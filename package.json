@@ -1,0 +1,19 @@
+{
+  "name": "signitures",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "image:html": "node scripts/convert-image-to-html.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.3",
+    "vite": "^7.3.3"
+  },
+  "private": true,
+  "dependencies": {
+    "simple-icons": "^16.20.0"
+  }
+}
