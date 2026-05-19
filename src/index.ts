@@ -171,7 +171,7 @@ ${bodyHtml}
 
 const sanitizeFontFamily = (value: string): string => {
   const cleaned = value.replace(/[;{}<>]/g, '').trim()
-  return cleaned || 'Arial, Helvetica, sans-serif'
+  return cleaned || "'Comeback SemiBold', 'Comeback Semi', Comeback, Arial, Helvetica, sans-serif"
 }
 
 const parseNumberInput = (
