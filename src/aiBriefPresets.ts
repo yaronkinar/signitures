@@ -571,3 +571,85 @@ export const buildAiBriefPresets = (
 
 export const presetPromptsFromList = (presets: AiBriefPreset[]): Map<string, string> =>
   new Map(presets.map((item) => [item.id, item.prompt]))
+
+export const buildAiCreatePresets = (lang: AppLanguage): AiBriefPreset[] => {
+  if (lang === 'he') {
+    return [
+      {
+        id: 'create-law-he',
+        label: 'משרד עורכי דין — מקצועי',
+        prompt:
+          'חתימה חדשה לעורך דין במשרד בוטיק: עברית RTL, כחול כהה ואפור, גופן Tahoma, מראה רשמי ואמין, לוגו מימין, בלי רשתות חברתיות.'
+      },
+      {
+        id: 'create-tech-he',
+        label: 'סטארטאפ הייטק',
+        prompt:
+          'חתימה חדשה למנהל מוצר בסטארטאפ: עברית, סגנון מודרני ונקי, דגש טורקיז או סגול עדין, Segoe UI, פריסה רחבה, אייקונים חברתיים עדינים.'
+      },
+      {
+        id: 'create-sales-he',
+        label: 'מכירות B2B',
+        prompt:
+          'חתימה חדשה למנהל מכירות B2B: עברית, אנרגטי אך מקצועי, דגש כתום או כחול עסקי, שם בולט, שורת קשר ברורה, LinkedIn בלבד אם מתאים.'
+      },
+      {
+        id: 'create-health-he',
+        label: 'מרפאה / בריאות',
+        prompt:
+          'חתימה חדשה לרופא/ה במרפאה פרטית: עברית RTL, צבעי בריאות רגועים (כחול-ירוק), מראה אמין ונקי, Calibri, ללא באנר.'
+      },
+      {
+        id: 'create-creative-he',
+        label: 'עיצוב / יצירתי',
+        prompt:
+          'חתימה חדשה למעצב/ת גרפי: עברית, סגנון יצירתי עם דגש צבעוני אחד מודגש, היררכיה ברורה, עדיין קריאה ב-Outlook.'
+      },
+      {
+        id: 'create-minimal-he',
+        label: 'מינימלי כללי',
+        prompt:
+          'חתימה חדשה מינימלית: עברית, שחור-אפור עם דגש צבע אחד עדין, גדלים קטנים לגוף, גובה נמוך, מראה נקי ומודרני.'
+      }
+    ]
+  }
+
+  return [
+    {
+      id: 'create-law-en',
+      label: 'Law firm — professional',
+      prompt:
+        'Brand new signature for a boutique law firm lawyer: English LTR, navy and gray, Tahoma or Georgia, formal trustworthy look, logo on the right, no social icons.'
+    },
+    {
+      id: 'create-tech-en',
+      label: 'Tech startup',
+      prompt:
+        'Brand new signature for a product manager at a tech startup: modern clean style, teal or soft purple accent, Segoe UI, wide layout, subtle social row.'
+    },
+    {
+      id: 'create-sales-en',
+      label: 'B2B sales',
+      prompt:
+        'Brand new signature for a B2B sales director: energetic but professional, blue or orange accent, bold name, scannable contact block, LinkedIn only if fitting.'
+    },
+    {
+      id: 'create-health-en',
+      label: 'Healthcare / clinic',
+      prompt:
+        'Brand new signature for a private clinic physician: calm healthcare blues, trustworthy and clean, Calibri, no banner, English LTR.'
+    },
+    {
+      id: 'create-creative-en',
+      label: 'Design / creative',
+      prompt:
+        'Brand new signature for a graphic designer: creative with one strong accent color, clear hierarchy, still Outlook-safe tables, English.'
+    },
+    {
+      id: 'create-minimal-en',
+      label: 'Minimal general',
+      prompt:
+        'Brand new minimal signature: black-gray with one subtle accent, small body text, low height, clean modern professional, English LTR.'
+    }
+  ]
+}

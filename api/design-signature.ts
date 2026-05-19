@@ -2,6 +2,7 @@ import {
   buildAiSystemPrompt,
   buildAiUserPrompt,
   parseAiSignatureDesign,
+  type AiDesignMode,
   type SignatureFormSnapshot
 } from '../src/aiSignatureDesign'
 
@@ -37,10 +38,19 @@ export default async function handler(request: Request): Promise<Response> {
 
   let brief = ''
   let snapshot: SignatureFormSnapshot | undefined
+  let mode: AiDesignMode = 'refine'
+  let keepContact = true
   try {
-    const body = (await request.json()) as { brief?: string; snapshot?: SignatureFormSnapshot }
+    const body = (await request.json()) as {
+      brief?: string
+      snapshot?: SignatureFormSnapshot
+      mode?: AiDesignMode
+      keepContact?: boolean
+    }
     brief = body.brief?.trim() ?? ''
     snapshot = body.snapshot
+    mode = body.mode === 'create' ? 'create' : 'refine'
+    keepContact = body.keepContact !== false
   } catch {
     return json({ error: 'Invalid request body' }, 400)
   }
@@ -61,11 +71,11 @@ export default async function handler(request: Request): Promise<Response> {
       },
       body: JSON.stringify({
         model,
-        temperature: 0.4,
+        temperature: mode === 'create' ? 0.55 : 0.4,
         response_format: { type: 'json_object' },
         messages: [
-          { role: 'system', content: buildAiSystemPrompt() },
-          { role: 'user', content: buildAiUserPrompt(brief, snapshot) }
+          { role: 'system', content: buildAiSystemPrompt(mode) },
+          { role: 'user', content: buildAiUserPrompt(brief, snapshot, { mode, keepContact }) }
         ]
       })
     })

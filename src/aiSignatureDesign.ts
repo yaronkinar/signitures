@@ -14,6 +14,8 @@ export const ALLOWED_FONT_FAMILIES = [
   "'Georgia', serif"
 ] as const
 
+export type AiDesignMode = 'refine' | 'create'
+
 export type AiSignatureDesign = {
   designSummary: string
   contact?: {
@@ -142,23 +144,46 @@ export const AI_DESIGN_JSON_SCHEMA = `{
   }
 }`
 
-export const buildAiSystemPrompt = (): string =>
-  `You are an expert email signature designer for Microsoft Outlook HTML signatures.
-
-Rules:
-- Return ONLY valid JSON matching the schema. No markdown fences or commentary.
+const SHARED_RULES = `- Return ONLY valid JSON matching the schema. No markdown fences or commentary.
 - Optimize for Outlook: table-based layout, web-safe fonts, readable contrast (WCAG AA).
 - Hebrew/RTL: set signatureLanguage to "he", align text right, prefer Tahoma or Arial.
+- Colors must be 6-digit hex (#RRGGBB).
+- fontFamily must be exactly one of:
+${ALLOWED_FONT_FAMILIES.map((f) => `  - ${f}`).join('\n')}`
+
+export const buildAiSystemPrompt = (mode: AiDesignMode = 'refine'): string => {
+  if (mode === 'create') {
+    return `You are an expert email signature designer for Microsoft Outlook HTML signatures.
+
+You are creating a BRAND NEW signature from scratch based on the user's brief. Do not copy or tweak an old design — invent a cohesive layout, typography scale, and color palette that fits the brief.
+
+Rules:
+${SHARED_RULES}
+- You MUST return complete "layout" and "colors" objects with sensible values for every field.
+- Match industry, tone, and language described in the brief.
+- Contact fields: only include values explicitly stated in the brief, or copy exactly from "contact to preserve" when provided. Never invent names, emails, or phone numbers.
+- If the brief describes a role without personal details (e.g. "law firm partner"), set jobTitle/company when appropriate but leave name/email/phone empty or omit them.
+- Social URLs: only if provided in the brief; otherwise return empty strings for all social fields.
+- Corporate/professional: restrained palette, Calibri or Segoe UI, moderate sizes.
+- Creative/modern: bolder accent, clear hierarchy, still Outlook-safe.
+
+JSON schema:
+${AI_DESIGN_JSON_SCHEMA}`
+  }
+
+  return `You are an expert email signature designer for Microsoft Outlook HTML signatures.
+
+Rules:
+${SHARED_RULES}
+- Refine the existing design described in the current form; keep contact details unless the brief asks to change them.
 - Corporate/professional: restrained palette, Calibri or Segoe UI, moderate sizes.
 - Creative/modern: bolder accent color, slightly larger name, optional wider signature.
 - Do NOT invent personal contact data. Only fill contact fields explicitly given in the brief or current form.
 - Keep social URLs empty unless provided in the brief or current form.
-- Colors must be 6-digit hex (#RRGGBB).
-- fontFamily must be exactly one of:
-${ALLOWED_FONT_FAMILIES.map((f) => `  - ${f}`).join('\n')}
 
 JSON schema:
 ${AI_DESIGN_JSON_SCHEMA}`
+}
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -291,8 +316,49 @@ export const parseAiSignatureDesign = (raw: string): AiSignatureDesign => {
   return result
 }
 
-export const buildAiUserPrompt = (brief: string, snapshot: SignatureFormSnapshot): string =>
-  `Design an Outlook email signature from this brief:
+export type AiUserPromptOptions = {
+  mode?: AiDesignMode
+  keepContact?: boolean
+}
+
+export const buildAiUserPrompt = (
+  brief: string,
+  snapshot: SignatureFormSnapshot,
+  options: AiUserPromptOptions = {}
+): string => {
+  const mode = options.mode ?? 'refine'
+  const keepContact = options.keepContact ?? true
+
+  if (mode === 'create') {
+    const contactNote = keepContact
+      ? `Contact to preserve exactly (do not change unless the brief overrides):\n${JSON.stringify(
+          {
+            signatureLanguage: snapshot.signatureLanguage,
+            fullName: snapshot.fullName,
+            jobTitle: snapshot.jobTitle,
+            company: snapshot.company,
+            phone: snapshot.phone,
+            email: snapshot.email,
+            website: snapshot.website
+          },
+          null,
+          2
+        )}`
+      : 'No existing contact to preserve — only use contact details explicitly written in the brief.'
+
+    return `Create a brand NEW Outlook email signature from scratch.
+
+Brief:
+"""
+${brief.trim()}
+"""
+
+${contactNote}
+
+Design everything fresh (layout, colors, typography). Return the JSON design object only.`
+  }
+
+  return `Refine an existing Outlook email signature from this brief:
 
 """
 ${brief.trim()}
@@ -302,3 +368,4 @@ Current form (use as context; do not overwrite contact/social unless the brief a
 ${JSON.stringify(snapshot, null, 2)}
 
 Return the JSON design object only.`
+}

@@ -2,6 +2,7 @@ import {
   buildAiSystemPrompt,
   buildAiUserPrompt,
   parseAiSignatureDesign,
+  type AiDesignMode,
   type AiSignatureDesign,
   type SignatureFormSnapshot
 } from './aiSignatureDesign'
@@ -10,6 +11,8 @@ export type AiAgentConfig = {
   apiKey: string
   baseUrl?: string
   model?: string
+  mode?: AiDesignMode
+  keepContact?: boolean
 }
 
 const DEFAULT_BASE_URL = 'https://api.openai.com/v1'
@@ -91,11 +94,20 @@ const designViaDirectOpenAi = async (
     },
     body: JSON.stringify({
       model,
-      temperature: 0.4,
+      temperature: config.mode === 'create' ? 0.55 : 0.4,
       response_format: { type: 'json_object' },
       messages: [
-        { role: 'system', content: buildAiSystemPrompt() },
-        { role: 'user', content: buildAiUserPrompt(brief, snapshot) }
+        {
+          role: 'system',
+          content: buildAiSystemPrompt(config.mode ?? 'refine')
+        },
+        {
+          role: 'user',
+          content: buildAiUserPrompt(brief, snapshot, {
+            mode: config.mode,
+            keepContact: config.keepContact
+          })
+        }
       ]
     })
   })
@@ -124,12 +136,18 @@ const designViaDirectOpenAi = async (
 
 const designViaServerProxy = async (
   brief: string,
-  snapshot: SignatureFormSnapshot
+  snapshot: SignatureFormSnapshot,
+  config: AiAgentConfig
 ): Promise<AiSignatureDesign> => {
   const response = await fetch(DESIGN_API_PATH, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ brief, snapshot })
+    body: JSON.stringify({
+      brief,
+      snapshot,
+      mode: config.mode ?? 'refine',
+      keepContact: config.keepContact ?? true
+    })
   })
 
   let payload: { design?: AiSignatureDesign; error?: string } = {}
@@ -156,7 +174,7 @@ export const designSignatureWithAi = async (
   config: AiAgentConfig
 ): Promise<AiSignatureDesign> => {
   if (usesServerAiProxy() && !config.apiKey.trim()) {
-    return designViaServerProxy(brief, snapshot)
+    return designViaServerProxy(brief, snapshot, config)
   }
   return designViaDirectOpenAi(brief, snapshot, config)
 }

@@ -1,5 +1,6 @@
 import {
   buildAiBriefPresets,
+  buildAiCreatePresets,
   presetPromptsFromList
 } from './aiBriefPresets'
 import {
@@ -10,7 +11,7 @@ import {
   loadStoredApiKey,
   storeApiKey
 } from './aiAgent'
-import type { SignatureFormSnapshot } from './aiSignatureDesign'
+import type { AiDesignMode, SignatureFormSnapshot } from './aiSignatureDesign'
 import { applyAiSignatureDesign } from './applyAiDesign'
 import { DEFAULT_LOGO_DATA_URL } from './defaultLogoDataUrl'
 import {
@@ -138,8 +139,15 @@ const outputElement = byId<HTMLTextAreaElement>('output')
 const installGuideGif = document.getElementById('installGuideGif') as HTMLImageElement | null
 const aiBriefInput = byId<HTMLTextAreaElement>('aiBrief')
 const aiBriefPresetSelect = byId<HTMLSelectElement>('aiBriefPreset')
+const aiPresetLabelElement = byId<HTMLSpanElement>('aiPresetLabel')
+const aiDesignLeadElement = byId<HTMLParagraphElement>('aiDesignLead')
 const aiApiKeyInput = byId<HTMLInputElement>('aiApiKey')
 const aiDesignButton = byId<HTMLButtonElement>('aiDesign')
+const aiCreateNewButton = byId<HTMLButtonElement>('aiCreateNew')
+const aiKeepContactWrap = byId<HTMLLabelElement>('aiKeepContactWrap')
+const aiKeepContactCheckbox = byId<HTMLInputElement>('aiKeepContact')
+const aiModeRefineRadio = byId<HTMLInputElement>('aiModeRefine')
+const aiModeCreateRadio = byId<HTMLInputElement>('aiModeCreate')
 const aiStatusElement = byId<HTMLParagraphElement>('aiStatus')
 
 const outlookHelpStatusElement = (() => {
@@ -483,15 +491,107 @@ const refreshAiApiKeyFieldState = (): void => {
       : t(lang, 'aiApiKeyPlaceholder')
 }
 
+const getAiDesignMode = (): AiDesignMode => (aiModeCreateRadio.checked ? 'create' : 'refine')
+
+const getDefaultDesignSnapshot = (): SignatureFormSnapshot => ({
+  signatureLanguage: getSignatureLanguage(),
+  fullName: '',
+  jobTitle: '',
+  company: '',
+  phone: '',
+  email: '',
+  website: '',
+  fontFamily: "'Comeback SemiBold', 'Comeback Semi', Comeback, Arial, Helvetica, sans-serif",
+  nameFontSize: 28,
+  titleFontSize: 19,
+  bodyFontSize: 12,
+  lineSpacing: 1.1,
+  signatureWidth: 400,
+  signatureHeight: 200,
+  textColumnWidth: 252,
+  logoMaxWidth: 122,
+  textAlign: getSignatureLanguage() === 'he' ? 'right' : 'right',
+  nameTitleAlign: getSignatureLanguage() === 'he' ? 'right' : 'right',
+  emailAlign: getSignatureLanguage() === 'he' ? 'right' : 'right',
+  logoAlign: 'right',
+  verticalAlign: 'top',
+  accentColor: '#92278f',
+  secondaryTextColor: '#666666',
+  socialIconGap: 5,
+  dividerThickness: 2
+})
+
+const buildAiRequestSnapshot = (mode: AiDesignMode, keepContact: boolean): SignatureFormSnapshot => {
+  if (mode === 'refine') return getFormSnapshot()
+
+  const defaults = getDefaultDesignSnapshot()
+  if (!keepContact) return defaults
+
+  const current = getFormSnapshot()
+  return {
+    ...defaults,
+    signatureLanguage: current.signatureLanguage,
+    fullName: current.fullName,
+    jobTitle: current.jobTitle,
+    company: current.company,
+    phone: current.phone,
+    email: current.email,
+    website: current.website
+  }
+}
+
+const clearSocialFields = (): void => {
+  inputs.facebookUrl.value = ''
+  inputs.instagramUrl.value = ''
+  inputs.linkedinUrl.value = ''
+  inputs.xUrl.value = ''
+  inputs.youtubeUrl.value = ''
+}
+
+const clearContactFields = (): void => {
+  inputs.fullName.value = ''
+  inputs.jobTitle.value = ''
+  inputs.company.value = ''
+  inputs.phone.value = ''
+  inputs.email.value = ''
+  inputs.website.value = ''
+}
+
+const prepareFormForCreate = (keepContact: boolean): void => {
+  clearSocialFields()
+  if (!keepContact) clearContactFields()
+}
+
+const refreshAiPanelState = (): void => {
+  const lang = getSignatureLanguage()
+  const mode = getAiDesignMode()
+  aiKeepContactWrap.hidden = mode === 'refine'
+  aiDesignLeadElement.textContent =
+    mode === 'create' ? t(lang, 'aiCreateLead') : t(lang, 'aiDesignLead')
+  aiPresetLabelElement.textContent =
+    mode === 'create' ? t(lang, 'aiCreatePresetLabel') : t(lang, 'aiPresetLabel')
+  aiBriefInput.dataset.i18nPlaceholder =
+    mode === 'create' ? 'aiCreateBriefPlaceholder' : 'aiBriefPlaceholder'
+  aiBriefInput.placeholder = t(
+    lang,
+    mode === 'create' ? 'aiCreateBriefPlaceholder' : 'aiBriefPlaceholder'
+  )
+  refreshAiBriefPresets()
+}
+
 const refreshAiBriefPresets = (): void => {
   const lang = getSignatureLanguage()
+  const mode = getAiDesignMode()
   const snapshot = getFormSnapshot()
-  const presets = buildAiBriefPresets(snapshot, {
-    hasLogo: hasLogoConfigured(),
-    hasBanner: hasBannerConfigured(),
-    hasSocial: hasSocialConfigured(),
-    hasWebsite: Boolean(snapshot.website.trim())
-  })
+  const presets =
+    mode === 'create'
+      ? buildAiCreatePresets(lang)
+      : buildAiBriefPresets(snapshot, {
+          hasLogo: hasLogoConfigured(),
+          hasBanner: hasBannerConfigured(),
+          hasSocial: hasSocialConfigured(),
+          hasWebsite: Boolean(snapshot.website.trim())
+        })
   aiBriefPresetPrompts = presetPromptsFromList(presets)
 
   const selectedId = aiBriefPresetSelect.value
@@ -520,7 +620,7 @@ const scheduleAiBriefPresetRefresh = (delayMs = 200): void => {
   }
   aiPresetRefreshTimer = window.setTimeout(() => {
     aiPresetRefreshTimer = null
-    refreshAiBriefPresets()
+    if (getAiDesignMode() === 'refine') refreshAiBriefPresets()
   }, delayMs)
 }
 
@@ -532,7 +632,7 @@ const setAiStatus = (message: string, tone: 'idle' | 'working' | 'success' | 'er
   if (tone === 'error') aiStatusElement.classList.add('is-error')
 }
 
-const runAiDesign = async (): Promise<void> => {
+const runAiDesign = async (mode: AiDesignMode): Promise<void> => {
   const lang = getSignatureLanguage()
   const brief = aiBriefInput.value.trim()
   if (!brief) {
@@ -548,24 +648,35 @@ const runAiDesign = async (): Promise<void> => {
     return
   }
 
+  const keepContact = mode === 'refine' || aiKeepContactCheckbox.checked
+  if (mode === 'create') {
+    prepareFormForCreate(keepContact)
+  }
+
   aiDesignButton.disabled = true
+  aiCreateNewButton.disabled = true
   setAiStatus(t(lang, 'aiDesignWorking'), 'working')
 
   try {
-    const design = await designSignatureWithAi(brief, getFormSnapshot(), {
-      apiKey: aiApiKeyInput.value
+    const design = await designSignatureWithAi(brief, buildAiRequestSnapshot(mode, keepContact), {
+      apiKey: aiApiKeyInput.value,
+      mode,
+      keepContact
     })
     applyAiSignatureDesign(inputs, design)
     refreshUiLanguage()
     await generate()
     revealSignaturePreview({ scrollToMain: true, showInline: true })
-    refreshAiBriefPresets()
-    setAiStatus(`${t(lang, 'aiDesignSuccess')} ${design.designSummary}`, 'success')
+    refreshAiPanelState()
+    const successPrefix =
+      mode === 'create' ? t(lang, 'aiCreateSuccess') : t(lang, 'aiDesignSuccess')
+    setAiStatus(`${successPrefix} ${design.designSummary}`, 'success')
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     setAiStatus(`${t(lang, 'aiDesignFailed')} ${message}`, 'error')
   } finally {
     aiDesignButton.disabled = false
+    aiCreateNewButton.disabled = false
   }
 }
 
@@ -1116,8 +1227,15 @@ aiBriefPresetSelect.addEventListener('change', () => {
   }
   aiBriefPresetSelect.value = ''
 })
+aiModeRefineRadio.addEventListener('change', () => refreshAiPanelState())
+aiModeCreateRadio.addEventListener('change', () => refreshAiPanelState())
 aiDesignButton.addEventListener('click', () => {
-  runAiDesign().catch(() => {
+  runAiDesign('refine').catch(() => {
+    setAiStatus(t(getSignatureLanguage(), 'aiDesignFailed'), 'error')
+  })
+})
+aiCreateNewButton.addEventListener('click', () => {
+  runAiDesign('create').catch(() => {
     setAiStatus(t(getSignatureLanguage(), 'aiDesignFailed'), 'error')
   })
 })
@@ -1164,7 +1282,7 @@ inputs.signatureLanguage.addEventListener('change', () => {
     inputs.emailAlign.value = 'right'
   }
   refreshUiLanguage()
-  refreshAiBriefPresets()
+  refreshAiPanelState()
   refreshAiApiKeyFieldState()
   scheduleLivePreviewUpdate()
 })
@@ -1182,7 +1300,7 @@ if (!inputs.logoUrl.value.trim()) {
 }
 
 refreshUiLanguage()
-refreshAiBriefPresets()
+refreshAiPanelState()
 refreshAiApiKeyFieldState()
 addLinkImageRow()
 generate().catch(() => {
