@@ -1,4 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import {
+  buildAiSystemPrompt,
+  buildAiUserPrompt,
+  parseAiSignatureDesign
+} from '../lib/aiSignatureDesign'
 
 const DEFAULT_BASE_URL = 'https://api.openai.com/v1'
 const DEFAULT_MODEL = 'gpt-4o-mini'
@@ -28,10 +33,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       res.status(405).json({ error: 'Method not allowed' })
       return
     }
-
-    const { buildAiSystemPrompt, buildAiUserPrompt, parseAiSignatureDesign } = await import(
-      './lib/aiSignatureDesign'
-    )
 
     const apiKey = getServerApiKey()
     if (!apiKey) {
