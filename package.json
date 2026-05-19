@@ -6,9 +6,12 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "image:html": "node scripts/convert-image-to-html.mjs"
+    "image:html": "node scripts/convert-image-to-html.mjs",
+    "capture:install-frames": "node scripts/capture-install-frames.mjs",
+    "build:install-gif": "node scripts/capture-install-frames.mjs"
   },
   "devDependencies": {
+    "playwright": "^1.51.0",
     "typescript": "^5.5.3",
     "vite": "^7.3.3"
   },

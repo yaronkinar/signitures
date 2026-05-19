@@ -229,6 +229,20 @@
         unicode-bidi: isolate;
       }
 
+      .install-guide-media {
+        margin-top: 12px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        background: #fff;
+      }
+
+      .install-guide-media img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
       .actions-bar {
         padding: 16px 20px;
         border-top: 1px solid var(--border);
@@ -547,7 +561,7 @@
                 </label>
                 <label>
                   <span data-i18n="lineSpacing">Line spacing</span>
-                  <input id="lineSpacing" type="number" min="1" max="2" step="0.05" value="1.25" />
+                  <input id="lineSpacing" type="number" min="1" max="2" step="0.05" value="1.1" />
                 </label>
                 <label>
                   <span data-i18n="signatureWidth">Width (px)</span>
@@ -590,11 +604,19 @@
                   </select>
                 </label>
                 <label>
+                  <span data-i18n="emailAlign">Position in email</span>
+                  <select id="emailAlign">
+                    <option value="left" data-i18n="alignLeft">Left</option>
+                    <option value="center" data-i18n="alignCenter">Center</option>
+                    <option value="right" data-i18n="alignRight" selected>Right</option>
+                  </select>
+                </label>
+                <label>
                   <span data-i18n="logoAlign">Logo align</span>
                   <select id="logoAlign">
-                    <option value="left" data-i18n="alignLeft" selected>Left</option>
+                    <option value="left" data-i18n="alignLeft">Left</option>
                     <option value="center" data-i18n="alignCenter">Center</option>
-                    <option value="right" data-i18n="alignRight">Right</option>
+                    <option value="right" data-i18n="alignRight" selected>Right</option>
                   </select>
                 </label>
                 <label>
@@ -696,6 +718,24 @@
             </button>
           </div>
           <p id="outlookHelpStatus" class="hint" style="margin-top: 10px"></p>
+          <details class="panel install-guide" style="margin-top: 14px" open>
+            <summary data-i18n="installGuide">How to install in Outlook</summary>
+            <div class="panel-body">
+              <p class="hint" data-i18n="installGuideLead">
+                Follow these steps to install your signature in classic Outlook desktop.
+              </p>
+              <div class="install-guide-media">
+                <img
+                  id="installGuideGif"
+                  src="/images/install-outlook.gif"
+                  width="960"
+                  height="720"
+                  alt="Outlook signature installation steps"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+          </details>
         </div>
       </section>
 

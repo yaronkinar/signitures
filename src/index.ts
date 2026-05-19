@@ -27,6 +27,7 @@ type SignatureLayoutSettings = {
   logoMaxWidth: number
   textAlign: 'left' | 'center' | 'right'
   nameTitleAlign: 'left' | 'center' | 'right'
+  emailAlign: 'left' | 'center' | 'right'
   logoAlign: 'left' | 'center' | 'right'
   verticalAlign: 'top' | 'middle' | 'bottom'
   textOffsetX: number
@@ -90,6 +91,7 @@ const inputs = {
   logoMaxWidth: byId<HTMLInputElement>('logoMaxWidth'),
   textAlign: byId<HTMLSelectElement>('textAlign'),
   nameTitleAlign: byId<HTMLSelectElement>('nameTitleAlign'),
+  emailAlign: byId<HTMLSelectElement>('emailAlign'),
   logoAlign: byId<HTMLSelectElement>('logoAlign'),
   verticalAlign: byId<HTMLSelectElement>('verticalAlign'),
   textOffsetX: byId<HTMLInputElement>('textOffsetX'),
@@ -115,6 +117,8 @@ const installOutlookButton = byId<HTMLButtonElement>('installOutlook')
 const installNewOutlookButton = byId<HTMLButtonElement>('installNewOutlook')
 const previewElement = byId<HTMLDivElement>('preview')
 const outputElement = byId<HTMLTextAreaElement>('output')
+const installGuideGif = document.getElementById('installGuideGif') as HTMLImageElement | null
+
 const outlookHelpStatusElement = (() => {
   const element =
     document.getElementById('outlookHelpStatus') ?? document.getElementById('newOutlookStatus')
@@ -160,6 +164,9 @@ const refreshUiLanguage = (): void => {
   applyUiLanguage(lang)
   outlookHelpStatusElement.dir = lang === 'he' ? 'rtl' : 'ltr'
   outlookHelpStatusElement.innerHTML = outlookHelpStatusHtml(lang)
+  if (installGuideGif) {
+    installGuideGif.alt = t(lang, 'installGuideAlt')
+  }
   linkImagesContainer.querySelectorAll('.link-image-row').forEach((row) => {
     localizeLinkImageRow(row as HTMLElement, lang)
   })
@@ -368,7 +375,7 @@ const getLayoutSettings = (): SignatureLayoutSettings => ({
   nameFontSize: parseNumberInput(inputs.nameFontSize.value, 28, 14, 72),
   titleFontSize: parseNumberInput(inputs.titleFontSize.value, 19, 10, 48),
   bodyFontSize: parseNumberInput(inputs.bodyFontSize.value, 12, 9, 24),
-  lineSpacing: parseNumberInput(inputs.lineSpacing.value, 1.25, 1, 2, 2),
+  lineSpacing: parseNumberInput(inputs.lineSpacing.value, 1.1, 1, 2, 2),
   signatureWidth: parseNumberInput(inputs.signatureWidth.value, 400, 250, 900),
   signatureHeight: parseNumberInput(inputs.signatureHeight.value, 200, 120, 500),
   textColumnWidth: parseNumberInput(inputs.textColumnWidth.value, 252, 120, 760),
@@ -379,7 +386,8 @@ const getLayoutSettings = (): SignatureLayoutSettings => ({
     ['left', 'center', 'right'] as const,
     'right'
   ),
-  logoAlign: parseEnumInput(inputs.logoAlign.value, ['left', 'center', 'right'] as const, 'left'),
+  emailAlign: parseEnumInput(inputs.emailAlign.value, ['left', 'center', 'right'] as const, 'right'),
+  logoAlign: parseEnumInput(inputs.logoAlign.value, ['left', 'center', 'right'] as const, 'right'),
   verticalAlign: parseEnumInput(inputs.verticalAlign.value, ['top', 'middle', 'bottom'] as const, 'top'),
   textOffsetX: parseNumberInput(inputs.textOffsetX.value, 0, -120, 120),
   textOffsetY: parseNumberInput(inputs.textOffsetY.value, 0, -120, 120),
@@ -423,7 +431,9 @@ const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
   const logoColumnWidth = Math.max(60, signatureWidth - textColumnWidth - layout.dividerThickness)
   const fontFamilyCss = escapeHtml(layout.fontFamily)
   const bodyFontSizePx = `${layout.bodyFontSize}px`
-  const detailsLineHeight = layout.lineSpacing
+  const detailsLineHeight = Math.max(1, layout.lineSpacing - 0.15)
+  const nameLineHeight = Math.max(1, layout.lineSpacing - 0.35)
+  const titleLineHeight = Math.max(1, layout.lineSpacing - 0.3)
   const rtlContent =
     lang === 'he' ||
     [inputs.fullName.value, inputs.jobTitle.value, inputs.company.value].some(hasHebrew)
@@ -432,37 +442,44 @@ const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
   const textOffsetRight = Math.max(-layout.textOffsetX, 0)
   const logoOffsetLeft = Math.max(layout.logoOffsetX, 0)
   const logoOffsetRight = Math.max(-layout.logoOffsetX, 0)
+  const contentAlign = rtlContent ? 'right' : layout.nameTitleAlign
+  const contentAlignAttr =
+    contentAlign === 'left' ? 'left' : contentAlign === 'center' ? 'center' : 'right'
+  const edgeInset = 8
+  const dividerInset = 12
+
+  const contactRowBorder = dividerColor
+  const buildContactRow = (labelHtml: string, valueHtml: string): string =>
+    `<tr>
+      <td dir="${contactDirection}" align="${contentAlignAttr}" style="padding:3px ${edgeInset}px 6px;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};text-align:${contentAlign};border-bottom:1px solid ${contactRowBorder};">
+        <span style="font-weight:700;color:${secondaryTextColor};">${labelHtml}</span>&nbsp;<span style="unicode-bidi:plaintext;">${valueHtml}</span>
+      </td>
+    </tr>`
 
   const contactRows: string[] = []
   if (phone.trim()) {
     contactRows.push(
-      `<tr>
-        <td dir="${contactDirection}" style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">${strings.phoneLabel}&nbsp;</td>
-        <td style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};unicode-bidi:plaintext;border-bottom:1px solid #d1d5db;">
-          <a href="${escapeHtml(normalizeUrl(`tel:${inputs.phone.value.trim()}`))}" style="text-decoration:none;color:${accentColor};">${phone}</a>
-        </td>
-      </tr>`
+      buildContactRow(
+        strings.phoneLabel,
+        `<a href="${escapeHtml(normalizeUrl(`tel:${inputs.phone.value.trim()}`))}" style="text-decoration:none;color:${accentColor};">${phone}</a>`
+      )
     )
   }
   if (email.trim()) {
     contactRows.push(
-      `<tr>
-        <td dir="${contactDirection}" style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">${strings.emailLabel}&nbsp;</td>
-        <td style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};unicode-bidi:plaintext;border-bottom:1px solid #d1d5db;">
-          <a href="${escapeHtml(normalizeUrl(`mailto:${inputs.email.value.trim()}`))}" style="text-decoration:underline;color:${accentColor};">${email}</a>
-        </td>
-      </tr>`
+      buildContactRow(
+        strings.emailLabel,
+        `<a href="${escapeHtml(normalizeUrl(`mailto:${inputs.email.value.trim()}`))}" style="text-decoration:underline;color:${accentColor};word-break:break-all;">${email}</a>`
+      )
     )
   }
   if (website) {
     const websiteLabel = escapeHtml(website.replace(/^https?:\/\//i, ''))
     contactRows.push(
-      `<tr>
-        <td dir="${contactDirection}" style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">${strings.websiteLabel}&nbsp;</td>
-        <td style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};unicode-bidi:plaintext;border-bottom:1px solid #d1d5db;">
-          <a href="${escapeHtml(website)}" style="text-decoration:underline;color:${linkColor};">${websiteLabel}</a>
-        </td>
-      </tr>`
+      buildContactRow(
+        strings.websiteLabel,
+        `<a href="${escapeHtml(website)}" style="text-decoration:underline;color:${linkColor};word-break:break-all;">${websiteLabel}</a>`
+      )
     )
   }
 
@@ -494,56 +511,65 @@ const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
     }
   ].filter((item) => item.url && item.iconUrl)
 
+  const socialIconSize = layout.bodyFontSize + 4
+  const socialAlign = contentAlign
+  const socialIconMargin =
+    nameTitleDirection === 'rtl'
+      ? `0 0 ${layout.socialIconGap}px ${layout.socialIconGap}px`
+      : `0 ${layout.socialIconGap}px ${layout.socialIconGap}px 0`
   const socialTextRow = socialLinks.length
-    ? `<tr><td style="padding-top:5px;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          ${socialLinks
-            .map(
-              (item) => `<td style="padding-right:${layout.socialIconGap}px;vertical-align:middle;">
-              <a href="${escapeHtml(item.url)}" title="${escapeHtml(
-                item.label
-              )}" style="text-decoration:none;display:inline-block;">
-                <img
-                  src="${escapeHtml(item.iconUrl)}"
-                  alt="${escapeHtml(item.label)}"
-                  width="16"
-                  height="16"
-                  style="display:block;width:16px;height:16px;border:0;"
-                />
-              </a>
-            </td>`
-            )
-            .join('')}
-        </tr>
-      </table>
+    ? `<tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="padding:${edgeInset}px ${edgeInset}px 0;text-align:${socialAlign};font-size:0;line-height:0;">
+      ${socialLinks
+        .map(
+          (item) => `<span style="display:inline-block;vertical-align:middle;margin:${socialIconMargin};font-size:0;line-height:0;">
+            <a href="${escapeHtml(item.url)}" title="${escapeHtml(item.label)}" style="text-decoration:none;display:inline-block;line-height:0;">
+              <img
+                src="${escapeHtml(item.iconUrl)}"
+                alt="${escapeHtml(item.label)}"
+                width="${socialIconSize}"
+                height="${socialIconSize}"
+                style="display:block;width:${socialIconSize}px;height:${socialIconSize}px;border:0;"
+              />
+            </a>
+          </span>`
+        )
+        .join('')}
     </td></tr>`
     : ''
 
-  return `<!-- Outlook email signature -->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" style="font-family:${fontFamilyCss};color:${textColor};background:${backgroundColor};width:${signatureWidth}px;max-width:${signatureWidth}px;height:${signatureHeight}px;overflow:hidden;">
+  // Keep layout LTR so columns stay text | divider | logo (logo on the right).
+  const signatureTable = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${layout.emailAlign}" style="font-family:${fontFamilyCss};color:${textColor};background:${backgroundColor};width:${signatureWidth}px;max-width:${signatureWidth}px;mso-line-height-rule:exactly;">
   <tr>
-    <td style="vertical-align:${layout.verticalAlign};padding-left:${textOffsetLeft}px;padding-right:${textOffsetRight}px;padding-top:${Math.max(
+    <td style="vertical-align:${layout.verticalAlign};padding-left:${textOffsetLeft + edgeInset}px;padding-right:${textOffsetRight + dividerInset}px;padding-top:${Math.max(
       0,
       layout.textOffsetY
-    )}px;padding-bottom:${Math.max(0, -layout.textOffsetY)}px;width:${textColumnWidth}px;max-width:${textColumnWidth}px;text-align:${layout.textAlign};unicode-bidi:plaintext;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-        <tr><td dir="${nameTitleDirection}" style="font-size:${layout.nameFontSize}px;line-height:${Math.max(1, layout.lineSpacing - 0.2)};font-weight:700;color:${accentColor};padding-bottom:2px;text-align:${layout.nameTitleAlign};unicode-bidi:plaintext;">${fullName || strings.fullNamePlaceholder}</td></tr>
-        <tr><td dir="${nameTitleDirection}" style="font-size:${layout.titleFontSize}px;line-height:${Math.max(1, layout.lineSpacing - 0.15)};font-weight:700;color:${secondaryTextColor};padding-bottom:8px;text-align:${layout.nameTitleAlign};unicode-bidi:plaintext;">${jobTitle || strings.jobTitlePlaceholder}${company ? ` | ${company}` : ''}</td></tr>
-        ${contactRows.length ? `<tr><td dir="${contactDirection}" style="padding-top:1px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="${contactDirection}" align="${layout.nameTitleAlign === 'left' ? 'left' : layout.nameTitleAlign === 'center' ? 'center' : 'right'}" style="text-align:${layout.nameTitleAlign};">${contactRows.join('')}</table></td></tr>` : ''}
-        ${socialTextRow.replace(/width="16"/g, `width="${layout.bodyFontSize + 4}"`).replace(/height="16"/g, `height="${layout.bodyFontSize + 4}"`).replace(/width:16px/g, `width:${layout.bodyFontSize + 4}px`).replace(/height:16px/g, `height:${layout.bodyFontSize + 4}px`)}
+    ) + edgeInset}px;padding-bottom:${Math.max(0, -layout.textOffsetY) + edgeInset}px;width:${textColumnWidth}px;max-width:${textColumnWidth}px;text-align:${contentAlign};unicode-bidi:plaintext;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contentAlignAttr}" dir="${nameTitleDirection}" style="text-align:${contentAlign};">
+        <tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="font-size:${layout.nameFontSize}px;line-height:${nameLineHeight};font-weight:700;color:${accentColor};padding:0 0 1px;text-align:${contentAlign};unicode-bidi:plaintext;">${fullName || strings.fullNamePlaceholder}</td></tr>
+        <tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="font-size:${layout.titleFontSize}px;line-height:${titleLineHeight};font-weight:700;color:${secondaryTextColor};padding:0 0 3px;text-align:${contentAlign};unicode-bidi:plaintext;">${jobTitle || strings.jobTitlePlaceholder}${company ? `<br style="line-height:${titleLineHeight};" /><span style="font-weight:700;line-height:${titleLineHeight};">${company}</span>` : ''}</td></tr>
+        ${contactRows.length ? `<tr><td dir="${contactDirection}" align="${contentAlignAttr}" style="padding-top:2px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contentAlignAttr}" dir="${contactDirection}" style="text-align:${contentAlign};border-collapse:collapse;">${contactRows.join('')}</table></td></tr>` : ''}
+        ${socialTextRow}
       </table>
     </td>
-    <td style="width:${layout.dividerThickness}px;background:${dividerColor};font-size:0;line-height:0;">&nbsp;</td>
-    <td style="vertical-align:${layout.verticalAlign};padding-left:${logoOffsetLeft}px;padding-right:${logoOffsetRight}px;padding-top:${Math.max(
+    <td style="width:${layout.dividerThickness}px;min-width:${layout.dividerThickness}px;background:${dividerColor};font-size:0;line-height:0;padding:0;">&nbsp;</td>
+    <td style="vertical-align:${layout.verticalAlign};padding-left:${logoOffsetLeft + dividerInset}px;padding-right:${logoOffsetRight + edgeInset}px;padding-top:${Math.max(
       0,
       layout.logoOffsetY
-    )}px;padding-bottom:${Math.max(0, -layout.logoOffsetY)}px;width:${logoColumnWidth}px;max-width:${logoColumnWidth}px;text-align:${layout.logoAlign};">
+    ) + edgeInset}px;padding-bottom:${Math.max(0, -layout.logoOffsetY) + edgeInset}px;width:${logoColumnWidth}px;max-width:${logoColumnWidth}px;text-align:${layout.logoAlign};">
       ${
         logoUrl
           ? `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(strings.companyLogoAlt)}" width="${layout.logoMaxWidth}" style="display:block;border:0;max-width:${layout.logoMaxWidth}px;height:auto;margin-left:${layout.logoAlign === 'left' ? '0' : 'auto'};margin-right:${layout.logoAlign === 'right' ? '0' : 'auto'};" />`
           : `<div style="font-size:14px;color:${accentColor};font-weight:700;">${strings.companyLogoPlaceholder}</div>`
       }
+    </td>
+  </tr>
+</table>`
+
+  return `<!-- Outlook email signature -->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" dir="ltr">
+  <tr>
+    <td align="${layout.emailAlign}" style="text-align:${layout.emailAlign};">
+      ${signatureTable}
     </td>
   </tr>
 </table>`
@@ -640,7 +666,7 @@ const toPlainTextSignature = (): string => {
   const website = normalizeUrl(inputs.website.value)
 
   if (fullName) lines.push(fullName)
-  if (roleBits.length) lines.push(roleBits.join(' | '))
+  if (roleBits.length) lines.push(roleBits.join('\r\n'))
   if (phone) lines.push(`${strings.phoneLabel} ${phone}`)
   if (email) lines.push(`${strings.emailLabel} ${email}`)
   if (website) lines.push(`${strings.websiteLabel} ${website}`)
@@ -851,6 +877,11 @@ installNewOutlookButton.addEventListener('click', () => {
     })
 })
 inputs.signatureLanguage.addEventListener('change', () => {
+  if (getSignatureLanguage() === 'he') {
+    inputs.textAlign.value = 'right'
+    inputs.nameTitleAlign.value = 'right'
+    inputs.emailAlign.value = 'right'
+  }
   refreshUiLanguage()
   scheduleLivePreviewUpdate()
 })
