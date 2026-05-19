@@ -11,7 +11,11 @@ await esbuild.build({
   target: 'node18',
   format: 'cjs',
   packages: 'bundle',
-  logLevel: 'info'
+  logLevel: 'info',
+  // Vercel invokes module.exports directly, not .default
+  footer: {
+    js: 'module.exports = module.exports.default ?? module.exports;'
+  }
 })
 
 console.log('Bundled api/design-signature/index.js')
