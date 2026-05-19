@@ -1,4 +1,12 @@
 import { DEFAULT_LOGO_DATA_URL } from './defaultLogoDataUrl'
+import {
+  applyUiLanguage,
+  localizeLinkImageRow,
+  newOutlookStatusHtml,
+  signatureStrings,
+  t,
+  type AppLanguage
+} from './i18n'
 import { siFacebook, siInstagram, siX, siYoutube } from 'simple-icons'
 
 type LinkImage = {
@@ -44,6 +52,7 @@ const byId = <T extends HTMLElement>(id: string): T => {
 }
 
 const inputs = {
+  signatureLanguage: byId<HTMLSelectElement>('signatureLanguage'),
   fullName: byId<HTMLInputElement>('fullName'),
   jobTitle: byId<HTMLInputElement>('jobTitle'),
   company: byId<HTMLInputElement>('company'),
@@ -133,6 +142,32 @@ const escapeHtml = (value: string): string =>
     .replace(/'/g, '&#039;')
 
 const hasHebrew = (value: string): boolean => /[\u0590-\u05FF]/.test(value)
+
+const getSignatureLanguage = (): AppLanguage =>
+  parseEnumInput(inputs.signatureLanguage.value, ['en', 'he'] as const, 'he')
+
+const getSignatureStrings = () => signatureStrings[getSignatureLanguage()]
+
+const refreshUiLanguage = (): void => {
+  const lang = getSignatureLanguage()
+  applyUiLanguage(lang)
+  linkImagesContainer.querySelectorAll('.link-image-row').forEach((row) => {
+    localizeLinkImageRow(row as HTMLElement, lang)
+  })
+}
+
+const wrapHtmlDocument = (bodyHtml: string, lang: AppLanguage): string =>
+  `<!doctype html>
+<html lang="${lang}"${lang === 'he' ? ' dir="rtl"' : ''}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Outlook Signature</title>
+  </head>
+  <body>
+${bodyHtml}
+  </body>
+</html>`
 
 const sanitizeFontFamily = (value: string): string => {
   const cleaned = value.replace(/[;{}<>]/g, '').trim()
@@ -278,15 +313,18 @@ const resolveSocialIconUrl = (platform: SocialPlatform, customIconUrl: string): 
 }
 
 const addLinkImageRow = (seed?: Partial<LinkImage>): void => {
+  const lang = getSignatureLanguage()
+  const defaultAlt = seed?.alt ?? t(lang, 'linkedImageAlt')
   const row = document.createElement('div')
   row.className = 'link-image-row'
   row.innerHTML = `
-    <label>Image URL <input class="link-image-url" placeholder="https://..." value="${escapeHtml(seed?.imageUrl ?? '')}" /></label>
-    <label>Link URL <input class="link-image-href" placeholder="https://..." value="${escapeHtml(seed?.href ?? '')}" /></label>
-    <label>Alt text <input class="link-image-alt" placeholder="Linked image" value="${escapeHtml(seed?.alt ?? '')}" /></label>
-    <label>Image file <input class="link-image-file" type="file" accept="image/*" /></label>
+    <label><span class="link-image-url-label"></span> <input class="link-image-url" placeholder="https://..." value="${escapeHtml(seed?.imageUrl ?? '')}" /></label>
+    <label><span class="link-image-href-label"></span> <input class="link-image-href" placeholder="https://..." value="${escapeHtml(seed?.href ?? '')}" /></label>
+    <label><span class="link-image-alt-label"></span> <input class="link-image-alt" placeholder="Linked image" value="${escapeHtml(defaultAlt)}" /></label>
+    <label><span class="link-image-file-label"></span> <input class="link-image-file" type="file" accept="image/*" /></label>
     <button type="button" class="secondary remove-link-image">Remove</button>
   `
+  localizeLinkImageRow(row, lang)
   linkImagesContainer.appendChild(row)
 
   const removeButton = row.querySelector('.remove-link-image')
@@ -308,7 +346,9 @@ const getLinkImages = (): LinkImage[] => {
     .map((row): LinkImage => {
       const imageUrl = (row.querySelector('.link-image-url') as HTMLInputElement).value.trim()
       const href = (row.querySelector('.link-image-href') as HTMLInputElement).value.trim()
-      const alt = (row.querySelector('.link-image-alt') as HTMLInputElement).value.trim() || 'Linked image'
+      const alt =
+        (row.querySelector('.link-image-alt') as HTMLInputElement).value.trim() ||
+        t(getSignatureLanguage(), 'linkedImageAlt')
       return { imageUrl, href, alt }
     })
     .filter((item) => item.imageUrl && item.href)
@@ -347,6 +387,9 @@ const getLayoutSettings = (): SignatureLayoutSettings => ({
 })
 
 const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
+  const lang = getSignatureLanguage()
+  const strings = getSignatureStrings()
+  const contactDirection = lang === 'he' ? 'rtl' : 'ltr'
   const fullName = escapeHtml(inputs.fullName.value.trim())
   const jobTitle = escapeHtml(inputs.jobTitle.value.trim())
   const company = escapeHtml(inputs.company.value.trim())
@@ -372,7 +415,9 @@ const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
   const fontFamilyCss = escapeHtml(layout.fontFamily)
   const bodyFontSizePx = `${layout.bodyFontSize}px`
   const detailsLineHeight = layout.lineSpacing
-  const rtlContent = [fullName, jobTitle, company].some(hasHebrew)
+  const rtlContent =
+    lang === 'he' ||
+    [inputs.fullName.value, inputs.jobTitle.value, inputs.company.value].some(hasHebrew)
   const nameTitleDirection = rtlContent ? 'rtl' : 'ltr'
   const textOffsetLeft = Math.max(layout.textOffsetX, 0)
   const textOffsetRight = Math.max(-layout.textOffsetX, 0)
@@ -383,7 +428,7 @@ const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
   if (phone.trim()) {
     contactRows.push(
       `<tr>
-        <td dir="rtl" style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">נייד:&nbsp;</td>
+        <td dir="${contactDirection}" style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">${strings.phoneLabel}&nbsp;</td>
         <td style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};unicode-bidi:plaintext;border-bottom:1px solid #d1d5db;">
           <a href="${escapeHtml(normalizeUrl(`tel:${inputs.phone.value.trim()}`))}" style="text-decoration:none;color:${accentColor};">${phone}</a>
         </td>
@@ -393,7 +438,7 @@ const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
   if (email.trim()) {
     contactRows.push(
       `<tr>
-        <td dir="rtl" style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">דוא"ל:&nbsp;</td>
+        <td dir="${contactDirection}" style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">${strings.emailLabel}&nbsp;</td>
         <td style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};unicode-bidi:plaintext;border-bottom:1px solid #d1d5db;">
           <a href="${escapeHtml(normalizeUrl(`mailto:${inputs.email.value.trim()}`))}" style="text-decoration:underline;color:${accentColor};">${email}</a>
         </td>
@@ -404,7 +449,7 @@ const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
     const websiteLabel = escapeHtml(website.replace(/^https?:\/\//i, ''))
     contactRows.push(
       `<tr>
-        <td dir="rtl" style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">אתר:&nbsp;</td>
+        <td dir="${contactDirection}" style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">${strings.websiteLabel}&nbsp;</td>
         <td style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};unicode-bidi:plaintext;border-bottom:1px solid #d1d5db;">
           <a href="${escapeHtml(website)}" style="text-decoration:underline;color:${linkColor};">${websiteLabel}</a>
         </td>
@@ -474,9 +519,9 @@ const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
       layout.textOffsetY
     )}px;padding-bottom:${Math.max(0, -layout.textOffsetY)}px;width:${textColumnWidth}px;max-width:${textColumnWidth}px;text-align:${layout.textAlign};unicode-bidi:plaintext;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-        <tr><td dir="${nameTitleDirection}" style="font-size:${layout.nameFontSize}px;line-height:${Math.max(1, layout.lineSpacing - 0.2)};font-weight:700;color:${accentColor};padding-bottom:2px;text-align:${layout.nameTitleAlign};unicode-bidi:plaintext;">${fullName || 'שם מלא'}</td></tr>
-        <tr><td dir="${nameTitleDirection}" style="font-size:${layout.titleFontSize}px;line-height:${Math.max(1, layout.lineSpacing - 0.15)};font-weight:700;color:${secondaryTextColor};padding-bottom:8px;text-align:${layout.nameTitleAlign};unicode-bidi:plaintext;">${jobTitle || 'תפקיד'}${company ? ` | ${company}` : ''}</td></tr>
-        ${contactRows.length ? `<tr><td dir="rtl" style="padding-top:1px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="rtl" align="${layout.nameTitleAlign === 'left' ? 'left' : layout.nameTitleAlign === 'center' ? 'center' : 'right'}" style="text-align:${layout.nameTitleAlign};">${contactRows.join('')}</table></td></tr>` : ''}
+        <tr><td dir="${nameTitleDirection}" style="font-size:${layout.nameFontSize}px;line-height:${Math.max(1, layout.lineSpacing - 0.2)};font-weight:700;color:${accentColor};padding-bottom:2px;text-align:${layout.nameTitleAlign};unicode-bidi:plaintext;">${fullName || strings.fullNamePlaceholder}</td></tr>
+        <tr><td dir="${nameTitleDirection}" style="font-size:${layout.titleFontSize}px;line-height:${Math.max(1, layout.lineSpacing - 0.15)};font-weight:700;color:${secondaryTextColor};padding-bottom:8px;text-align:${layout.nameTitleAlign};unicode-bidi:plaintext;">${jobTitle || strings.jobTitlePlaceholder}${company ? ` | ${company}` : ''}</td></tr>
+        ${contactRows.length ? `<tr><td dir="${contactDirection}" style="padding-top:1px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="${contactDirection}" align="${layout.nameTitleAlign === 'left' ? 'left' : layout.nameTitleAlign === 'center' ? 'center' : 'right'}" style="text-align:${layout.nameTitleAlign};">${contactRows.join('')}</table></td></tr>` : ''}
         ${socialTextRow.replace(/width="16"/g, `width="${layout.bodyFontSize + 4}"`).replace(/height="16"/g, `height="${layout.bodyFontSize + 4}"`).replace(/width:16px/g, `width:${layout.bodyFontSize + 4}px`).replace(/height:16px/g, `height:${layout.bodyFontSize + 4}px`)}
       </table>
     </td>
@@ -487,8 +532,8 @@ const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
     )}px;padding-bottom:${Math.max(0, -layout.logoOffsetY)}px;width:${logoColumnWidth}px;max-width:${logoColumnWidth}px;text-align:${layout.logoAlign};">
       ${
         logoUrl
-          ? `<img src="${escapeHtml(logoUrl)}" alt="Company logo" width="${layout.logoMaxWidth}" style="display:block;border:0;max-width:${layout.logoMaxWidth}px;height:auto;margin-left:${layout.logoAlign === 'left' ? '0' : 'auto'};margin-right:${layout.logoAlign === 'right' ? '0' : 'auto'};" />`
-          : `<div style="font-size:14px;color:${accentColor};font-weight:700;">לוגו חברה</div>`
+          ? `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(strings.companyLogoAlt)}" width="${layout.logoMaxWidth}" style="display:block;border:0;max-width:${layout.logoMaxWidth}px;height:auto;margin-left:${layout.logoAlign === 'left' ? '0' : 'auto'};margin-right:${layout.logoAlign === 'right' ? '0' : 'auto'};" />`
+          : `<div style="font-size:14px;color:${accentColor};font-weight:700;">${strings.companyLogoPlaceholder}</div>`
       }
     </td>
   </tr>
@@ -564,17 +609,7 @@ const copyHtmlForPasting = async (html: string): Promise<boolean> => {
 const downloadOutput = (): void => {
   const value = outputElement.value.trim()
   if (!value) return
-  const htmlDocument = `<!doctype html>
-<html lang="he">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Outlook Signature</title>
-  </head>
-  <body>
-${value}
-  </body>
-</html>`
+  const htmlDocument = wrapHtmlDocument(value, getSignatureLanguage())
   const blob = new Blob([htmlDocument], { type: 'text/html;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
@@ -587,6 +622,7 @@ ${value}
 }
 
 const toPlainTextSignature = (): string => {
+  const strings = getSignatureStrings()
   const lines: string[] = []
   const fullName = inputs.fullName.value.trim()
   const roleBits = [inputs.jobTitle.value.trim(), inputs.company.value.trim()].filter(Boolean)
@@ -596,9 +632,9 @@ const toPlainTextSignature = (): string => {
 
   if (fullName) lines.push(fullName)
   if (roleBits.length) lines.push(roleBits.join(' | '))
-  if (phone) lines.push(`Phone: ${phone}`)
-  if (email) lines.push(`Email: ${email}`)
-  if (website) lines.push(`Website: ${website}`)
+  if (phone) lines.push(`${strings.phoneLabel} ${phone}`)
+  if (email) lines.push(`${strings.emailLabel} ${email}`)
+  if (website) lines.push(`${strings.websiteLabel} ${website}`)
 
   return lines.join('\r\n')
 }
@@ -634,17 +670,7 @@ const downloadOutlookInstaller = (): void => {
   if (!value) return
 
   const signatureName = sanitizeSignatureName(inputs.fullName.value)
-  const htmlDocument = `<!doctype html>
-<html lang="he">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Outlook Signature</title>
-  </head>
-  <body>
-${value}
-  </body>
-</html>`
+  const htmlDocument = wrapHtmlDocument(value, getSignatureLanguage())
   const txtDocument = toPlainTextSignature()
   const rtfDocument = plainTextToRtf(txtDocument)
   const htmlBase64 = toBase64Utf8(htmlDocument)
@@ -742,34 +768,28 @@ const installForNewOutlook = async (): Promise<void> => {
   const popup = window.open(NEW_OUTLOOK_SIGNATURE_SETTINGS_URL, '_blank', 'noopener,noreferrer')
   const openedSettings = !!popup
 
-  newOutlookStatusElement.innerHTML =
-    'New Outlook setup: open <a href="https://outlook.office.com/mail/options/mail/layout/EmailSignature" target="_blank" rel="noopener noreferrer">Compose and reply settings</a>, paste into signature editor, then save.'
+  const lang = getSignatureLanguage()
+  newOutlookStatusElement.innerHTML = newOutlookStatusHtml(lang)
 
   if (richCopied && openedSettings) {
-    window.alert('Signature copied and New Outlook settings opened. Paste in the signature editor and click Save.')
+    window.alert(t(lang, 'alertNewOutlookCopiedOpened'))
     return
   }
   if (richCopied && !openedSettings) {
-    window.alert(
-      'Signature copied. Please open New Outlook settings (Compose and reply), paste into signature editor, and click Save.'
-    )
+    window.alert(t(lang, 'alertNewOutlookCopied'))
     return
   }
   if (!richCopied && openedSettings) {
-    window.alert(
-      'New Outlook settings opened, but clipboard copy was blocked. Copy from "Generated HTML", paste into signature editor, and click Save.'
-    )
+    window.alert(t(lang, 'alertNewOutlookOpenedNoCopy'))
     return
   }
-  window.alert(
-    'Could not auto-open settings or copy automatically. Open New Outlook > Settings > Mail > Compose and reply, paste from "Generated HTML", and click Save.'
-  )
+  window.alert(t(lang, 'alertNewOutlookManual'))
 }
 
 addLinkImageButton.addEventListener('click', () => addLinkImageRow())
 generateButton.addEventListener('click', () => {
   generate().catch(() => {
-    window.alert('Could not generate social icons. Please try again.')
+    window.alert(t(getSignatureLanguage(), 'alertGenerateFailed'))
   })
 })
 copyButton.addEventListener('click', () => {
@@ -785,12 +805,10 @@ installOutlookButton.addEventListener('click', () => {
   run
     .then(() => {
       downloadOutlookInstaller()
-      window.alert(
-        'Installers downloaded: install-outlook-signature.ps1 and run-install-outlook-signature.bat. Double-click the .bat for easiest install, or run the .ps1 directly.'
-      )
+      window.alert(t(getSignatureLanguage(), 'alertOutlookInstallSuccess'))
     })
     .catch(() => {
-      window.alert('Could not prepare Outlook installer. Please generate the signature first.')
+      window.alert(t(getSignatureLanguage(), 'alertOutlookInstallFailed'))
     })
 })
 installNewOutlookButton.addEventListener('click', () => {
@@ -799,8 +817,12 @@ installNewOutlookButton.addEventListener('click', () => {
   run
     .then(() => installForNewOutlook())
     .catch(() => {
-      window.alert('Could not prepare New Outlook setup. Please generate the signature first.')
+      window.alert(t(getSignatureLanguage(), 'alertNewOutlookFailed'))
     })
+})
+inputs.signatureLanguage.addEventListener('change', () => {
+  refreshUiLanguage()
+  scheduleLivePreviewUpdate()
 })
 bindFileInputToUrl(inputs.logoFile, inputs.logoUrl)
 bindFileInputToUrl(inputs.bannerFile, inputs.bannerUrl)
@@ -815,7 +837,8 @@ if (!inputs.logoUrl.value.trim()) {
   inputs.logoUrl.value = DEFAULT_LOGO_DATA_URL
 }
 
-addLinkImageRow({ alt: 'Linked image' })
+refreshUiLanguage()
+addLinkImageRow()
 generate().catch(() => {
   // Initial render should not block form usage.
 })

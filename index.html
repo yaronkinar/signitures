@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Outlook Signature Generator</title>
+    <title>מחולל חתימות Outlook</title>
     <style>
       :root {
         color-scheme: light;
@@ -319,8 +319,8 @@
     <main class="page">
       <section class="card">
         <div class="card-header">
-          <h1>Outlook Signature Generator</h1>
-          <p class="lead">
+          <h1 data-i18n="pageHeading">Outlook Signature Generator</h1>
+          <p class="lead" data-i18n="pageLead">
             Fill in your details and generate copy-ready HTML for Outlook. Expand each section as
             needed.
           </p>
@@ -328,37 +328,77 @@
 
         <div class="panels">
           <details class="panel" open>
-            <summary>Contact details</summary>
+            <summary data-i18n="contactDetails">Contact details</summary>
             <div class="panel-body">
               <div class="grid">
-                <label>Full name <input id="fullName" placeholder="Jane Doe" /></label>
-                <label>Job title <input id="jobTitle" placeholder="Sales Manager" /></label>
-                <label>Company <input id="company" placeholder="Acme Ltd" /></label>
-                <label>Phone <input id="phone" placeholder="+1 555 123 4567" /></label>
-                <label>Email <input id="email" placeholder="jane@acme.com" /></label>
-                <label>Website <input id="website" placeholder="https://acme.com" /></label>
+                <label>
+                  <span data-i18n="language">Language</span>
+                  <select id="signatureLanguage">
+                    <option value="en">English</option>
+                    <option value="he" selected>Hebrew (עברית)</option>
+                  </select>
+                </label>
+                <label>
+                  <span data-i18n="fullName">Full name</span>
+                  <input id="fullName" data-i18n-placeholder="fullNamePlaceholder" placeholder="Jane Doe" />
+                </label>
+                <label>
+                  <span data-i18n="jobTitle">Job title</span>
+                  <input id="jobTitle" data-i18n-placeholder="jobTitlePlaceholder" placeholder="Sales Manager" />
+                </label>
+                <label>
+                  <span data-i18n="company">Company</span>
+                  <input id="company" data-i18n-placeholder="companyPlaceholder" placeholder="Acme Ltd" />
+                </label>
+                <label>
+                  <span data-i18n="phone">Phone</span>
+                  <input id="phone" data-i18n-placeholder="phonePlaceholder" placeholder="+1 555 123 4567" />
+                </label>
+                <label>
+                  <span data-i18n="email">Email</span>
+                  <input id="email" data-i18n-placeholder="emailPlaceholder" placeholder="jane@acme.com" />
+                </label>
+                <label>
+                  <span data-i18n="website">Website</span>
+                  <input id="website" data-i18n-placeholder="websitePlaceholder" placeholder="https://acme.com" />
+                </label>
               </div>
             </div>
           </details>
 
           <details class="panel">
-            <summary>Logo &amp; banner</summary>
+            <summary data-i18n="logoBanner">Logo &amp; banner</summary>
             <div class="panel-body">
-              <p class="hint">Use a URL or upload a local image file.</p>
+              <p class="hint" data-i18n="logoBannerHint">Use a URL or upload a local image file.</p>
               <div class="grid">
-                <label>Logo URL <input id="logoUrl" placeholder="https://..." /></label>
-                <label>Logo file <input id="logoFile" type="file" accept="image/*" /></label>
-                <label>Banner URL <input id="bannerUrl" placeholder="https://..." /></label>
-                <label>Banner file <input id="bannerFile" type="file" accept="image/*" /></label>
-                <label>Banner link <input id="bannerLink" placeholder="https://..." /></label>
+                <label>
+                  <span data-i18n="logoUrl">Logo URL</span>
+                  <input id="logoUrl" data-i18n-placeholder="urlPlaceholder" placeholder="https://..." />
+                </label>
+                <label>
+                  <span data-i18n="logoFile">Logo file</span>
+                  <input id="logoFile" type="file" accept="image/*" />
+                </label>
+                <label>
+                  <span data-i18n="bannerUrl">Banner URL</span>
+                  <input id="bannerUrl" data-i18n-placeholder="urlPlaceholder" placeholder="https://..." />
+                </label>
+                <label>
+                  <span data-i18n="bannerFile">Banner file</span>
+                  <input id="bannerFile" type="file" accept="image/*" />
+                </label>
+                <label>
+                  <span data-i18n="bannerLink">Banner link</span>
+                  <input id="bannerLink" data-i18n-placeholder="urlPlaceholder" placeholder="https://..." />
+                </label>
               </div>
             </div>
           </details>
 
           <details class="panel">
-            <summary>Social media</summary>
+            <summary data-i18n="socialMedia">Social media</summary>
             <div class="panel-body">
-              <p class="hint">
+              <p class="hint" data-i18n="socialMediaHint">
                 Add profile URLs for networks you use. Leave icon fields empty for built-in brand
                 icons.
               </p>
@@ -366,56 +406,101 @@
               <details class="sub-panel">
                 <summary>Facebook</summary>
                 <div class="sub-panel-body grid-compact">
-                  <label>Profile URL <input id="facebookUrl" value="https://www.facebook.com/SBAIsrael" /></label>
-                  <label>Icon URL <input id="facebookIconUrl" placeholder="Optional" /></label>
-                  <label>Icon file <input id="facebookIconFile" type="file" accept="image/*" /></label>
+                  <label>
+                    <span data-i18n="profileUrl">Profile URL</span>
+                    <input id="facebookUrl" value="https://www.facebook.com/SBAIsrael" />
+                  </label>
+                  <label>
+                    <span data-i18n="iconUrl">Icon URL</span>
+                    <input id="facebookIconUrl" data-i18n-placeholder="optionalPlaceholder" placeholder="Optional" />
+                  </label>
+                  <label>
+                    <span data-i18n="iconFile">Icon file</span>
+                    <input id="facebookIconFile" type="file" accept="image/*" />
+                  </label>
                 </div>
               </details>
 
               <details class="sub-panel">
                 <summary>Instagram</summary>
                 <div class="sub-panel-body grid-compact">
-                  <label>Profile URL <input id="instagramUrl" value="https://www.instagram.com/sba.israel?igsh=MXUyYjI5a3UxMmZidg==" /></label>
-                  <label>Icon URL <input id="instagramIconUrl" placeholder="Optional" /></label>
-                  <label>Icon file <input id="instagramIconFile" type="file" accept="image/*" /></label>
+                  <label>
+                    <span data-i18n="profileUrl">Profile URL</span>
+                    <input id="instagramUrl" value="https://www.instagram.com/sba.israel?igsh=MXUyYjI5a3UxMmZidg==" />
+                  </label>
+                  <label>
+                    <span data-i18n="iconUrl">Icon URL</span>
+                    <input id="instagramIconUrl" data-i18n-placeholder="optionalPlaceholder" placeholder="Optional" />
+                  </label>
+                  <label>
+                    <span data-i18n="iconFile">Icon file</span>
+                    <input id="instagramIconFile" type="file" accept="image/*" />
+                  </label>
                 </div>
               </details>
 
               <details class="sub-panel">
                 <summary>LinkedIn</summary>
                 <div class="sub-panel-body grid-compact">
-                  <label>Profile URL <input id="linkedinUrl" value="https://www.linkedin.com/in/misradacalcala/" /></label>
-                  <label>Icon URL <input id="linkedinIconUrl" placeholder="Optional" /></label>
-                  <label>Icon file <input id="linkedinIconFile" type="file" accept="image/*" /></label>
+                  <label>
+                    <span data-i18n="profileUrl">Profile URL</span>
+                    <input id="linkedinUrl" value="https://www.linkedin.com/in/misradacalcala/" />
+                  </label>
+                  <label>
+                    <span data-i18n="iconUrl">Icon URL</span>
+                    <input id="linkedinIconUrl" data-i18n-placeholder="optionalPlaceholder" placeholder="Optional" />
+                  </label>
+                  <label>
+                    <span data-i18n="iconFile">Icon file</span>
+                    <input id="linkedinIconFile" type="file" accept="image/*" />
+                  </label>
                 </div>
               </details>
 
               <details class="sub-panel">
                 <summary>X / Twitter</summary>
                 <div class="sub-panel-body grid-compact">
-                  <label>Profile URL <input id="xUrl" value="https://x.com/misrad_calcala" /></label>
-                  <label>Icon URL <input id="xIconUrl" placeholder="Optional" /></label>
-                  <label>Icon file <input id="xIconFile" type="file" accept="image/*" /></label>
+                  <label>
+                    <span data-i18n="profileUrl">Profile URL</span>
+                    <input id="xUrl" value="https://x.com/misrad_calcala" />
+                  </label>
+                  <label>
+                    <span data-i18n="iconUrl">Icon URL</span>
+                    <input id="xIconUrl" data-i18n-placeholder="optionalPlaceholder" placeholder="Optional" />
+                  </label>
+                  <label>
+                    <span data-i18n="iconFile">Icon file</span>
+                    <input id="xIconFile" type="file" accept="image/*" />
+                  </label>
                 </div>
               </details>
 
               <details class="sub-panel">
                 <summary>YouTube</summary>
                 <div class="sub-panel-body grid-compact">
-                  <label>Profile URL <input id="youtubeUrl" value="https://www.youtube.com/user/SBAIsrael" /></label>
-                  <label>Icon URL <input id="youtubeIconUrl" placeholder="Optional" /></label>
-                  <label>Icon file <input id="youtubeIconFile" type="file" accept="image/*" /></label>
+                  <label>
+                    <span data-i18n="profileUrl">Profile URL</span>
+                    <input id="youtubeUrl" value="https://www.youtube.com/user/SBAIsrael" />
+                  </label>
+                  <label>
+                    <span data-i18n="iconUrl">Icon URL</span>
+                    <input id="youtubeIconUrl" data-i18n-placeholder="optionalPlaceholder" placeholder="Optional" />
+                  </label>
+                  <label>
+                    <span data-i18n="iconFile">Icon file</span>
+                    <input id="youtubeIconFile" type="file" accept="image/*" />
+                  </label>
                 </div>
               </details>
             </div>
           </details>
 
           <details class="panel">
-            <summary>Layout &amp; typography</summary>
+            <summary data-i18n="layoutTypography">Layout &amp; typography</summary>
             <div class="panel-body">
               <div class="grid">
                 <label>
-                  Font family
+                  <span data-i18n="fontFamily">Font family</span>
                   <select id="fontFamily">
                     <option value="Arial, Helvetica, sans-serif" selected>Arial</option>
                     <option value="'Calibri', Arial, Helvetica, sans-serif">Calibri</option>
@@ -427,95 +512,167 @@
                     <option value="'Georgia', serif">Georgia</option>
                   </select>
                 </label>
-                <label>Name size (px) <input id="nameFontSize" type="number" min="14" max="72" step="1" value="28" /></label>
-                <label>Title size (px) <input id="titleFontSize" type="number" min="10" max="48" step="1" value="19" /></label>
-                <label>Body size (px) <input id="bodyFontSize" type="number" min="9" max="24" step="1" value="12" /></label>
-                <label>Line spacing <input id="lineSpacing" type="number" min="1" max="2" step="0.05" value="1.25" /></label>
-                <label>Width (px) <input id="signatureWidth" type="number" min="250" max="900" step="1" value="400" /></label>
-                <label>Height (px) <input id="signatureHeight" type="number" min="120" max="500" step="1" value="200" /></label>
-                <label>Text column (px) <input id="textColumnWidth" type="number" min="120" max="760" step="1" value="252" /></label>
-                <label>Logo max width (px) <input id="logoMaxWidth" type="number" min="60" max="400" step="1" value="122" /></label>
+                <label>
+                  <span data-i18n="nameFontSize">Name size (px)</span>
+                  <input id="nameFontSize" type="number" min="14" max="72" step="1" value="28" />
+                </label>
+                <label>
+                  <span data-i18n="titleFontSize">Title size (px)</span>
+                  <input id="titleFontSize" type="number" min="10" max="48" step="1" value="19" />
+                </label>
+                <label>
+                  <span data-i18n="bodyFontSize">Body size (px)</span>
+                  <input id="bodyFontSize" type="number" min="9" max="24" step="1" value="12" />
+                </label>
+                <label>
+                  <span data-i18n="lineSpacing">Line spacing</span>
+                  <input id="lineSpacing" type="number" min="1" max="2" step="0.05" value="1.25" />
+                </label>
+                <label>
+                  <span data-i18n="signatureWidth">Width (px)</span>
+                  <input id="signatureWidth" type="number" min="250" max="900" step="1" value="400" />
+                </label>
+                <label>
+                  <span data-i18n="signatureHeight">Height (px)</span>
+                  <input id="signatureHeight" type="number" min="120" max="500" step="1" value="200" />
+                </label>
+                <label>
+                  <span data-i18n="textColumnWidth">Text column (px)</span>
+                  <input id="textColumnWidth" type="number" min="120" max="760" step="1" value="252" />
+                </label>
+                <label>
+                  <span data-i18n="logoMaxWidth">Logo max width (px)</span>
+                  <input id="logoMaxWidth" type="number" min="60" max="400" step="1" value="122" />
+                </label>
               </div>
             </div>
           </details>
 
           <details class="panel">
-            <summary>Position &amp; alignment</summary>
+            <summary data-i18n="positionAlignment">Position &amp; alignment</summary>
             <div class="panel-body">
               <div class="grid">
                 <label>
-                  Main text align
+                  <span data-i18n="mainTextAlign">Main text align</span>
                   <select id="textAlign">
-                    <option value="left">Left</option>
-                    <option value="center">Center</option>
-                    <option value="right" selected>Right</option>
+                    <option value="left" data-i18n="alignLeft">Left</option>
+                    <option value="center" data-i18n="alignCenter">Center</option>
+                    <option value="right" data-i18n="alignRight" selected>Right</option>
                   </select>
                 </label>
                 <label>
-                  Name/title align
+                  <span data-i18n="nameTitleAlign">Name/title align</span>
                   <select id="nameTitleAlign">
-                    <option value="left">Left</option>
-                    <option value="center">Center</option>
-                    <option value="right" selected>Right</option>
+                    <option value="left" data-i18n="alignLeft">Left</option>
+                    <option value="center" data-i18n="alignCenter">Center</option>
+                    <option value="right" data-i18n="alignRight" selected>Right</option>
                   </select>
                 </label>
                 <label>
-                  Logo align
+                  <span data-i18n="logoAlign">Logo align</span>
                   <select id="logoAlign">
-                    <option value="left" selected>Left</option>
-                    <option value="center">Center</option>
-                    <option value="right">Right</option>
+                    <option value="left" data-i18n="alignLeft" selected>Left</option>
+                    <option value="center" data-i18n="alignCenter">Center</option>
+                    <option value="right" data-i18n="alignRight">Right</option>
                   </select>
                 </label>
                 <label>
-                  Vertical align
+                  <span data-i18n="verticalAlign">Vertical align</span>
                   <select id="verticalAlign">
-                    <option value="top" selected>Top</option>
-                    <option value="middle">Middle</option>
-                    <option value="bottom">Bottom</option>
+                    <option value="top" data-i18n="alignTop" selected>Top</option>
+                    <option value="middle" data-i18n="alignMiddle">Middle</option>
+                    <option value="bottom" data-i18n="alignBottom">Bottom</option>
                   </select>
                 </label>
-                <label>Text offset X <input id="textOffsetX" type="number" min="-120" max="120" step="1" value="0" /></label>
-                <label>Text offset Y <input id="textOffsetY" type="number" min="-120" max="120" step="1" value="0" /></label>
-                <label>Logo offset X <input id="logoOffsetX" type="number" min="-120" max="120" step="1" value="10" /></label>
-                <label>Logo offset Y <input id="logoOffsetY" type="number" min="-120" max="120" step="1" value="6" /></label>
-                <label>Divider thickness <input id="dividerThickness" type="number" min="0" max="10" step="1" value="2" /></label>
-                <label>Social icon gap <input id="socialIconGap" type="number" min="0" max="20" step="1" value="5" /></label>
+                <label>
+                  <span data-i18n="textOffsetX">Text offset X</span>
+                  <input id="textOffsetX" type="number" min="-120" max="120" step="1" value="0" />
+                </label>
+                <label>
+                  <span data-i18n="textOffsetY">Text offset Y</span>
+                  <input id="textOffsetY" type="number" min="-120" max="120" step="1" value="0" />
+                </label>
+                <label>
+                  <span data-i18n="logoOffsetX">Logo offset X</span>
+                  <input id="logoOffsetX" type="number" min="-120" max="120" step="1" value="10" />
+                </label>
+                <label>
+                  <span data-i18n="logoOffsetY">Logo offset Y</span>
+                  <input id="logoOffsetY" type="number" min="-120" max="120" step="1" value="6" />
+                </label>
+                <label>
+                  <span data-i18n="dividerThickness">Divider thickness</span>
+                  <input id="dividerThickness" type="number" min="0" max="10" step="1" value="2" />
+                </label>
+                <label>
+                  <span data-i18n="socialIconGap">Social icon gap</span>
+                  <input id="socialIconGap" type="number" min="0" max="20" step="1" value="5" />
+                </label>
               </div>
             </div>
           </details>
 
           <details class="panel">
-            <summary>Colors</summary>
+            <summary data-i18n="colors">Colors</summary>
             <div class="panel-body">
               <div class="grid">
-                <label>Accent <input id="accentColor" type="color" value="#92278f" /></label>
-                <label>Primary text <input id="textColor" type="color" value="#111827" /></label>
-                <label>Secondary text <input id="secondaryTextColor" type="color" value="#666666" /></label>
-                <label>Divider <input id="dividerColor" type="color" value="#bcbec0" /></label>
-                <label>Links <input id="linkColor" type="color" value="#5a5a5a" /></label>
-                <label>Background <input id="backgroundColor" type="color" value="#ffffff" /></label>
+                <label>
+                  <span data-i18n="accent">Accent</span>
+                  <input id="accentColor" type="color" value="#92278f" />
+                </label>
+                <label>
+                  <span data-i18n="primaryText">Primary text</span>
+                  <input id="textColor" type="color" value="#111827" />
+                </label>
+                <label>
+                  <span data-i18n="secondaryText">Secondary text</span>
+                  <input id="secondaryTextColor" type="color" value="#666666" />
+                </label>
+                <label>
+                  <span data-i18n="divider">Divider</span>
+                  <input id="dividerColor" type="color" value="#bcbec0" />
+                </label>
+                <label>
+                  <span data-i18n="links">Links</span>
+                  <input id="linkColor" type="color" value="#5a5a5a" />
+                </label>
+                <label>
+                  <span data-i18n="background">Background</span>
+                  <input id="backgroundColor" type="color" value="#ffffff" />
+                </label>
               </div>
             </div>
           </details>
 
           <details class="panel">
-            <summary>Extra linked images</summary>
+            <summary data-i18n="extraLinkedImages">Extra linked images</summary>
             <div class="panel-body">
-              <p class="hint">Optional icons or buttons with their own link targets.</p>
+              <p class="hint" data-i18n="extraLinkedImagesHint">
+                Optional icons or buttons with their own link targets.
+              </p>
               <div id="linkImages"></div>
-              <button id="addLinkImage" class="secondary" type="button">Add linked image</button>
+              <button id="addLinkImage" class="secondary" type="button" data-i18n="addLinkedImage">
+                Add linked image
+              </button>
             </div>
           </details>
         </div>
 
         <div class="actions-bar">
           <div class="actions">
-            <button id="generate" class="primary" type="button">Generate signature</button>
-            <button id="copy" class="secondary" type="button">Copy HTML</button>
-            <button id="download" class="secondary" type="button">Download .html</button>
-            <button id="installOutlook" class="secondary" type="button">Install to Outlook</button>
-            <button id="installNewOutlook" class="secondary" type="button">New Outlook setup</button>
+            <button id="generate" class="primary" type="button" data-i18n="generateSignature">
+              Generate signature
+            </button>
+            <button id="copy" class="secondary" type="button" data-i18n="copyHtml">Copy HTML</button>
+            <button id="download" class="secondary" type="button" data-i18n="downloadHtml">
+              Download .html
+            </button>
+            <button id="installOutlook" class="secondary" type="button" data-i18n="installOutlook">
+              Install to Outlook
+            </button>
+            <button id="installNewOutlook" class="secondary" type="button" data-i18n="newOutlookSetup">
+              New Outlook setup
+            </button>
           </div>
           <p id="newOutlookStatus" class="hint" style="margin-top: 10px"></p>
         </div>
@@ -523,7 +680,7 @@
 
       <section class="card card-preview">
         <details class="panel" open style="border: 0; background: transparent">
-          <summary>Preview</summary>
+          <summary data-i18n="preview">Preview</summary>
           <div class="panel-body" style="border-top: 0">
             <div class="preview-frame">
               <div id="preview" class="preview"></div>
@@ -534,7 +691,7 @@
 
       <section class="card card-output">
         <details class="panel" style="border: 0; background: transparent">
-          <summary>Generated HTML</summary>
+          <summary data-i18n="generatedHtml">Generated HTML</summary>
           <div class="panel-body" style="border-top: 0">
             <textarea id="output" spellcheck="false"></textarea>
           </div>
