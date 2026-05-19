@@ -98,6 +98,9 @@ const translations = {
     remove: 'Remove',
     linkedImageAlt: 'Linked image',
     composeReplySettings: 'Compose and reply settings',
+    signatureFolderPrefix: 'Classic Outlook signatures folder: ',
+    signatureFolderLink: 'open folder',
+    signatureFolderSuffix: '.',
     newOutlookSetupPrefix: 'New Outlook setup: open ',
     newOutlookSetupSuffix: ', paste into signature editor, then save.',
     alertGenerateFailed: 'Could not generate social icons. Please try again.',
@@ -199,6 +202,9 @@ const translations = {
     remove: 'הסרה',
     linkedImageAlt: 'תמונה מקושרת',
     composeReplySettings: 'הגדרות כתיבה ומענה',
+    signatureFolderPrefix: 'תיקיית חתימות Outlook הקלאסי: ',
+    signatureFolderLink: 'פתיחת התיקייה',
+    signatureFolderSuffix: '.',
     newOutlookSetupPrefix: 'הגדרת Outlook החדש: פתחו ',
     newOutlookSetupSuffix: ', הדביקו בעורך החתימה ושמרו.',
     alertGenerateFailed: 'לא ניתן ליצור אייקונים חברתיים. נסו שוב.',
@@ -245,8 +251,16 @@ export const signatureStrings: Record<AppLanguage, SignatureStrings> = {
 const NEW_OUTLOOK_SIGNATURE_SETTINGS_URL =
   'https://outlook.office.com/mail/options/mail/layout/EmailSignature'
 
+export const OUTLOOK_SIGNATURES_FOLDER_PATH = '%APPDATA%\\Microsoft\\Signatures'
+
+export const signatureFolderStatusHtml = (lang: AppLanguage): string =>
+  `${t(lang, 'signatureFolderPrefix')}<a href="#" class="open-signatures-folder">${t(lang, 'signatureFolderLink')}</a> <span dir="ltr">(${OUTLOOK_SIGNATURES_FOLDER_PATH})</span>${t(lang, 'signatureFolderSuffix')}`
+
 export const newOutlookStatusHtml = (lang: AppLanguage): string =>
   `${t(lang, 'newOutlookSetupPrefix')}<a href="${NEW_OUTLOOK_SIGNATURE_SETTINGS_URL}" target="_blank" rel="noopener noreferrer">${t(lang, 'composeReplySettings')}</a>${t(lang, 'newOutlookSetupSuffix')}`
+
+export const outlookHelpStatusHtml = (lang: AppLanguage): string =>
+  `${signatureFolderStatusHtml(lang)}<br>${newOutlookStatusHtml(lang)}`
 
 export const applyUiLanguage = (lang: AppLanguage): void => {
   document.documentElement.lang = lang

@@ -2,7 +2,7 @@ import { DEFAULT_LOGO_DATA_URL } from './defaultLogoDataUrl'
 import {
   applyUiLanguage,
   localizeLinkImageRow,
-  newOutlookStatusHtml,
+  outlookHelpStatusHtml,
   signatureStrings,
   t,
   type AppLanguage
@@ -115,7 +115,7 @@ const installOutlookButton = byId<HTMLButtonElement>('installOutlook')
 const installNewOutlookButton = byId<HTMLButtonElement>('installNewOutlook')
 const previewElement = byId<HTMLDivElement>('preview')
 const outputElement = byId<HTMLTextAreaElement>('output')
-const newOutlookStatusElement = byId<HTMLParagraphElement>('newOutlookStatus')
+const outlookHelpStatusElement = byId<HTMLParagraphElement>('outlookHelpStatus')
 
 const NEW_OUTLOOK_SIGNATURE_SETTINGS_URL =
   'https://outlook.office.com/mail/options/mail/layout/EmailSignature'
@@ -151,6 +151,7 @@ const getSignatureStrings = () => signatureStrings[getSignatureLanguage()]
 const refreshUiLanguage = (): void => {
   const lang = getSignatureLanguage()
   applyUiLanguage(lang)
+  outlookHelpStatusElement.innerHTML = outlookHelpStatusHtml(lang)
   linkImagesContainer.querySelectorAll('.link-image-row').forEach((row) => {
     localizeLinkImageRow(row as HTMLElement, lang)
   })
@@ -665,6 +666,21 @@ const toBase64Utf8 = (value: string): string => {
   return btoa(binary)
 }
 
+const downloadOpenSignaturesFolderBat = (): void => {
+  const batchContent = `@echo off
+explorer "%APPDATA%\\Microsoft\\Signatures"
+`
+  const blob = new Blob([batchContent], { type: 'text/plain;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'open-signatures-folder.bat'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
 const downloadOutlookInstaller = (): void => {
   const value = outputElement.value.trim()
   if (!value) return
@@ -769,7 +785,6 @@ const installForNewOutlook = async (): Promise<void> => {
   const openedSettings = !!popup
 
   const lang = getSignatureLanguage()
-  newOutlookStatusElement.innerHTML = newOutlookStatusHtml(lang)
 
   if (richCopied && openedSettings) {
     window.alert(t(lang, 'alertNewOutlookCopiedOpened'))
@@ -785,6 +800,13 @@ const installForNewOutlook = async (): Promise<void> => {
   }
   window.alert(t(lang, 'alertNewOutlookManual'))
 }
+
+outlookHelpStatusElement.addEventListener('click', (event) => {
+  const target = (event.target as HTMLElement).closest('.open-signatures-folder')
+  if (!target) return
+  event.preventDefault()
+  downloadOpenSignaturesFolderBat()
+})
 
 addLinkImageButton.addEventListener('click', () => addLinkImageRow())
 generateButton.addEventListener('click', () => {
