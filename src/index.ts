@@ -5,7 +5,8 @@ import {
   outlookHelpStatusHtml,
   signatureStrings,
   t,
-  type AppLanguage
+  type AppLanguage,
+  type I18nKey
 } from './i18n'
 import { siFacebook, siInstagram, siX, siYoutube } from 'simple-icons'
 
@@ -700,8 +701,18 @@ const toBase64Utf8 = (value: string): string => {
   return btoa(binary)
 }
 
-const downloadBinaryFile = (filename: string, content: string): void => {
-  const blob = new Blob([new TextEncoder().encode(content)], { type: 'application/octet-stream' })
+const encodeBatFile = (content: string): Uint8Array => {
+  const normalized = content.replace(/\r?\n/g, '\r\n')
+  const body = new TextEncoder().encode(normalized)
+  const bom = new Uint8Array([0xef, 0xbb, 0xbf])
+  const out = new Uint8Array(bom.length + body.length)
+  out.set(bom, 0)
+  out.set(body, bom.length)
+  return out
+}
+
+const downloadBatFile = (filename: string, content: string): void => {
+  const blob = new Blob([encodeBatFile(content)], { type: 'application/octet-stream' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
@@ -713,51 +724,82 @@ const downloadBinaryFile = (filename: string, content: string): void => {
 }
 
 const OUTLOOK_INSTALL_SCRIPT_MARKER = '# SIGSCRIPT'
+const POWERSHELL_EXE = '%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'
 
 const escapePsSingleQuoted = (value: string): string => value.replace(/'/g, "''")
 
-const batConsolePreamble = (lang: AppLanguage): string =>
+/**
+ * Legacy conhost shows Hebrew in reversed visual order. Pre-reverse so it reads correctly.
+ * Pure Hebrew lines: reverse the whole string. Mixed lines: reverse each Hebrew run only.
+ */
+const fixConsoleHebrew = (text: string, lang: AppLanguage): string => {
+  if (lang !== 'he') return text
+  if (!/[A-Za-z]/.test(text)) {
+    return [...text].reverse().join('')
+  }
+  return text.replace(/[\u0590-\u05FF]+/g, (run) => [...run].reverse().join(''))
+}
+
+const psConsoleMessage = (lang: AppLanguage, key: I18nKey): string =>
+  escapePsSingleQuoted(fixConsoleHebrew(t(lang, key), lang))
+
+const batUtf8Preamble = (lang: AppLanguage): string =>
   lang === 'he' ? 'chcp 65001 >nul\r\n' : ''
+
+const buildBatPauseCommand = (lang: AppLanguage, outcome: 'success' | 'failure'): string => {
+  const utf8Console =
+    lang === 'he' ? '[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false); ' : ''
+  const pressEnter = psConsoleMessage(lang, 'batPressEnterToClose')
+  const lines =
+    outcome === 'success'
+      ? [psConsoleMessage(lang, 'batInstallComplete')]
+      : [psConsoleMessage(lang, 'batInstallFailed'), psConsoleMessage(lang, 'batInstallSecurityHint')]
+  const writeLines = lines.map((line) => `Write-Host '${line}'`).join('; ')
+  return `"${POWERSHELL_EXE}" -NoProfile -ExecutionPolicy Bypass -Command "${utf8Console}${writeLines}; Read-Host '${pressEnter}'"`
+}
 
 const buildSelfContainedInstallBat = (scriptContent: string, lang: AppLanguage): string => {
   const scriptLines = scriptContent.replace(/\r?\n/g, '\r\n').trimEnd()
-  const corruptMsg = escapePsSingleQuoted(t(lang, 'batInstallerCorrupt'))
-  const installComplete = t(lang, 'batInstallComplete')
-  const installFailed = t(lang, 'batInstallFailed')
-  const securityHint = t(lang, 'batInstallSecurityHint')
+  const corruptMsg = psConsoleMessage(lang, 'batInstallerCorrupt')
 
   return `@echo off
 setlocal
-${batConsolePreamble(lang)}cd /d "%~dp0"
+${batUtf8Preamble(lang)}cd /d "%~dp0"
+set "EC=0"
 set "SCRIPT=%TEMP%\\install-outlook-signature-%RANDOM%.ps1"
-"%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "$marker='${OUTLOOK_INSTALL_SCRIPT_MARKER}'; $lines=Get-Content -LiteralPath '%~f0' -Encoding UTF8; $start=[Array]::IndexOf($lines,$marker); if ($start -lt 0) { Write-Error '${corruptMsg}'; exit 1 }; $lines[($start+1)..($lines.Length-1)] | Set-Content -LiteralPath '%SCRIPT%' -Encoding UTF8"
-if errorlevel 1 goto :fail
-"%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT%"
+"${POWERSHELL_EXE}" -NoProfile -ExecutionPolicy Bypass -Command "$marker='${OUTLOOK_INSTALL_SCRIPT_MARKER}'; $lines=Get-Content -LiteralPath '%~f0' -Encoding UTF8; $start=[Array]::IndexOf($lines,$marker); if ($start -lt 0) { Write-Error '${corruptMsg}'; exit 1 }; $lines[($start+1)..($lines.Length-1)] | Set-Content -LiteralPath '%SCRIPT%' -Encoding UTF8"
+if errorlevel 1 set "EC=1" & goto :finish
+"${POWERSHELL_EXE}" -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT%"
 set "EC=%ERRORLEVEL%"
 del "%SCRIPT%" 2>nul
-if not "%EC%"=="0" goto :fail
-echo.
-echo ${installComplete}
-pause
-exit /b 0
-:fail
-echo.
-echo ${installFailed}
-echo ${securityHint}
-pause
-exit /b 1
+:finish
+if "%EC%"=="0" (
+  ${buildBatPauseCommand(lang, 'success')}
+) else (
+  ${buildBatPauseCommand(lang, 'failure')}
+)
+exit /b %EC%
+
+goto :eof
 ${OUTLOOK_INSTALL_SCRIPT_MARKER}
 ${scriptLines}
 `
 }
 
 const downloadOpenSignaturesFolderBat = (lang: AppLanguage): void => {
-  downloadBinaryFile(
+  const utf8Console =
+    lang === 'he' ? '[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false); ' : ''
+  const folderOpened = psConsoleMessage(lang, 'batFolderOpened')
+  const pressEnter = psConsoleMessage(lang, 'batPressEnterToClose')
+
+  downloadBatFile(
     'open-signatures-folder.bat',
     `@echo off
 setlocal
-${batConsolePreamble(lang)}if not exist "%APPDATA%\\Microsoft\\Signatures" mkdir "%APPDATA%\\Microsoft\\Signatures" 2>nul
+${batUtf8Preamble(lang)}cd /d "%~dp0"
+if not exist "%APPDATA%\\Microsoft\\Signatures" mkdir "%APPDATA%\\Microsoft\\Signatures" 2>nul
 start "" "%SystemRoot%\\explorer.exe" "%APPDATA%\\Microsoft\\Signatures"
+"${POWERSHELL_EXE}" -NoProfile -ExecutionPolicy Bypass -Command "${utf8Console}Write-Host '${folderOpened}'; Read-Host '${pressEnter}'"
 exit /b 0
 `
   )
@@ -814,14 +856,14 @@ foreach ($path in $mailSettingsPaths) {
   }
 }
 
-Write-Host '${escapePsSingleQuoted(t(lang, 'batPsInstallSuccess'))}' -ForegroundColor Green
+Write-Host '${psConsoleMessage(lang, 'batPsInstallSuccess')}' -ForegroundColor Green
 Write-Host $htmlFile
 Write-Host ""
-Write-Host '${escapePsSingleQuoted(t(lang, 'batPsSetDefault'))}'
-Write-Host '${escapePsSingleQuoted(t(lang, 'batPsRestartOutlook'))}'
-Write-Host '${escapePsSingleQuoted(t(lang, 'batPsClassicNote'))}'
+Write-Host '${psConsoleMessage(lang, 'batPsSetDefault')}'
+Write-Host '${psConsoleMessage(lang, 'batPsRestartOutlook')}'
+Write-Host '${psConsoleMessage(lang, 'batPsClassicNote')}'
 `
-  downloadBinaryFile('install-outlook-signature.bat', buildSelfContainedInstallBat(scriptContent, lang))
+  downloadBatFile('install-outlook-signature.bat', buildSelfContainedInstallBat(scriptContent, lang))
 }
 
 const installForNewOutlook = async (): Promise<void> => {

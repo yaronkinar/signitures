@@ -122,6 +122,8 @@ const translations = {
     batPsRestartOutlook: 'If Outlook was open, restart Outlook to refresh signatures.',
     batPsClassicNote:
       'Note: works with classic Outlook desktop. New Outlook may ignore local signature files.',
+    batPressEnterToClose: 'Press Enter to close',
+    batFolderOpened: 'Signatures folder opened.',
     alertNewOutlookFailed: 'Could not prepare New Outlook setup. Please generate the signature first.',
     alertNewOutlookCopiedOpened:
       'Signature copied and New Outlook settings opened. Paste in the signature editor and click Save.',
@@ -240,6 +242,8 @@ const translations = {
     batPsRestartOutlook: 'אם Outlook היה פתוח, הפעילו אותו מחדש כדי לרענן חתימות.',
     batPsClassicNote:
       'הערה: עובד ב-Outlook הקלאסי. Outlook החדש עשוי להתעלם מקבצי חתימה מקומיים.',
+    batPressEnterToClose: 'לחצו Enter לסגירה',
+    batFolderOpened: 'תיקיית החתימות נפתחה.',
     alertNewOutlookFailed: 'לא ניתן להכין את הגדרת Outlook החדש. יש ליצור חתימה תחילה.',
     alertNewOutlookCopiedOpened:
       'החתימה הועתקה והגדרות Outlook החדש נפתחו. הדביקו בעורך החתימה ולחצו שמור.',
