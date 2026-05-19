@@ -1,11 +1,3 @@
-import {
-  buildAiSystemPrompt,
-  buildAiUserPrompt,
-  parseAiSignatureDesign,
-  type AiDesignMode,
-  type SignatureFormSnapshot
-} from '../lib/aiSignatureDesign'
-
 const DEFAULT_BASE_URL = 'https://api.openai.com/v1'
 const DEFAULT_MODEL = 'gpt-4o-mini'
 
@@ -35,6 +27,10 @@ export async function GET(): Promise<Response> {
 
 export async function POST(request: Request): Promise<Response> {
   try {
+    const { buildAiSystemPrompt, buildAiUserPrompt, parseAiSignatureDesign } = await import(
+      './lib/aiSignatureDesign.js'
+    )
+
     const apiKey = getServerApiKey()
     if (!apiKey) {
       return json(
@@ -47,14 +43,14 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     let brief = ''
-    let snapshot: SignatureFormSnapshot | undefined
-    let mode: AiDesignMode = 'refine'
+    let snapshot: Record<string, unknown> | undefined
+    let mode: 'refine' | 'create' = 'refine'
     let keepContact = true
     try {
       const body = (await request.json()) as {
         brief?: string
-        snapshot?: SignatureFormSnapshot
-        mode?: AiDesignMode
+        snapshot?: Record<string, unknown>
+        mode?: 'refine' | 'create'
         keepContact?: boolean
       }
       brief = body.brief?.trim() ?? ''
@@ -84,7 +80,7 @@ export async function POST(request: Request): Promise<Response> {
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: buildAiSystemPrompt(mode) },
-          { role: 'user', content: buildAiUserPrompt(brief, snapshot, { mode, keepContact }) }
+          { role: 'user', content: buildAiUserPrompt(brief, snapshot as never, { mode, keepContact }) }
         ]
       })
     })

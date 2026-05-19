@@ -3,7 +3,6 @@
   "outputDirectory": "dist",
   "functions": {
     "api/design-signature.ts": {
-      "includeFiles": "lib/**",
       "maxDuration": 60
     }
   },
