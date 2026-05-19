@@ -7,6 +7,16 @@ type LinkImage = {
   alt: string
 }
 
+type SignatureLayoutSettings = {
+  fontFamily: string
+  nameFontSize: number
+  titleFontSize: number
+  bodyFontSize: number
+  lineSpacing: number
+  signatureWidth: number
+  signatureHeight: number
+}
+
 const byId = <T extends HTMLElement>(id: string): T => {
   const element = document.getElementById(id)
   if (!element) {
@@ -31,7 +41,14 @@ const inputs = {
   logoFile: byId<HTMLInputElement>('logoFile'),
   bannerUrl: byId<HTMLInputElement>('bannerUrl'),
   bannerFile: byId<HTMLInputElement>('bannerFile'),
-  bannerLink: byId<HTMLInputElement>('bannerLink')
+  bannerLink: byId<HTMLInputElement>('bannerLink'),
+  fontFamily: byId<HTMLSelectElement>('fontFamily'),
+  nameFontSize: byId<HTMLInputElement>('nameFontSize'),
+  titleFontSize: byId<HTMLInputElement>('titleFontSize'),
+  bodyFontSize: byId<HTMLInputElement>('bodyFontSize'),
+  lineSpacing: byId<HTMLInputElement>('lineSpacing'),
+  signatureWidth: byId<HTMLInputElement>('signatureWidth'),
+  signatureHeight: byId<HTMLInputElement>('signatureHeight')
 }
 
 const linkImagesContainer = byId<HTMLDivElement>('linkImages')
@@ -40,8 +57,13 @@ const generateButton = byId<HTMLButtonElement>('generate')
 const copyButton = byId<HTMLButtonElement>('copy')
 const downloadButton = byId<HTMLButtonElement>('download')
 const installOutlookButton = byId<HTMLButtonElement>('installOutlook')
+const installNewOutlookButton = byId<HTMLButtonElement>('installNewOutlook')
 const previewElement = byId<HTMLDivElement>('preview')
 const outputElement = byId<HTMLTextAreaElement>('output')
+const newOutlookStatusElement = byId<HTMLParagraphElement>('newOutlookStatus')
+
+const NEW_OUTLOOK_SIGNATURE_SETTINGS_URL =
+  'https://outlook.office.com/mail/options/mail/layout/EmailSignature'
 
 type SocialPlatform = 'Facebook' | 'Instagram' | 'LinkedIn' | 'X' | 'YouTube'
 
@@ -54,6 +76,7 @@ const socialIconDataUrls: Record<SocialPlatform, string> = {
 }
 
 let socialIconsInitializationPromise: Promise<void> | null = null
+let livePreviewTimer: number | null = null
 
 const escapeHtml = (value: string): string =>
   value
@@ -64,6 +87,25 @@ const escapeHtml = (value: string): string =>
     .replace(/'/g, '&#039;')
 
 const hasHebrew = (value: string): boolean => /[\u0590-\u05FF]/.test(value)
+
+const sanitizeFontFamily = (value: string): string => {
+  const cleaned = value.replace(/[;{}<>]/g, '').trim()
+  return cleaned || 'Arial, Helvetica, sans-serif'
+}
+
+const parseNumberInput = (
+  value: string,
+  fallback: number,
+  min: number,
+  max: number,
+  decimals = 0
+): number => {
+  const parsed = Number.parseFloat(value)
+  if (!Number.isFinite(parsed)) return fallback
+  const clamped = Math.min(max, Math.max(min, parsed))
+  if (decimals <= 0) return Math.round(clamped)
+  return Number(clamped.toFixed(decimals))
+}
 
 const normalizeUrl = (value: string): string => {
   const trimmed = value.trim()
@@ -89,12 +131,27 @@ const bindFileInputToUrl = (fileInput: HTMLInputElement, urlInput: HTMLInputElem
     if (!file) return
     fileToDataUrl(file)
       .then((dataUrl) => {
-        if (dataUrl) urlInput.value = dataUrl
+        if (dataUrl) {
+          urlInput.value = dataUrl
+          urlInput.dispatchEvent(new Event('input', { bubbles: true }))
+        }
       })
       .catch(() => {
         // Keep current value if file conversion fails.
       })
   })
+}
+
+const scheduleLivePreviewUpdate = (delayMs = 120): void => {
+  if (livePreviewTimer !== null) {
+    window.clearTimeout(livePreviewTimer)
+  }
+  livePreviewTimer = window.setTimeout(() => {
+    livePreviewTimer = null
+    generate().catch(() => {
+      // Keep form responsive even if preview generation fails.
+    })
+  }, delayMs)
 }
 
 const buildSocialIconSvg = (icon: { path: string }, fillColor: string): string =>
@@ -173,7 +230,10 @@ const addLinkImageRow = (seed?: Partial<LinkImage>): void => {
   linkImagesContainer.appendChild(row)
 
   const removeButton = row.querySelector('.remove-link-image')
-  removeButton?.addEventListener('click', () => row.remove())
+  removeButton?.addEventListener('click', () => {
+    row.remove()
+    scheduleLivePreviewUpdate()
+  })
 
   const fileInput = row.querySelector('.link-image-file') as HTMLInputElement | null
   const imageUrlInput = row.querySelector('.link-image-url') as HTMLInputElement | null
@@ -194,7 +254,17 @@ const getLinkImages = (): LinkImage[] => {
     .filter((item) => item.imageUrl && item.href)
 }
 
-const buildSignatureHtml = (): string => {
+const getLayoutSettings = (): SignatureLayoutSettings => ({
+  fontFamily: sanitizeFontFamily(inputs.fontFamily.value),
+  nameFontSize: parseNumberInput(inputs.nameFontSize.value, 28, 14, 72),
+  titleFontSize: parseNumberInput(inputs.titleFontSize.value, 19, 10, 48),
+  bodyFontSize: parseNumberInput(inputs.bodyFontSize.value, 12, 9, 24),
+  lineSpacing: parseNumberInput(inputs.lineSpacing.value, 1.25, 1, 2, 2),
+  signatureWidth: parseNumberInput(inputs.signatureWidth.value, 400, 250, 900),
+  signatureHeight: parseNumberInput(inputs.signatureHeight.value, 200, 120, 500)
+})
+
+const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
   const fullName = escapeHtml(inputs.fullName.value.trim())
   const jobTitle = escapeHtml(inputs.jobTitle.value.trim())
   const company = escapeHtml(inputs.company.value.trim())
@@ -208,10 +278,13 @@ const buildSignatureHtml = (): string => {
   const youtubeUrl = normalizeUrl(inputs.youtubeUrl.value)
   const logoUrl = normalizeUrl(inputs.logoUrl.value)
   const accentColor = '#92278f'
-  const signatureWidth = 400
-  const signatureHeight = 200
-  const textColumnWidth = 252
-  const logoColumnWidth = 138
+  const signatureWidth = layout.signatureWidth
+  const signatureHeight = layout.signatureHeight
+  const textColumnWidth = Math.round(signatureWidth * 0.63)
+  const logoColumnWidth = Math.max(110, signatureWidth - textColumnWidth - 10)
+  const fontFamilyCss = escapeHtml(layout.fontFamily)
+  const bodyFontSizePx = `${layout.bodyFontSize}px`
+  const detailsLineHeight = layout.lineSpacing
   const rtlContent = [fullName, jobTitle, company].some(hasHebrew)
   const textDirection = rtlContent ? 'rtl' : 'ltr'
   const textAlign = rtlContent ? 'right' : 'left'
@@ -224,8 +297,8 @@ const buildSignatureHtml = (): string => {
   if (phone.trim()) {
     contactRows.push(
       `<tr>
-        <td dir="rtl" style="padding:2px 0;font-size:12px;line-height:1.25;color:#666666;font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">נייד:&nbsp;</td>
-        <td style="padding:2px 0;font-size:12px;line-height:1.25;color:#666666;unicode-bidi:plaintext;border-bottom:1px solid #d1d5db;">
+        <td dir="rtl" style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:#666666;font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">נייד:&nbsp;</td>
+        <td style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:#666666;unicode-bidi:plaintext;border-bottom:1px solid #d1d5db;">
           <a href="${escapeHtml(normalizeUrl(`tel:${inputs.phone.value.trim()}`))}" style="text-decoration:none;color:${accentColor};">${phone}</a>
         </td>
       </tr>`
@@ -234,8 +307,8 @@ const buildSignatureHtml = (): string => {
   if (email.trim()) {
     contactRows.push(
       `<tr>
-        <td dir="rtl" style="padding:2px 0;font-size:12px;line-height:1.25;color:#666666;font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">דוא"ל:&nbsp;</td>
-        <td style="padding:2px 0;font-size:12px;line-height:1.25;color:#666666;unicode-bidi:plaintext;border-bottom:1px solid #d1d5db;">
+        <td dir="rtl" style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:#666666;font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">דוא"ל:&nbsp;</td>
+        <td style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:#666666;unicode-bidi:plaintext;border-bottom:1px solid #d1d5db;">
           <a href="${escapeHtml(normalizeUrl(`mailto:${inputs.email.value.trim()}`))}" style="text-decoration:underline;color:${accentColor};">${email}</a>
         </td>
       </tr>`
@@ -245,8 +318,8 @@ const buildSignatureHtml = (): string => {
     const websiteLabel = escapeHtml(website.replace(/^https?:\/\//i, ''))
     contactRows.push(
       `<tr>
-        <td dir="rtl" style="padding:2px 0;font-size:12px;line-height:1.25;color:#666666;font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">אתר:&nbsp;</td>
-        <td style="padding:2px 0;font-size:12px;line-height:1.25;color:#666666;unicode-bidi:plaintext;border-bottom:1px solid #d1d5db;">
+        <td dir="rtl" style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:#666666;font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">אתר:&nbsp;</td>
+        <td style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:#666666;unicode-bidi:plaintext;border-bottom:1px solid #d1d5db;">
           <a href="${escapeHtml(website)}" style="text-decoration:underline;color:#5a5a5a;">${websiteLabel}</a>
         </td>
       </tr>`
@@ -308,14 +381,14 @@ const buildSignatureHtml = (): string => {
     : ''
 
   return `<!-- Outlook email signature -->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" style="font-family:Arial,Helvetica,sans-serif;color:#111827;width:${signatureWidth}px;max-width:${signatureWidth}px;height:${signatureHeight}px;overflow:hidden;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" style="font-family:${fontFamilyCss};color:#111827;width:${signatureWidth}px;max-width:${signatureWidth}px;height:${signatureHeight}px;overflow:hidden;">
   <tr>
     <td style="vertical-align:top;${dividerPadding}width:${textColumnWidth}px;max-width:${textColumnWidth}px;text-align:${textAlign};unicode-bidi:plaintext;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-        <tr><td dir="${nameTitleDirection}" style="font-size:28px;line-height:1.05;font-weight:700;color:${accentColor};padding-bottom:2px;text-align:${nameTitleAlign};unicode-bidi:plaintext;">${fullName || 'שם מלא'}</td></tr>
-        <tr><td dir="${nameTitleDirection}" style="font-size:19px;line-height:1.1;font-weight:700;color:#6b6b74;padding-bottom:8px;text-align:${nameTitleAlign};unicode-bidi:plaintext;">${jobTitle || 'מנהל פיתוח אזורי'}${company ? ` | ${company}` : ''}</td></tr>
+        <tr><td dir="${nameTitleDirection}" style="font-size:${layout.nameFontSize}px;line-height:${Math.max(1, layout.lineSpacing - 0.2)};font-weight:700;color:${accentColor};padding-bottom:2px;text-align:${nameTitleAlign};unicode-bidi:plaintext;">${fullName || 'שם מלא'}</td></tr>
+        <tr><td dir="${nameTitleDirection}" style="font-size:${layout.titleFontSize}px;line-height:${Math.max(1, layout.lineSpacing - 0.15)};font-weight:700;color:#6b6b74;padding-bottom:8px;text-align:${nameTitleAlign};unicode-bidi:plaintext;">${jobTitle || 'תפקיד'}${company ? ` | ${company}` : ''}</td></tr>
         ${contactRows.length ? `<tr><td dir="rtl" style="padding-top:1px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="rtl" align="right" style="text-align:right;">${contactRows.join('')}</table></td></tr>` : ''}
-        ${socialTextRow}
+        ${socialTextRow.replace(/width="16"/g, `width="${layout.bodyFontSize + 4}"`).replace(/height="16"/g, `height="${layout.bodyFontSize + 4}"`).replace(/width:16px/g, `width:${layout.bodyFontSize + 4}px`).replace(/height:16px/g, `height:${layout.bodyFontSize + 4}px`)}
       </table>
     </td>
     <td style="width:2px;background:#bcbec0;font-size:0;line-height:0;">&nbsp;</td>
@@ -332,15 +405,68 @@ const buildSignatureHtml = (): string => {
 
 const generate = async (): Promise<void> => {
   await initializeSocialIconDataUrls()
-  const html = buildSignatureHtml()
+  const layout = getLayoutSettings()
+  const html = buildSignatureHtml(layout)
   outputElement.value = html
+  previewElement.style.width = `${layout.signatureWidth}px`
+  previewElement.style.height = `${layout.signatureHeight}px`
   previewElement.innerHTML = html
+}
+
+const enableLivePreview = (): void => {
+  Object.values(inputs).forEach((input) => {
+    input.addEventListener('input', () => scheduleLivePreviewUpdate())
+    input.addEventListener('change', () => scheduleLivePreviewUpdate())
+  })
+  linkImagesContainer.addEventListener('input', () => scheduleLivePreviewUpdate())
+  linkImagesContainer.addEventListener('change', () => scheduleLivePreviewUpdate())
 }
 
 const copyOutput = async (): Promise<void> => {
   const value = outputElement.value.trim()
   if (!value) return
   await navigator.clipboard.writeText(value)
+}
+
+const copyHtmlForPasting = async (html: string): Promise<boolean> => {
+  const clipboardItemCtor = (window as typeof window & { ClipboardItem?: typeof ClipboardItem })
+    .ClipboardItem
+
+  if (clipboardItemCtor && navigator.clipboard?.write) {
+    try {
+      const clipboardItem = new clipboardItemCtor({
+        'text/html': new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob([html], { type: 'text/plain' })
+      })
+      await navigator.clipboard.write([clipboardItem])
+      return true
+    } catch {
+      // Fallback to execCommand below.
+    }
+  }
+
+  try {
+    const helper = document.createElement('div')
+    helper.setAttribute('contenteditable', 'true')
+    helper.style.position = 'fixed'
+    helper.style.left = '-9999px'
+    helper.style.top = '0'
+    helper.innerHTML = html
+    document.body.appendChild(helper)
+
+    const selection = window.getSelection()
+    const range = document.createRange()
+    range.selectNodeContents(helper)
+    selection?.removeAllRanges()
+    selection?.addRange(range)
+
+    const success = document.execCommand('copy')
+    selection?.removeAllRanges()
+    document.body.removeChild(helper)
+    return success
+  } catch {
+    return false
+  }
 }
 
 const downloadOutput = (): void => {
@@ -368,10 +494,54 @@ ${value}
   URL.revokeObjectURL(url)
 }
 
+const toPlainTextSignature = (): string => {
+  const lines: string[] = []
+  const fullName = inputs.fullName.value.trim()
+  const roleBits = [inputs.jobTitle.value.trim(), inputs.company.value.trim()].filter(Boolean)
+  const phone = inputs.phone.value.trim()
+  const email = inputs.email.value.trim()
+  const website = normalizeUrl(inputs.website.value)
+
+  if (fullName) lines.push(fullName)
+  if (roleBits.length) lines.push(roleBits.join(' | '))
+  if (phone) lines.push(`Phone: ${phone}`)
+  if (email) lines.push(`Email: ${email}`)
+  if (website) lines.push(`Website: ${website}`)
+
+  return lines.join('\r\n')
+}
+
+const plainTextToRtf = (plainText: string): string => {
+  const escaped = plainText
+    .replace(/\\/g, '\\\\')
+    .replace(/\{/g, '\\{')
+    .replace(/\}/g, '\\}')
+    .replace(/\r\n|\n|\r/g, '\\par ')
+  return `{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0 Arial;}}\\f0\\fs20 ${escaped}}`
+}
+
+const sanitizeSignatureName = (value: string): string => {
+  const cleaned = value
+    .trim()
+    .replace(/[<>:"/\\|?*\x00-\x1f]/g, '')
+    .replace(/\s+/g, ' ')
+  return cleaned || 'Outlook-Signature'
+}
+
+const toBase64Utf8 = (value: string): string => {
+  const utf8Bytes = new TextEncoder().encode(value)
+  let binary = ''
+  for (const byte of utf8Bytes) {
+    binary += String.fromCharCode(byte)
+  }
+  return btoa(binary)
+}
+
 const downloadOutlookInstaller = (): void => {
   const value = outputElement.value.trim()
   if (!value) return
 
+  const signatureName = sanitizeSignatureName(inputs.fullName.value)
   const htmlDocument = `<!doctype html>
 <html lang="he">
   <head>
@@ -383,42 +553,125 @@ const downloadOutlookInstaller = (): void => {
 ${value}
   </body>
 </html>`
+  const txtDocument = toPlainTextSignature()
+  const rtfDocument = plainTextToRtf(txtDocument)
+  const htmlBase64 = toBase64Utf8(htmlDocument)
+  const txtBase64 = toBase64Utf8(txtDocument)
+  const rtfBase64 = toBase64Utf8(rtfDocument)
 
-  const utf8Bytes = new TextEncoder().encode(htmlDocument)
-  let binaryHtml = ''
-  for (const byte of utf8Bytes) {
-    binaryHtml += String.fromCharCode(byte)
-  }
-  const htmlBase64 = btoa(binaryHtml)
   const scriptContent = `$ErrorActionPreference = "Stop"
 
-$signatureName = "Outlook-Signature"
+$signatureName = "${signatureName.replace(/"/g, "'")}"
 $signatureDir = Join-Path $env:APPDATA "Microsoft\\Signatures"
 $htmlFile = Join-Path $signatureDir "$signatureName.htm"
+$txtFile = Join-Path $signatureDir "$signatureName.txt"
+$rtfFile = Join-Path $signatureDir "$signatureName.rtf"
+$filesDir = Join-Path $signatureDir "$($signatureName)_files"
 
 if (-not (Test-Path $signatureDir)) {
   New-Item -Path $signatureDir -ItemType Directory | Out-Null
 }
+if (-not (Test-Path $filesDir)) {
+  New-Item -Path $filesDir -ItemType Directory | Out-Null
+}
 
 $htmlBase64 = "${htmlBase64}"
+$txtBase64 = "${txtBase64}"
+$rtfBase64 = "${rtfBase64}"
 $htmlContent = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($htmlBase64))
+$txtContent = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($txtBase64))
+$rtfContent = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($rtfBase64))
 [System.IO.File]::WriteAllText($htmlFile, $htmlContent, [System.Text.Encoding]::UTF8)
+[System.IO.File]::WriteAllText($txtFile, $txtContent, [System.Text.Encoding]::UTF8)
+[System.IO.File]::WriteAllText($rtfFile, $rtfContent, [System.Text.Encoding]::UTF8)
+
+$mailSettingsPaths = @(
+  "HKCU:\\Software\\Microsoft\\Office\\16.0\\Common\\MailSettings",
+  "HKCU:\\Software\\Microsoft\\Office\\15.0\\Common\\MailSettings"
+)
+
+foreach ($path in $mailSettingsPaths) {
+  if (Test-Path $path) {
+    New-ItemProperty -Path $path -Name "NewSignature" -Value $signatureName -PropertyType String -Force | Out-Null
+    New-ItemProperty -Path $path -Name "ReplySignature" -Value $signatureName -PropertyType String -Force | Out-Null
+  }
+}
 
 Write-Host "Signature installed successfully:" -ForegroundColor Green
 Write-Host $htmlFile
 Write-Host ""
-Write-Host "Next step: open Outlook > File > Options > Mail > Signatures and select '$signatureName'."
+Write-Host "Set as default for New/Reply where supported."
+Write-Host "If Outlook was open, restart Outlook to refresh signatures."
+Write-Host "Note: works with classic Outlook desktop. New Outlook may ignore local signature files."
+`
+  const batchContent = `@echo off
+setlocal
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0install-outlook-signature.ps1"
+if errorlevel 1 (
+  echo.
+  echo Installation failed. If blocked by policy, right-click the .ps1 and run with PowerShell.
+  pause
+  exit /b 1
+)
+echo.
+echo Signature installation completed.
+pause
 `
 
-  const blob = new Blob([scriptContent], { type: 'text/plain;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = 'install-outlook-signature.ps1'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  URL.revokeObjectURL(url)
+  const psBlob = new Blob([scriptContent], { type: 'text/plain;charset=utf-8' })
+  const psUrl = URL.createObjectURL(psBlob)
+  const psLink = document.createElement('a')
+  psLink.href = psUrl
+  psLink.download = 'install-outlook-signature.ps1'
+  document.body.appendChild(psLink)
+  psLink.click()
+  document.body.removeChild(psLink)
+  URL.revokeObjectURL(psUrl)
+
+  const batBlob = new Blob([batchContent], { type: 'text/plain;charset=utf-8' })
+  const batUrl = URL.createObjectURL(batBlob)
+  const batLink = document.createElement('a')
+  batLink.href = batUrl
+  batLink.download = 'run-install-outlook-signature.bat'
+  document.body.appendChild(batLink)
+  // Stagger download slightly so both files are reliably saved in all browsers.
+  window.setTimeout(() => {
+    batLink.click()
+    document.body.removeChild(batLink)
+    URL.revokeObjectURL(batUrl)
+  }, 120)
+}
+
+const installForNewOutlook = async (): Promise<void> => {
+  const value = outputElement.value.trim()
+  if (!value) return
+
+  const richCopied = await copyHtmlForPasting(value)
+  const popup = window.open(NEW_OUTLOOK_SIGNATURE_SETTINGS_URL, '_blank', 'noopener,noreferrer')
+  const openedSettings = !!popup
+
+  newOutlookStatusElement.innerHTML =
+    'New Outlook setup: open <a href="https://outlook.office.com/mail/options/mail/layout/EmailSignature" target="_blank" rel="noopener noreferrer">Compose and reply settings</a>, paste into signature editor, then save.'
+
+  if (richCopied && openedSettings) {
+    window.alert('Signature copied and New Outlook settings opened. Paste in the signature editor and click Save.')
+    return
+  }
+  if (richCopied && !openedSettings) {
+    window.alert(
+      'Signature copied. Please open New Outlook settings (Compose and reply), paste into signature editor, and click Save.'
+    )
+    return
+  }
+  if (!richCopied && openedSettings) {
+    window.alert(
+      'New Outlook settings opened, but clipboard copy was blocked. Copy from "Generated HTML", paste into signature editor, and click Save.'
+    )
+    return
+  }
+  window.alert(
+    'Could not auto-open settings or copy automatically. Open New Outlook > Settings > Mail > Compose and reply, paste from "Generated HTML", and click Save.'
+  )
 }
 
 addLinkImageButton.addEventListener('click', () => addLinkImageRow())
@@ -440,14 +693,26 @@ installOutlookButton.addEventListener('click', () => {
   run
     .then(() => {
       downloadOutlookInstaller()
-      window.alert('PowerShell installer downloaded. Run install-outlook-signature.ps1 to install your signature in Outlook.')
+      window.alert(
+        'Installers downloaded: install-outlook-signature.ps1 and run-install-outlook-signature.bat. Double-click the .bat for easiest install, or run the .ps1 directly.'
+      )
     })
     .catch(() => {
       window.alert('Could not prepare Outlook installer. Please generate the signature first.')
     })
 })
+installNewOutlookButton.addEventListener('click', () => {
+  const hasSignature = outputElement.value.trim().length > 0
+  const run = hasSignature ? Promise.resolve() : generate()
+  run
+    .then(() => installForNewOutlook())
+    .catch(() => {
+      window.alert('Could not prepare New Outlook setup. Please generate the signature first.')
+    })
+})
 bindFileInputToUrl(inputs.logoFile, inputs.logoUrl)
 bindFileInputToUrl(inputs.bannerFile, inputs.bannerUrl)
+enableLivePreview()
 
 if (!inputs.logoUrl.value.trim()) {
   inputs.logoUrl.value = DEFAULT_LOGO_DATA_URL
