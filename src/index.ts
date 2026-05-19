@@ -6,6 +6,7 @@ import {
   designSignatureWithAi,
   hasConfiguredAiApiKey,
   isUsingEnvApiKey,
+  isUsingServerAiProxy,
   loadStoredApiKey,
   storeApiKey
 } from './aiAgent'
@@ -473,8 +474,13 @@ const hasSocialConfigured = (): boolean =>
 
 const refreshAiApiKeyFieldState = (): void => {
   const lang = getSignatureLanguage()
+  const usingServer = isUsingServerAiProxy(aiApiKeyInput.value)
   const usingEnv = isUsingEnvApiKey(aiApiKeyInput.value)
-  aiApiKeyInput.placeholder = usingEnv ? t(lang, 'aiApiKeyUsingEnv') : t(lang, 'aiApiKeyPlaceholder')
+  aiApiKeyInput.placeholder = usingServer
+    ? t(lang, 'aiApiKeyUsingServer')
+    : usingEnv
+      ? t(lang, 'aiApiKeyUsingEnv')
+      : t(lang, 'aiApiKeyPlaceholder')
 }
 
 const refreshAiBriefPresets = (): void => {

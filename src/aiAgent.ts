@@ -14,6 +14,7 @@ export type AiAgentConfig = {
 
 const DEFAULT_BASE_URL = 'https://api.openai.com/v1'
 const DEFAULT_MODEL = 'gpt-4o-mini'
+const DESIGN_API_PATH = '/api/design-signature'
 
 const readViteEnv = (name: 'VITE_OPENAI_API_KEY' | 'VITE_OPENAI_BASE_URL' | 'VITE_OPENAI_MODEL'): string => {
   if (!import.meta.env.DEV) return ''
@@ -21,12 +22,15 @@ const readViteEnv = (name: 'VITE_OPENAI_API_KEY' | 'VITE_OPENAI_BASE_URL' | 'VIT
   return value?.trim() ?? ''
 }
 
-/** Only available in `npm run dev`; production builds must use the in-app key field. */
+/** Local dev only (`npm run dev` + `.env`). */
 const getEnvApiKey = (): string => readViteEnv('VITE_OPENAI_API_KEY')
 
 const getEnvBaseUrl = (): string => readViteEnv('VITE_OPENAI_BASE_URL') || DEFAULT_BASE_URL
 
 const getEnvModel = (): string => readViteEnv('VITE_OPENAI_MODEL') || DEFAULT_MODEL
+
+/** Production on Vercel uses `/api/design-signature` with server env vars. */
+export const usesServerAiProxy = (): boolean => import.meta.env.PROD
 
 export const resolveAiApiKey = (userApiKey: string): string => {
   const fromField = userApiKey.trim()
@@ -35,10 +39,13 @@ export const resolveAiApiKey = (userApiKey: string): string => {
 }
 
 export const hasConfiguredAiApiKey = (userApiKey: string): boolean =>
-  Boolean(resolveAiApiKey(userApiKey))
+  Boolean(resolveAiApiKey(userApiKey)) || usesServerAiProxy()
 
 export const isUsingEnvApiKey = (userApiKey: string): boolean =>
-  !userApiKey.trim() && Boolean(getEnvApiKey())
+  import.meta.env.DEV && !userApiKey.trim() && Boolean(getEnvApiKey())
+
+export const isUsingServerAiProxy = (userApiKey: string): boolean =>
+  usesServerAiProxy() && !userApiKey.trim() && !getEnvApiKey()
 
 const SESSION_KEY = 'signitures-openai-api-key'
 
@@ -63,7 +70,7 @@ export const storeApiKey = (apiKey: string): void => {
   }
 }
 
-export const designSignatureWithAi = async (
+const designViaDirectOpenAi = async (
   brief: string,
   snapshot: SignatureFormSnapshot,
   config: AiAgentConfig
@@ -113,4 +120,43 @@ export const designSignatureWithAi = async (
   }
 
   return parseAiSignatureDesign(content)
+}
+
+const designViaServerProxy = async (
+  brief: string,
+  snapshot: SignatureFormSnapshot
+): Promise<AiSignatureDesign> => {
+  const response = await fetch(DESIGN_API_PATH, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ brief, snapshot })
+  })
+
+  let payload: { design?: AiSignatureDesign; error?: string } = {}
+  try {
+    payload = (await response.json()) as { design?: AiSignatureDesign; error?: string }
+  } catch {
+    // ignore
+  }
+
+  if (!response.ok) {
+    throw new Error(payload.error || `Server error ${response.status}`)
+  }
+
+  if (!payload.design) {
+    throw new Error(payload.error || 'Invalid server response')
+  }
+
+  return payload.design
+}
+
+export const designSignatureWithAi = async (
+  brief: string,
+  snapshot: SignatureFormSnapshot,
+  config: AiAgentConfig
+): Promise<AiSignatureDesign> => {
+  if (usesServerAiProxy() && !config.apiKey.trim()) {
+    return designViaServerProxy(brief, snapshot)
+  }
+  return designViaDirectOpenAi(brief, snapshot, config)
 }
