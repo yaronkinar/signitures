@@ -150,11 +150,21 @@ const designViaServerProxy = async (
     })
   })
 
+  const responseText = await response.text()
   let payload: { design?: AiSignatureDesign; error?: string } = {}
   try {
-    payload = (await response.json()) as { design?: AiSignatureDesign; error?: string }
+    payload = JSON.parse(responseText) as { design?: AiSignatureDesign; error?: string }
   } catch {
-    // ignore
+    if (response.status === 404) {
+      throw new Error(
+        'AI API route not found. Redeploy the site with the latest version (api/design-signature).'
+      )
+    }
+    throw new Error(
+      responseText.startsWith('<')
+        ? `Server returned HTML instead of JSON (${response.status}). Check Vercel deployment logs.`
+        : `Invalid server response (${response.status})`
+    )
   }
 
   if (!response.ok) {
@@ -173,7 +183,8 @@ export const designSignatureWithAi = async (
   snapshot: SignatureFormSnapshot,
   config: AiAgentConfig
 ): Promise<AiSignatureDesign> => {
-  if (usesServerAiProxy() && !config.apiKey.trim()) {
+  // Production must use the server proxy (browser cannot call OpenAI directly due to CORS).
+  if (usesServerAiProxy()) {
     return designViaServerProxy(brief, snapshot, config)
   }
   return designViaDirectOpenAi(brief, snapshot, config)

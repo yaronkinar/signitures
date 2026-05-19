@@ -6,6 +6,11 @@ import {
   type SignatureFormSnapshot
 } from '../src/aiSignatureDesign'
 
+export const config = {
+  runtime: 'nodejs',
+  maxDuration: 60
+}
+
 const DEFAULT_BASE_URL = 'https://api.openai.com/v1'
 const DEFAULT_MODEL = 'gpt-4o-mini'
 
@@ -20,17 +25,13 @@ const json = (body: unknown, status = 200): Response =>
     headers: { 'Content-Type': 'application/json' }
   })
 
-export default async function handler(request: Request): Promise<Response> {
-  if (request.method !== 'POST') {
-    return json({ error: 'Method not allowed' }, 405)
-  }
-
+export async function POST(request: Request): Promise<Response> {
   const apiKey = getServerApiKey()
   if (!apiKey) {
     return json(
       {
         error:
-          'OPENAI_API_KEY is not set on the server. Add it in Vercel → Project → Settings → Environment Variables.'
+          'OPENAI_API_KEY is not set on the server. In Vercel: Project → Settings → Environment Variables → add OPENAI_API_KEY for Production, then redeploy.'
       },
       500
     )
