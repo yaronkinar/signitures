@@ -206,7 +206,7 @@ const translations = {
     signatureFolderLink: 'פתיחת התיקייה',
     signatureFolderSuffix: '.',
     newOutlookSetupPrefix: 'הגדרת Outlook החדש: פתחו ',
-    newOutlookSetupSuffix: ', הדביקו בעורך החתימה ושמרו.',
+    newOutlookSetupSuffix: ' — הדביקו בעורך החתימה ושמרו.',
     alertGenerateFailed: 'לא ניתן ליצור אייקונים חברתיים. נסו שוב.',
     alertOutlookInstallSuccess:
       'קבצי ההתקנה הורדו: install-outlook-signature.ps1 ו-run-install-outlook-signature.bat. לחצו פעמיים על קובץ ה-.bat להתקנה הקלה, או הריצו את קובץ ה-.ps1.',
@@ -254,7 +254,7 @@ const NEW_OUTLOOK_SIGNATURE_SETTINGS_URL =
 export const OUTLOOK_SIGNATURES_FOLDER_PATH = '%APPDATA%\\Microsoft\\Signatures'
 
 export const signatureFolderStatusHtml = (lang: AppLanguage): string =>
-  `${t(lang, 'signatureFolderPrefix')}<a href="#" class="open-signatures-folder">${t(lang, 'signatureFolderLink')}</a> <span dir="ltr">(${OUTLOOK_SIGNATURES_FOLDER_PATH})</span>${t(lang, 'signatureFolderSuffix')}`
+  `${t(lang, 'signatureFolderPrefix')}<button type="button" class="text-link open-signatures-folder">${t(lang, 'signatureFolderLink')}</button> <span dir="ltr" class="outlook-folder-path">(${OUTLOOK_SIGNATURES_FOLDER_PATH})</span>${t(lang, 'signatureFolderSuffix')}`
 
 export const newOutlookStatusHtml = (lang: AppLanguage): string =>
   `${t(lang, 'newOutlookSetupPrefix')}<a href="${NEW_OUTLOOK_SIGNATURE_SETTINGS_URL}" target="_blank" rel="noopener noreferrer">${t(lang, 'composeReplySettings')}</a>${t(lang, 'newOutlookSetupSuffix')}`

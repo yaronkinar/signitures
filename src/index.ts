@@ -115,7 +115,14 @@ const installOutlookButton = byId<HTMLButtonElement>('installOutlook')
 const installNewOutlookButton = byId<HTMLButtonElement>('installNewOutlook')
 const previewElement = byId<HTMLDivElement>('preview')
 const outputElement = byId<HTMLTextAreaElement>('output')
-const outlookHelpStatusElement = byId<HTMLParagraphElement>('outlookHelpStatus')
+const outlookHelpStatusElement = (() => {
+  const element =
+    document.getElementById('outlookHelpStatus') ?? document.getElementById('newOutlookStatus')
+  if (!element) {
+    throw new Error('Missing #outlookHelpStatus element in index.html')
+  }
+  return element as HTMLParagraphElement
+})()
 
 const NEW_OUTLOOK_SIGNATURE_SETTINGS_URL =
   'https://outlook.office.com/mail/options/mail/layout/EmailSignature'
@@ -151,6 +158,7 @@ const getSignatureStrings = () => signatureStrings[getSignatureLanguage()]
 const refreshUiLanguage = (): void => {
   const lang = getSignatureLanguage()
   applyUiLanguage(lang)
+  outlookHelpStatusElement.dir = lang === 'he' ? 'rtl' : 'ltr'
   outlookHelpStatusElement.innerHTML = outlookHelpStatusHtml(lang)
   linkImagesContainer.querySelectorAll('.link-image-row').forEach((row) => {
     localizeLinkImageRow(row as HTMLElement, lang)

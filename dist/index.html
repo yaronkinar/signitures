@@ -209,6 +209,26 @@
         line-height: 1.45;
       }
 
+      .hint .text-link {
+        display: inline;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background: none;
+        font: inherit;
+        color: var(--accent);
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      .hint .text-link:hover {
+        color: #1e40af;
+      }
+
+      .hint .outlook-folder-path {
+        unicode-bidi: isolate;
+      }
+
       .actions-bar {
         padding: 16px 20px;
         border-top: 1px solid var(--border);
@@ -314,7 +334,7 @@
         }
       }
     </style>
-    <script type="module" crossorigin src="/assets/index-B21v8lkj.js"></script>
+    <script type="module" crossorigin src="/assets/index-DPYzmF38.js"></script>
   </head>
   <body>
     <main class="page">
@@ -503,7 +523,8 @@
                 <label>
                   <span data-i18n="fontFamily">Font family</span>
                   <select id="fontFamily">
-                    <option value="Arial, Helvetica, sans-serif" selected>Arial</option>
+                    <option value="Arial, Helvetica, sans-serif">Arial</option>
+                    <option value="'Comeback SemiBold', 'Comeback Semi', Comeback, Arial, Helvetica, sans-serif" selected>Comeback SemiBold</option>
                     <option value="'Calibri', Arial, Helvetica, sans-serif">Calibri</option>
                     <option value="'Segoe UI', Arial, Helvetica, sans-serif">Segoe UI</option>
                     <option value="'Tahoma', Arial, Helvetica, sans-serif">Tahoma</option>
@@ -675,7 +696,7 @@
               New Outlook setup
             </button>
           </div>
-          <p id="newOutlookStatus" class="hint" style="margin-top: 10px"></p>
+          <p id="outlookHelpStatus" class="hint" style="margin-top: 10px"></p>
         </div>
       </section>
 
