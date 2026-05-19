@@ -15,6 +15,24 @@ type SignatureLayoutSettings = {
   lineSpacing: number
   signatureWidth: number
   signatureHeight: number
+  textColumnWidth: number
+  logoMaxWidth: number
+  textAlign: 'left' | 'center' | 'right'
+  nameTitleAlign: 'left' | 'center' | 'right'
+  logoAlign: 'left' | 'center' | 'right'
+  verticalAlign: 'top' | 'middle' | 'bottom'
+  textOffsetX: number
+  textOffsetY: number
+  logoOffsetX: number
+  logoOffsetY: number
+  dividerThickness: number
+  socialIconGap: number
+  accentColor: string
+  textColor: string
+  secondaryTextColor: string
+  dividerColor: string
+  linkColor: string
+  backgroundColor: string
 }
 
 const byId = <T extends HTMLElement>(id: string): T => {
@@ -48,7 +66,25 @@ const inputs = {
   bodyFontSize: byId<HTMLInputElement>('bodyFontSize'),
   lineSpacing: byId<HTMLInputElement>('lineSpacing'),
   signatureWidth: byId<HTMLInputElement>('signatureWidth'),
-  signatureHeight: byId<HTMLInputElement>('signatureHeight')
+  signatureHeight: byId<HTMLInputElement>('signatureHeight'),
+  textColumnWidth: byId<HTMLInputElement>('textColumnWidth'),
+  logoMaxWidth: byId<HTMLInputElement>('logoMaxWidth'),
+  textAlign: byId<HTMLSelectElement>('textAlign'),
+  nameTitleAlign: byId<HTMLSelectElement>('nameTitleAlign'),
+  logoAlign: byId<HTMLSelectElement>('logoAlign'),
+  verticalAlign: byId<HTMLSelectElement>('verticalAlign'),
+  textOffsetX: byId<HTMLInputElement>('textOffsetX'),
+  textOffsetY: byId<HTMLInputElement>('textOffsetY'),
+  logoOffsetX: byId<HTMLInputElement>('logoOffsetX'),
+  logoOffsetY: byId<HTMLInputElement>('logoOffsetY'),
+  dividerThickness: byId<HTMLInputElement>('dividerThickness'),
+  socialIconGap: byId<HTMLInputElement>('socialIconGap'),
+  accentColor: byId<HTMLInputElement>('accentColor'),
+  textColor: byId<HTMLInputElement>('textColor'),
+  secondaryTextColor: byId<HTMLInputElement>('secondaryTextColor'),
+  dividerColor: byId<HTMLInputElement>('dividerColor'),
+  linkColor: byId<HTMLInputElement>('linkColor'),
+  backgroundColor: byId<HTMLInputElement>('backgroundColor')
 }
 
 const linkImagesContainer = byId<HTMLDivElement>('linkImages')
@@ -106,6 +142,12 @@ const parseNumberInput = (
   if (decimals <= 0) return Math.round(clamped)
   return Number(clamped.toFixed(decimals))
 }
+
+const parseEnumInput = <T extends string>(value: string, allowed: readonly T[], fallback: T): T =>
+  allowed.includes(value as T) ? (value as T) : fallback
+
+const parseColorInput = (value: string, fallback: string): string =>
+  /^#[0-9a-fA-F]{6}$/.test(value.trim()) ? value.trim() : fallback
 
 const normalizeUrl = (value: string): string => {
   const trimmed = value.trim()
@@ -261,7 +303,29 @@ const getLayoutSettings = (): SignatureLayoutSettings => ({
   bodyFontSize: parseNumberInput(inputs.bodyFontSize.value, 12, 9, 24),
   lineSpacing: parseNumberInput(inputs.lineSpacing.value, 1.25, 1, 2, 2),
   signatureWidth: parseNumberInput(inputs.signatureWidth.value, 400, 250, 900),
-  signatureHeight: parseNumberInput(inputs.signatureHeight.value, 200, 120, 500)
+  signatureHeight: parseNumberInput(inputs.signatureHeight.value, 200, 120, 500),
+  textColumnWidth: parseNumberInput(inputs.textColumnWidth.value, 252, 120, 760),
+  logoMaxWidth: parseNumberInput(inputs.logoMaxWidth.value, 122, 60, 400),
+  textAlign: parseEnumInput(inputs.textAlign.value, ['left', 'center', 'right'] as const, 'right'),
+  nameTitleAlign: parseEnumInput(
+    inputs.nameTitleAlign.value,
+    ['left', 'center', 'right'] as const,
+    'right'
+  ),
+  logoAlign: parseEnumInput(inputs.logoAlign.value, ['left', 'center', 'right'] as const, 'left'),
+  verticalAlign: parseEnumInput(inputs.verticalAlign.value, ['top', 'middle', 'bottom'] as const, 'top'),
+  textOffsetX: parseNumberInput(inputs.textOffsetX.value, 0, -120, 120),
+  textOffsetY: parseNumberInput(inputs.textOffsetY.value, 0, -120, 120),
+  logoOffsetX: parseNumberInput(inputs.logoOffsetX.value, 10, -120, 120),
+  logoOffsetY: parseNumberInput(inputs.logoOffsetY.value, 6, -120, 120),
+  dividerThickness: parseNumberInput(inputs.dividerThickness.value, 2, 0, 10),
+  socialIconGap: parseNumberInput(inputs.socialIconGap.value, 5, 0, 20),
+  accentColor: parseColorInput(inputs.accentColor.value, '#92278f'),
+  textColor: parseColorInput(inputs.textColor.value, '#111827'),
+  secondaryTextColor: parseColorInput(inputs.secondaryTextColor.value, '#666666'),
+  dividerColor: parseColorInput(inputs.dividerColor.value, '#bcbec0'),
+  linkColor: parseColorInput(inputs.linkColor.value, '#5a5a5a'),
+  backgroundColor: parseColorInput(inputs.backgroundColor.value, '#ffffff')
 })
 
 const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
@@ -277,28 +341,32 @@ const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
   const xUrl = normalizeUrl(inputs.xUrl.value)
   const youtubeUrl = normalizeUrl(inputs.youtubeUrl.value)
   const logoUrl = normalizeUrl(inputs.logoUrl.value)
-  const accentColor = '#92278f'
+  const accentColor = layout.accentColor
+  const textColor = layout.textColor
+  const secondaryTextColor = layout.secondaryTextColor
+  const dividerColor = layout.dividerColor
+  const linkColor = layout.linkColor
+  const backgroundColor = layout.backgroundColor
   const signatureWidth = layout.signatureWidth
   const signatureHeight = layout.signatureHeight
-  const textColumnWidth = Math.round(signatureWidth * 0.63)
-  const logoColumnWidth = Math.max(110, signatureWidth - textColumnWidth - 10)
+  const textColumnWidth = Math.min(layout.textColumnWidth, signatureWidth - 80)
+  const logoColumnWidth = Math.max(60, signatureWidth - textColumnWidth - layout.dividerThickness)
   const fontFamilyCss = escapeHtml(layout.fontFamily)
   const bodyFontSizePx = `${layout.bodyFontSize}px`
   const detailsLineHeight = layout.lineSpacing
   const rtlContent = [fullName, jobTitle, company].some(hasHebrew)
-  const textDirection = rtlContent ? 'rtl' : 'ltr'
-  const textAlign = rtlContent ? 'right' : 'left'
-  const nameTitleDirection = 'rtl'
-  const nameTitleAlign = 'right'
-  const dividerPadding = 'padding-right:6px;'
-  const logoPadding = 'padding-left:10px;'
+  const nameTitleDirection = rtlContent ? 'rtl' : 'ltr'
+  const textOffsetLeft = Math.max(layout.textOffsetX, 0)
+  const textOffsetRight = Math.max(-layout.textOffsetX, 0)
+  const logoOffsetLeft = Math.max(layout.logoOffsetX, 0)
+  const logoOffsetRight = Math.max(-layout.logoOffsetX, 0)
 
   const contactRows: string[] = []
   if (phone.trim()) {
     contactRows.push(
       `<tr>
-        <td dir="rtl" style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:#666666;font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">נייד:&nbsp;</td>
-        <td style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:#666666;unicode-bidi:plaintext;border-bottom:1px solid #d1d5db;">
+        <td dir="rtl" style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">נייד:&nbsp;</td>
+        <td style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};unicode-bidi:plaintext;border-bottom:1px solid #d1d5db;">
           <a href="${escapeHtml(normalizeUrl(`tel:${inputs.phone.value.trim()}`))}" style="text-decoration:none;color:${accentColor};">${phone}</a>
         </td>
       </tr>`
@@ -307,8 +375,8 @@ const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
   if (email.trim()) {
     contactRows.push(
       `<tr>
-        <td dir="rtl" style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:#666666;font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">דוא"ל:&nbsp;</td>
-        <td style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:#666666;unicode-bidi:plaintext;border-bottom:1px solid #d1d5db;">
+        <td dir="rtl" style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">דוא"ל:&nbsp;</td>
+        <td style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};unicode-bidi:plaintext;border-bottom:1px solid #d1d5db;">
           <a href="${escapeHtml(normalizeUrl(`mailto:${inputs.email.value.trim()}`))}" style="text-decoration:underline;color:${accentColor};">${email}</a>
         </td>
       </tr>`
@@ -318,9 +386,9 @@ const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
     const websiteLabel = escapeHtml(website.replace(/^https?:\/\//i, ''))
     contactRows.push(
       `<tr>
-        <td dir="rtl" style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:#666666;font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">אתר:&nbsp;</td>
-        <td style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:#666666;unicode-bidi:plaintext;border-bottom:1px solid #d1d5db;">
-          <a href="${escapeHtml(website)}" style="text-decoration:underline;color:#5a5a5a;">${websiteLabel}</a>
+        <td dir="rtl" style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};font-weight:700;white-space:nowrap;border-bottom:1px solid #d1d5db;">אתר:&nbsp;</td>
+        <td style="padding:2px 0;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};color:${secondaryTextColor};unicode-bidi:plaintext;border-bottom:1px solid #d1d5db;">
+          <a href="${escapeHtml(website)}" style="text-decoration:underline;color:${linkColor};">${websiteLabel}</a>
         </td>
       </tr>`
     )
@@ -360,7 +428,7 @@ const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
         <tr>
           ${socialLinks
             .map(
-              (item) => `<td style="padding-right:5px;vertical-align:middle;">
+              (item) => `<td style="padding-right:${layout.socialIconGap}px;vertical-align:middle;">
               <a href="${escapeHtml(item.url)}" title="${escapeHtml(
                 item.label
               )}" style="text-decoration:none;display:inline-block;">
@@ -381,21 +449,27 @@ const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
     : ''
 
   return `<!-- Outlook email signature -->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" style="font-family:${fontFamilyCss};color:#111827;width:${signatureWidth}px;max-width:${signatureWidth}px;height:${signatureHeight}px;overflow:hidden;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" style="font-family:${fontFamilyCss};color:${textColor};background:${backgroundColor};width:${signatureWidth}px;max-width:${signatureWidth}px;height:${signatureHeight}px;overflow:hidden;">
   <tr>
-    <td style="vertical-align:top;${dividerPadding}width:${textColumnWidth}px;max-width:${textColumnWidth}px;text-align:${textAlign};unicode-bidi:plaintext;">
+    <td style="vertical-align:${layout.verticalAlign};padding-left:${textOffsetLeft}px;padding-right:${textOffsetRight}px;padding-top:${Math.max(
+      0,
+      layout.textOffsetY
+    )}px;padding-bottom:${Math.max(0, -layout.textOffsetY)}px;width:${textColumnWidth}px;max-width:${textColumnWidth}px;text-align:${layout.textAlign};unicode-bidi:plaintext;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-        <tr><td dir="${nameTitleDirection}" style="font-size:${layout.nameFontSize}px;line-height:${Math.max(1, layout.lineSpacing - 0.2)};font-weight:700;color:${accentColor};padding-bottom:2px;text-align:${nameTitleAlign};unicode-bidi:plaintext;">${fullName || 'שם מלא'}</td></tr>
-        <tr><td dir="${nameTitleDirection}" style="font-size:${layout.titleFontSize}px;line-height:${Math.max(1, layout.lineSpacing - 0.15)};font-weight:700;color:#6b6b74;padding-bottom:8px;text-align:${nameTitleAlign};unicode-bidi:plaintext;">${jobTitle || 'תפקיד'}${company ? ` | ${company}` : ''}</td></tr>
-        ${contactRows.length ? `<tr><td dir="rtl" style="padding-top:1px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="rtl" align="right" style="text-align:right;">${contactRows.join('')}</table></td></tr>` : ''}
+        <tr><td dir="${nameTitleDirection}" style="font-size:${layout.nameFontSize}px;line-height:${Math.max(1, layout.lineSpacing - 0.2)};font-weight:700;color:${accentColor};padding-bottom:2px;text-align:${layout.nameTitleAlign};unicode-bidi:plaintext;">${fullName || 'שם מלא'}</td></tr>
+        <tr><td dir="${nameTitleDirection}" style="font-size:${layout.titleFontSize}px;line-height:${Math.max(1, layout.lineSpacing - 0.15)};font-weight:700;color:${secondaryTextColor};padding-bottom:8px;text-align:${layout.nameTitleAlign};unicode-bidi:plaintext;">${jobTitle || 'תפקיד'}${company ? ` | ${company}` : ''}</td></tr>
+        ${contactRows.length ? `<tr><td dir="rtl" style="padding-top:1px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="rtl" align="${layout.nameTitleAlign === 'left' ? 'left' : layout.nameTitleAlign === 'center' ? 'center' : 'right'}" style="text-align:${layout.nameTitleAlign};">${contactRows.join('')}</table></td></tr>` : ''}
         ${socialTextRow.replace(/width="16"/g, `width="${layout.bodyFontSize + 4}"`).replace(/height="16"/g, `height="${layout.bodyFontSize + 4}"`).replace(/width:16px/g, `width:${layout.bodyFontSize + 4}px`).replace(/height:16px/g, `height:${layout.bodyFontSize + 4}px`)}
       </table>
     </td>
-    <td style="width:2px;background:#bcbec0;font-size:0;line-height:0;">&nbsp;</td>
-    <td style="vertical-align:top;${logoPadding}padding-top:6px;width:${logoColumnWidth}px;max-width:${logoColumnWidth}px;">
+    <td style="width:${layout.dividerThickness}px;background:${dividerColor};font-size:0;line-height:0;">&nbsp;</td>
+    <td style="vertical-align:${layout.verticalAlign};padding-left:${logoOffsetLeft}px;padding-right:${logoOffsetRight}px;padding-top:${Math.max(
+      0,
+      layout.logoOffsetY
+    )}px;padding-bottom:${Math.max(0, -layout.logoOffsetY)}px;width:${logoColumnWidth}px;max-width:${logoColumnWidth}px;text-align:${layout.logoAlign};">
       ${
         logoUrl
-          ? `<img src="${escapeHtml(logoUrl)}" alt="Company logo" width="122" style="display:block;border:0;max-width:122px;height:auto;" />`
+          ? `<img src="${escapeHtml(logoUrl)}" alt="Company logo" width="${layout.logoMaxWidth}" style="display:block;border:0;max-width:${layout.logoMaxWidth}px;height:auto;margin-left:${layout.logoAlign === 'left' ? '0' : 'auto'};margin-right:${layout.logoAlign === 'right' ? '0' : 'auto'};" />`
           : `<div style="font-size:14px;color:${accentColor};font-weight:700;">לוגו חברה</div>`
       }
     </td>

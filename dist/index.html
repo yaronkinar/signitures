@@ -132,7 +132,7 @@
         font-size: 12px;
       }
     </style>
-    <script type="module" crossorigin src="/assets/index-DqjknPBn.js"></script>
+    <script type="module" crossorigin src="/assets/index-DuNQz3nY.js"></script>
   </head>
   <body>
     <main class="page">
@@ -182,6 +182,58 @@
           <label>Line spacing <input id="lineSpacing" type="number" min="1" max="2" step="0.05" value="1.25" /></label>
           <label>Signature width (px) <input id="signatureWidth" type="number" min="250" max="900" step="1" value="400" /></label>
           <label>Signature height (px) <input id="signatureHeight" type="number" min="120" max="500" step="1" value="200" /></label>
+          <label>Text column width (px) <input id="textColumnWidth" type="number" min="120" max="760" step="1" value="252" /></label>
+          <label>Logo max width (px) <input id="logoMaxWidth" type="number" min="60" max="400" step="1" value="122" /></label>
+        </div>
+        <h3>Position & alignment</h3>
+        <div class="grid">
+          <label>
+            Main text align
+            <select id="textAlign">
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right" selected>Right</option>
+            </select>
+          </label>
+          <label>
+            Name/title align
+            <select id="nameTitleAlign">
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right" selected>Right</option>
+            </select>
+          </label>
+          <label>
+            Logo align
+            <select id="logoAlign">
+              <option value="left" selected>Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+            </select>
+          </label>
+          <label>
+            Vertical align
+            <select id="verticalAlign">
+              <option value="top" selected>Top</option>
+              <option value="middle">Middle</option>
+              <option value="bottom">Bottom</option>
+            </select>
+          </label>
+          <label>Text offset X (px) <input id="textOffsetX" type="number" min="-120" max="120" step="1" value="0" /></label>
+          <label>Text offset Y (px) <input id="textOffsetY" type="number" min="-120" max="120" step="1" value="0" /></label>
+          <label>Logo offset X (px) <input id="logoOffsetX" type="number" min="-120" max="120" step="1" value="10" /></label>
+          <label>Logo offset Y (px) <input id="logoOffsetY" type="number" min="-120" max="120" step="1" value="6" /></label>
+          <label>Divider thickness (px) <input id="dividerThickness" type="number" min="0" max="10" step="1" value="2" /></label>
+          <label>Social icon gap (px) <input id="socialIconGap" type="number" min="0" max="20" step="1" value="5" /></label>
+        </div>
+        <h3>Colors</h3>
+        <div class="grid">
+          <label>Accent color <input id="accentColor" type="color" value="#92278f" /></label>
+          <label>Primary text color <input id="textColor" type="color" value="#111827" /></label>
+          <label>Secondary text color <input id="secondaryTextColor" type="color" value="#666666" /></label>
+          <label>Divider color <input id="dividerColor" type="color" value="#bcbec0" /></label>
+          <label>Link color <input id="linkColor" type="color" value="#5a5a5a" /></label>
+          <label>Background color <input id="backgroundColor" type="color" value="#ffffff" /></label>
         </div>
         <p class="hint">
           You can use URL fields or upload local images. Social links are rendered as
