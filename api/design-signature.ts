@@ -4,20 +4,20 @@ import {
   parseAiSignatureDesign,
   type AiDesignMode,
   type SignatureFormSnapshot
-} from '../src/aiSignatureDesign'
-
-export const config = {
-  runtime: 'nodejs',
-  maxDuration: 60
-}
+} from '../lib/aiSignatureDesign'
 
 const DEFAULT_BASE_URL = 'https://api.openai.com/v1'
 const DEFAULT_MODEL = 'gpt-4o-mini'
 
+const normalizeApiKey = (value: string | undefined): string => {
+  const trimmed = value?.trim() ?? ''
+  if (!trimmed) return ''
+  return trimmed.replace(/^['"]|['"]$/g, '')
+}
+
 const getServerApiKey = (): string =>
-  process.env.OPENAI_API_KEY?.trim() ||
-  process.env.VITE_OPENAI_API_KEY?.trim() ||
-  ''
+  normalizeApiKey(process.env.OPENAI_API_KEY) ||
+  normalizeApiKey(process.env.VITE_OPENAI_API_KEY)
 
 const json = (body: unknown, status = 200): Response =>
   new Response(JSON.stringify(body), {
@@ -25,45 +25,53 @@ const json = (body: unknown, status = 200): Response =>
     headers: { 'Content-Type': 'application/json' }
   })
 
+export async function GET(): Promise<Response> {
+  return json({
+    ok: true,
+    hasApiKey: Boolean(getServerApiKey()),
+    model: process.env.OPENAI_MODEL?.trim() || DEFAULT_MODEL
+  })
+}
+
 export async function POST(request: Request): Promise<Response> {
-  const apiKey = getServerApiKey()
-  if (!apiKey) {
-    return json(
-      {
-        error:
-          'OPENAI_API_KEY is not set on the server. In Vercel: Project → Settings → Environment Variables → add OPENAI_API_KEY for Production, then redeploy.'
-      },
-      500
-    )
-  }
-
-  let brief = ''
-  let snapshot: SignatureFormSnapshot | undefined
-  let mode: AiDesignMode = 'refine'
-  let keepContact = true
   try {
-    const body = (await request.json()) as {
-      brief?: string
-      snapshot?: SignatureFormSnapshot
-      mode?: AiDesignMode
-      keepContact?: boolean
+    const apiKey = getServerApiKey()
+    if (!apiKey) {
+      return json(
+        {
+          error:
+            'OPENAI_API_KEY is not set on the server. In Vercel: Settings → Environment Variables → add OPENAI_API_KEY for Production, then redeploy.'
+        },
+        500
+      )
     }
-    brief = body.brief?.trim() ?? ''
-    snapshot = body.snapshot
-    mode = body.mode === 'create' ? 'create' : 'refine'
-    keepContact = body.keepContact !== false
-  } catch {
-    return json({ error: 'Invalid request body' }, 400)
-  }
 
-  if (!brief || !snapshot) {
-    return json({ error: 'Missing brief or snapshot' }, 400)
-  }
+    let brief = ''
+    let snapshot: SignatureFormSnapshot | undefined
+    let mode: AiDesignMode = 'refine'
+    let keepContact = true
+    try {
+      const body = (await request.json()) as {
+        brief?: string
+        snapshot?: SignatureFormSnapshot
+        mode?: AiDesignMode
+        keepContact?: boolean
+      }
+      brief = body.brief?.trim() ?? ''
+      snapshot = body.snapshot
+      mode = body.mode === 'create' ? 'create' : 'refine'
+      keepContact = body.keepContact !== false
+    } catch {
+      return json({ error: 'Invalid request body' }, 400)
+    }
 
-  const baseUrl = (process.env.OPENAI_BASE_URL?.trim() || DEFAULT_BASE_URL).replace(/\/$/, '')
-  const model = process.env.OPENAI_MODEL?.trim() || DEFAULT_MODEL
+    if (!brief || !snapshot) {
+      return json({ error: 'Missing brief or snapshot' }, 400)
+    }
 
-  try {
+    const baseUrl = (process.env.OPENAI_BASE_URL?.trim() || DEFAULT_BASE_URL).replace(/\/$/, '')
+    const model = process.env.OPENAI_MODEL?.trim() || DEFAULT_MODEL
+
     const response = await fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -104,6 +112,7 @@ export async function POST(request: Request): Promise<Response> {
     return json({ design })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'AI request failed'
+    console.error('[design-signature]', message, error)
     return json({ error: message }, 500)
   }
 }

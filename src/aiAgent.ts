@@ -168,7 +168,11 @@ const designViaServerProxy = async (
   }
 
   if (!response.ok) {
-    throw new Error(payload.error || `Server error ${response.status}`)
+    const fallback =
+      payload.error ||
+      (responseText.length > 0 && responseText.length < 500 ? responseText : '') ||
+      `Server error ${response.status}`
+    throw new Error(fallback)
   }
 
   if (!payload.design) {
