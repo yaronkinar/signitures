@@ -1,6 +1,5 @@
 /tmp
 /out-tsc
-/api/design-signature/index.js
 
 .env
 .env.local
