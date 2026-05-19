@@ -8,86 +8,235 @@
       :root {
         color-scheme: light;
         font-family: Arial, Helvetica, sans-serif;
+        --border: #dbe1ea;
+        --muted: #6b7280;
+        --surface: #f8fafc;
+        --accent: #1d4ed8;
       }
 
       body {
         margin: 0;
-        background: #f5f7fb;
+        background: #f0f4f9;
         color: #1f2937;
       }
 
       .page {
-        max-width: 1100px;
+        max-width: 960px;
         margin: 0 auto;
-        padding: 24px;
+        padding: 24px 20px 40px;
         display: grid;
-        gap: 20px;
+        gap: 16px;
       }
 
       .card {
         background: #fff;
-        border: 1px solid #dbe1ea;
-        border-radius: 10px;
-        padding: 16px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .card-header {
+        padding: 20px 20px 0;
       }
 
       h1 {
         margin: 0 0 6px;
-        font-size: 26px;
+        font-size: 24px;
+        letter-spacing: -0.02em;
       }
 
-      p {
-        margin: 0 0 14px;
-        color: #4b5563;
+      .lead {
+        margin: 0;
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .panels {
+        padding: 12px 12px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .panel {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--surface);
+        overflow: hidden;
+      }
+
+      .panel > summary {
+        list-style: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        user-select: none;
+        color: #111827;
+      }
+
+      .panel > summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .panel > summary::after {
+        content: '';
+        flex-shrink: 0;
+        width: 8px;
+        height: 8px;
+        border-right: 2px solid #64748b;
+        border-bottom: 2px solid #64748b;
+        transform: rotate(45deg);
+        transition: transform 0.15s ease;
+        margin-top: -4px;
+      }
+
+      .panel[open] > summary::after {
+        transform: rotate(-135deg);
+        margin-top: 4px;
+      }
+
+      .panel > summary:hover {
+        background: #f1f5f9;
+      }
+
+      .panel-body {
+        padding: 0 14px 14px;
+        border-top: 1px solid var(--border);
+        background: #fff;
+      }
+
+      .panel-body > .hint:first-child {
+        margin-top: 12px;
+      }
+
+      .sub-panel {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: var(--surface);
+        margin-top: 8px;
+      }
+
+      .sub-panel > summary {
+        list-style: none;
+        padding: 10px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .sub-panel > summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .sub-panel > summary::after {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-right: 2px solid #94a3b8;
+        border-bottom: 2px solid #94a3b8;
+        transform: rotate(45deg);
+        transition: transform 0.15s ease;
+      }
+
+      .sub-panel[open] > summary::after {
+        transform: rotate(-135deg);
+      }
+
+      .sub-panel-body {
+        padding: 0 12px 12px;
+        background: #fff;
+        border-top: 1px solid #e2e8f0;
       }
 
       .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 12px;
+        padding-top: 12px;
+      }
+
+      .grid-compact {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding-top: 10px;
+      }
+
+      .card-preview,
+      .card-output {
+        padding: 4px 12px 12px;
       }
 
       label {
         display: grid;
-        gap: 6px;
-        font-size: 13px;
+        gap: 5px;
+        font-size: 12px;
         font-weight: 600;
+        color: #374151;
       }
 
       input,
       select {
         width: 100%;
         box-sizing: border-box;
-        padding: 10px;
+        padding: 9px 10px;
         border-radius: 8px;
         border: 1px solid #c6d1df;
         font-size: 14px;
+        font-weight: 400;
+        background: #fff;
+      }
+
+      input:focus,
+      select:focus {
+        outline: 2px solid #bfdbfe;
+        border-color: #93c5fd;
       }
 
       .hint {
-        margin: 4px 0 0;
+        margin: 0;
         font-size: 12px;
-        color: #6b7280;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+
+      .actions-bar {
+        padding: 16px 20px;
+        border-top: 1px solid var(--border);
+        background: #fff;
       }
 
       .actions {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 14px;
+        gap: 8px;
       }
 
       button {
         border: 0;
         border-radius: 8px;
-        padding: 10px 14px;
-        font-size: 14px;
+        padding: 9px 14px;
+        font-size: 13px;
+        font-weight: 600;
         cursor: pointer;
       }
 
       .primary {
-        background: #1d4ed8;
+        background: var(--accent);
         color: #fff;
+      }
+
+      .primary:hover {
+        background: #1e40af;
       }
 
       .secondary {
@@ -95,12 +244,40 @@
         color: #111827;
       }
 
+      .secondary:hover {
+        background: #d1d5db;
+      }
+
       .link-image-row {
         display: grid;
-        grid-template-columns: 1fr 1fr 130px 1fr 90px;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
         gap: 10px;
         align-items: end;
-        margin-bottom: 10px;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px dashed #e2e8f0;
+      }
+
+      .link-image-row:first-child {
+        margin-top: 0;
+        padding-top: 12px;
+        border-top: 0;
+      }
+
+      .card-preview .panel > summary,
+      .card-output .panel > summary {
+        font-size: 15px;
+      }
+
+      .preview-frame {
+        min-height: 200px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 8px;
+        padding: 12px;
+        background: #fff;
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
       }
 
       .preview {
@@ -110,159 +287,258 @@
         background: #ffffff;
       }
 
-      .preview-frame {
-        min-height: 220px;
-        border: 1px dashed #cbd5e1;
-        border-radius: 8px;
-        padding: 12px;
-        background: #ffffff;
-        display: flex;
-        align-items: flex-start;
-        justify-content: flex-start;
-      }
-
       textarea {
         width: 100%;
         box-sizing: border-box;
         border: 1px solid #cbd5e1;
         border-radius: 8px;
-        min-height: 220px;
+        min-height: 200px;
         padding: 10px;
         font-family: Consolas, Monaco, monospace;
         font-size: 12px;
+        resize: vertical;
+      }
+
+      #addLinkImage {
+        margin-top: 10px;
+      }
+
+      @media (max-width: 640px) {
+        .page {
+          padding: 16px 12px 32px;
+        }
+
+        .actions button {
+          flex: 1 1 auto;
+          min-width: calc(50% - 4px);
+        }
       }
     </style>
   </head>
   <body>
     <main class="page">
       <section class="card">
-        <h1>Outlook Signature Generator</h1>
-        <p>
-          Fill in your details, add linked image buttons (social icons, banners,
-          badges), then generate copy-ready HTML for Outlook.
-        </p>
+        <div class="card-header">
+          <h1>Outlook Signature Generator</h1>
+          <p class="lead">
+            Fill in your details and generate copy-ready HTML for Outlook. Expand each section as
+            needed.
+          </p>
+        </div>
 
-        <div class="grid">
-          <label>Full name <input id="fullName" placeholder="Jane Doe" /></label>
-          <label>Job title <input id="jobTitle" placeholder="Sales Manager" /></label>
-          <label>Company <input id="company" placeholder="Acme Ltd" /></label>
-          <label>Phone <input id="phone" placeholder="+1 555 123 4567" /></label>
-          <label>Email <input id="email" placeholder="jane@acme.com" /></label>
-          <label>Website URL <input id="website" placeholder="https://acme.com" /></label>
-          <label>Facebook URL <input id="facebookUrl" value="https://www.facebook.com/SBAIsrael" /></label>
-          <label>Instagram URL <input id="instagramUrl" value="https://www.instagram.com/sba.israel?igsh=MXUyYjI5a3UxMmZidg==" /></label>
-          <label>LinkedIn URL <input id="linkedinUrl" value="https://www.linkedin.com/in/misradacalcala/" /></label>
-          <label>X / Twitter URL <input id="xUrl" value="https://x.com/misrad_calcala" /></label>
-          <label>YouTube URL <input id="youtubeUrl" value="https://www.youtube.com/user/SBAIsrael" /></label>
-          <label>Logo image URL <input id="logoUrl" placeholder="https://..." /></label>
-          <label>Logo image file <input id="logoFile" type="file" accept="image/*" /></label>
-          <label>Banner image URL <input id="bannerUrl" placeholder="https://..." /></label>
-          <label>Banner image file <input id="bannerFile" type="file" accept="image/*" /></label>
-          <label>Banner link URL <input id="bannerLink" placeholder="https://..." /></label>
-        </div>
-        <h3>Layout settings</h3>
-        <div class="grid">
-          <label>
-            Font family
-            <select id="fontFamily">
-              <option value="Arial, Helvetica, sans-serif" selected>Arial</option>
-              <option value="'Calibri', Arial, Helvetica, sans-serif">Calibri</option>
-              <option value="'Segoe UI', Arial, Helvetica, sans-serif">Segoe UI</option>
-              <option value="'Tahoma', Arial, Helvetica, sans-serif">Tahoma</option>
-              <option value="'Verdana', Arial, Helvetica, sans-serif">Verdana</option>
-              <option value="'Trebuchet MS', Arial, Helvetica, sans-serif">Trebuchet MS</option>
-              <option value="'Times New Roman', Times, serif">Times New Roman</option>
-              <option value="'Georgia', serif">Georgia</option>
-            </select>
-          </label>
-          <label>Name font size (px) <input id="nameFontSize" type="number" min="14" max="72" step="1" value="28" /></label>
-          <label>Title font size (px) <input id="titleFontSize" type="number" min="10" max="48" step="1" value="19" /></label>
-          <label>Body font size (px) <input id="bodyFontSize" type="number" min="9" max="24" step="1" value="12" /></label>
-          <label>Line spacing <input id="lineSpacing" type="number" min="1" max="2" step="0.05" value="1.25" /></label>
-          <label>Signature width (px) <input id="signatureWidth" type="number" min="250" max="900" step="1" value="400" /></label>
-          <label>Signature height (px) <input id="signatureHeight" type="number" min="120" max="500" step="1" value="200" /></label>
-          <label>Text column width (px) <input id="textColumnWidth" type="number" min="120" max="760" step="1" value="252" /></label>
-          <label>Logo max width (px) <input id="logoMaxWidth" type="number" min="60" max="400" step="1" value="122" /></label>
-        </div>
-        <h3>Position & alignment</h3>
-        <div class="grid">
-          <label>
-            Main text align
-            <select id="textAlign">
-              <option value="left">Left</option>
-              <option value="center">Center</option>
-              <option value="right" selected>Right</option>
-            </select>
-          </label>
-          <label>
-            Name/title align
-            <select id="nameTitleAlign">
-              <option value="left">Left</option>
-              <option value="center">Center</option>
-              <option value="right" selected>Right</option>
-            </select>
-          </label>
-          <label>
-            Logo align
-            <select id="logoAlign">
-              <option value="left" selected>Left</option>
-              <option value="center">Center</option>
-              <option value="right">Right</option>
-            </select>
-          </label>
-          <label>
-            Vertical align
-            <select id="verticalAlign">
-              <option value="top" selected>Top</option>
-              <option value="middle">Middle</option>
-              <option value="bottom">Bottom</option>
-            </select>
-          </label>
-          <label>Text offset X (px) <input id="textOffsetX" type="number" min="-120" max="120" step="1" value="0" /></label>
-          <label>Text offset Y (px) <input id="textOffsetY" type="number" min="-120" max="120" step="1" value="0" /></label>
-          <label>Logo offset X (px) <input id="logoOffsetX" type="number" min="-120" max="120" step="1" value="10" /></label>
-          <label>Logo offset Y (px) <input id="logoOffsetY" type="number" min="-120" max="120" step="1" value="6" /></label>
-          <label>Divider thickness (px) <input id="dividerThickness" type="number" min="0" max="10" step="1" value="2" /></label>
-          <label>Social icon gap (px) <input id="socialIconGap" type="number" min="0" max="20" step="1" value="5" /></label>
-        </div>
-        <h3>Colors</h3>
-        <div class="grid">
-          <label>Accent color <input id="accentColor" type="color" value="#92278f" /></label>
-          <label>Primary text color <input id="textColor" type="color" value="#111827" /></label>
-          <label>Secondary text color <input id="secondaryTextColor" type="color" value="#666666" /></label>
-          <label>Divider color <input id="dividerColor" type="color" value="#bcbec0" /></label>
-          <label>Link color <input id="linkColor" type="color" value="#5a5a5a" /></label>
-          <label>Background color <input id="backgroundColor" type="color" value="#ffffff" /></label>
-        </div>
-        <p class="hint">
-          You can use URL fields or upload local images. Social links are rendered as
-          text labels for better Outlook compatibility.
-        </p>
+        <div class="panels">
+          <details class="panel" open>
+            <summary>Contact details</summary>
+            <div class="panel-body">
+              <div class="grid">
+                <label>Full name <input id="fullName" placeholder="Jane Doe" /></label>
+                <label>Job title <input id="jobTitle" placeholder="Sales Manager" /></label>
+                <label>Company <input id="company" placeholder="Acme Ltd" /></label>
+                <label>Phone <input id="phone" placeholder="+1 555 123 4567" /></label>
+                <label>Email <input id="email" placeholder="jane@acme.com" /></label>
+                <label>Website <input id="website" placeholder="https://acme.com" /></label>
+              </div>
+            </div>
+          </details>
 
-        <h3>Linked images (icons/buttons)</h3>
-        <div id="linkImages"></div>
-        <button id="addLinkImage" class="secondary" type="button">Add linked image</button>
+          <details class="panel">
+            <summary>Logo &amp; banner</summary>
+            <div class="panel-body">
+              <p class="hint">Use a URL or upload a local image file.</p>
+              <div class="grid">
+                <label>Logo URL <input id="logoUrl" placeholder="https://..." /></label>
+                <label>Logo file <input id="logoFile" type="file" accept="image/*" /></label>
+                <label>Banner URL <input id="bannerUrl" placeholder="https://..." /></label>
+                <label>Banner file <input id="bannerFile" type="file" accept="image/*" /></label>
+                <label>Banner link <input id="bannerLink" placeholder="https://..." /></label>
+              </div>
+            </div>
+          </details>
 
-        <div class="actions">
-          <button id="generate" class="primary" type="button">Generate signature HTML</button>
-          <button id="copy" class="secondary" type="button">Copy HTML</button>
-          <button id="download" class="secondary" type="button">Download .html file</button>
-          <button id="installOutlook" class="secondary" type="button">Install to Outlook (.ps1)</button>
-          <button id="installNewOutlook" class="secondary" type="button">Install to New Outlook</button>
+          <details class="panel">
+            <summary>Social media</summary>
+            <div class="panel-body">
+              <p class="hint">
+                Add profile URLs for networks you use. Leave icon fields empty for built-in brand
+                icons.
+              </p>
+
+              <details class="sub-panel">
+                <summary>Facebook</summary>
+                <div class="sub-panel-body grid-compact">
+                  <label>Profile URL <input id="facebookUrl" value="https://www.facebook.com/SBAIsrael" /></label>
+                  <label>Icon URL <input id="facebookIconUrl" placeholder="Optional" /></label>
+                  <label>Icon file <input id="facebookIconFile" type="file" accept="image/*" /></label>
+                </div>
+              </details>
+
+              <details class="sub-panel">
+                <summary>Instagram</summary>
+                <div class="sub-panel-body grid-compact">
+                  <label>Profile URL <input id="instagramUrl" value="https://www.instagram.com/sba.israel?igsh=MXUyYjI5a3UxMmZidg==" /></label>
+                  <label>Icon URL <input id="instagramIconUrl" placeholder="Optional" /></label>
+                  <label>Icon file <input id="instagramIconFile" type="file" accept="image/*" /></label>
+                </div>
+              </details>
+
+              <details class="sub-panel">
+                <summary>LinkedIn</summary>
+                <div class="sub-panel-body grid-compact">
+                  <label>Profile URL <input id="linkedinUrl" value="https://www.linkedin.com/in/misradacalcala/" /></label>
+                  <label>Icon URL <input id="linkedinIconUrl" placeholder="Optional" /></label>
+                  <label>Icon file <input id="linkedinIconFile" type="file" accept="image/*" /></label>
+                </div>
+              </details>
+
+              <details class="sub-panel">
+                <summary>X / Twitter</summary>
+                <div class="sub-panel-body grid-compact">
+                  <label>Profile URL <input id="xUrl" value="https://x.com/misrad_calcala" /></label>
+                  <label>Icon URL <input id="xIconUrl" placeholder="Optional" /></label>
+                  <label>Icon file <input id="xIconFile" type="file" accept="image/*" /></label>
+                </div>
+              </details>
+
+              <details class="sub-panel">
+                <summary>YouTube</summary>
+                <div class="sub-panel-body grid-compact">
+                  <label>Profile URL <input id="youtubeUrl" value="https://www.youtube.com/user/SBAIsrael" /></label>
+                  <label>Icon URL <input id="youtubeIconUrl" placeholder="Optional" /></label>
+                  <label>Icon file <input id="youtubeIconFile" type="file" accept="image/*" /></label>
+                </div>
+              </details>
+            </div>
+          </details>
+
+          <details class="panel">
+            <summary>Layout &amp; typography</summary>
+            <div class="panel-body">
+              <div class="grid">
+                <label>
+                  Font family
+                  <select id="fontFamily">
+                    <option value="Arial, Helvetica, sans-serif" selected>Arial</option>
+                    <option value="'Calibri', Arial, Helvetica, sans-serif">Calibri</option>
+                    <option value="'Segoe UI', Arial, Helvetica, sans-serif">Segoe UI</option>
+                    <option value="'Tahoma', Arial, Helvetica, sans-serif">Tahoma</option>
+                    <option value="'Verdana', Arial, Helvetica, sans-serif">Verdana</option>
+                    <option value="'Trebuchet MS', Arial, Helvetica, sans-serif">Trebuchet MS</option>
+                    <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                    <option value="'Georgia', serif">Georgia</option>
+                  </select>
+                </label>
+                <label>Name size (px) <input id="nameFontSize" type="number" min="14" max="72" step="1" value="28" /></label>
+                <label>Title size (px) <input id="titleFontSize" type="number" min="10" max="48" step="1" value="19" /></label>
+                <label>Body size (px) <input id="bodyFontSize" type="number" min="9" max="24" step="1" value="12" /></label>
+                <label>Line spacing <input id="lineSpacing" type="number" min="1" max="2" step="0.05" value="1.25" /></label>
+                <label>Width (px) <input id="signatureWidth" type="number" min="250" max="900" step="1" value="400" /></label>
+                <label>Height (px) <input id="signatureHeight" type="number" min="120" max="500" step="1" value="200" /></label>
+                <label>Text column (px) <input id="textColumnWidth" type="number" min="120" max="760" step="1" value="252" /></label>
+                <label>Logo max width (px) <input id="logoMaxWidth" type="number" min="60" max="400" step="1" value="122" /></label>
+              </div>
+            </div>
+          </details>
+
+          <details class="panel">
+            <summary>Position &amp; alignment</summary>
+            <div class="panel-body">
+              <div class="grid">
+                <label>
+                  Main text align
+                  <select id="textAlign">
+                    <option value="left">Left</option>
+                    <option value="center">Center</option>
+                    <option value="right" selected>Right</option>
+                  </select>
+                </label>
+                <label>
+                  Name/title align
+                  <select id="nameTitleAlign">
+                    <option value="left">Left</option>
+                    <option value="center">Center</option>
+                    <option value="right" selected>Right</option>
+                  </select>
+                </label>
+                <label>
+                  Logo align
+                  <select id="logoAlign">
+                    <option value="left" selected>Left</option>
+                    <option value="center">Center</option>
+                    <option value="right">Right</option>
+                  </select>
+                </label>
+                <label>
+                  Vertical align
+                  <select id="verticalAlign">
+                    <option value="top" selected>Top</option>
+                    <option value="middle">Middle</option>
+                    <option value="bottom">Bottom</option>
+                  </select>
+                </label>
+                <label>Text offset X <input id="textOffsetX" type="number" min="-120" max="120" step="1" value="0" /></label>
+                <label>Text offset Y <input id="textOffsetY" type="number" min="-120" max="120" step="1" value="0" /></label>
+                <label>Logo offset X <input id="logoOffsetX" type="number" min="-120" max="120" step="1" value="10" /></label>
+                <label>Logo offset Y <input id="logoOffsetY" type="number" min="-120" max="120" step="1" value="6" /></label>
+                <label>Divider thickness <input id="dividerThickness" type="number" min="0" max="10" step="1" value="2" /></label>
+                <label>Social icon gap <input id="socialIconGap" type="number" min="0" max="20" step="1" value="5" /></label>
+              </div>
+            </div>
+          </details>
+
+          <details class="panel">
+            <summary>Colors</summary>
+            <div class="panel-body">
+              <div class="grid">
+                <label>Accent <input id="accentColor" type="color" value="#92278f" /></label>
+                <label>Primary text <input id="textColor" type="color" value="#111827" /></label>
+                <label>Secondary text <input id="secondaryTextColor" type="color" value="#666666" /></label>
+                <label>Divider <input id="dividerColor" type="color" value="#bcbec0" /></label>
+                <label>Links <input id="linkColor" type="color" value="#5a5a5a" /></label>
+                <label>Background <input id="backgroundColor" type="color" value="#ffffff" /></label>
+              </div>
+            </div>
+          </details>
+
+          <details class="panel">
+            <summary>Extra linked images</summary>
+            <div class="panel-body">
+              <p class="hint">Optional icons or buttons with their own link targets.</p>
+              <div id="linkImages"></div>
+              <button id="addLinkImage" class="secondary" type="button">Add linked image</button>
+            </div>
+          </details>
         </div>
-        <p id="newOutlookStatus" class="hint"></p>
+
+        <div class="actions-bar">
+          <div class="actions">
+            <button id="generate" class="primary" type="button">Generate signature</button>
+            <button id="copy" class="secondary" type="button">Copy HTML</button>
+            <button id="download" class="secondary" type="button">Download .html</button>
+            <button id="installOutlook" class="secondary" type="button">Install to Outlook</button>
+            <button id="installNewOutlook" class="secondary" type="button">New Outlook setup</button>
+          </div>
+          <p id="newOutlookStatus" class="hint" style="margin-top: 10px"></p>
+        </div>
       </section>
 
-      <section class="card">
-        <h3>Preview</h3>
-        <div class="preview-frame">
-          <div id="preview" class="preview"></div>
-        </div>
+      <section class="card card-preview">
+        <details class="panel" open style="border: 0; background: transparent">
+          <summary>Preview</summary>
+          <div class="panel-body" style="border-top: 0">
+            <div class="preview-frame">
+              <div id="preview" class="preview"></div>
+            </div>
+          </div>
+        </details>
       </section>
 
-      <section class="card">
-        <h3>Generated HTML</h3>
-        <textarea id="output" spellcheck="false"></textarea>
+      <section class="card card-output">
+        <details class="panel" style="border: 0; background: transparent">
+          <summary>Generated HTML</summary>
+          <div class="panel-body" style="border-top: 0">
+            <textarea id="output" spellcheck="false"></textarea>
+          </div>
+        </details>
       </section>
     </main>
     <script type="module" src="/src/index.ts"></script>

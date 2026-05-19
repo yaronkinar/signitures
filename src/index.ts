@@ -51,10 +51,20 @@ const inputs = {
   email: byId<HTMLInputElement>('email'),
   website: byId<HTMLInputElement>('website'),
   facebookUrl: byId<HTMLInputElement>('facebookUrl'),
+  facebookIconUrl: byId<HTMLInputElement>('facebookIconUrl'),
+  facebookIconFile: byId<HTMLInputElement>('facebookIconFile'),
   instagramUrl: byId<HTMLInputElement>('instagramUrl'),
+  instagramIconUrl: byId<HTMLInputElement>('instagramIconUrl'),
+  instagramIconFile: byId<HTMLInputElement>('instagramIconFile'),
   linkedinUrl: byId<HTMLInputElement>('linkedinUrl'),
+  linkedinIconUrl: byId<HTMLInputElement>('linkedinIconUrl'),
+  linkedinIconFile: byId<HTMLInputElement>('linkedinIconFile'),
   xUrl: byId<HTMLInputElement>('xUrl'),
+  xIconUrl: byId<HTMLInputElement>('xIconUrl'),
+  xIconFile: byId<HTMLInputElement>('xIconFile'),
   youtubeUrl: byId<HTMLInputElement>('youtubeUrl'),
+  youtubeIconUrl: byId<HTMLInputElement>('youtubeIconUrl'),
+  youtubeIconFile: byId<HTMLInputElement>('youtubeIconFile'),
   logoUrl: byId<HTMLInputElement>('logoUrl'),
   logoFile: byId<HTMLInputElement>('logoFile'),
   bannerUrl: byId<HTMLInputElement>('bannerUrl'),
@@ -259,6 +269,14 @@ const initializeSocialIconDataUrls = async (): Promise<void> => {
   return socialIconsInitializationPromise
 }
 
+const resolveSocialIconUrl = (platform: SocialPlatform, customIconUrl: string): string => {
+  const custom = customIconUrl.trim()
+  if (custom) {
+    return normalizeUrl(custom)
+  }
+  return socialIconDataUrls[platform]
+}
+
 const addLinkImageRow = (seed?: Partial<LinkImage>): void => {
   const row = document.createElement('div')
   row.className = 'link-image-row'
@@ -398,29 +416,29 @@ const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
     {
       label: 'Facebook',
       url: facebookUrl,
-      iconUrl: socialIconDataUrls.Facebook
+      iconUrl: resolveSocialIconUrl('Facebook', inputs.facebookIconUrl.value)
     },
     {
       label: 'Instagram',
       url: instagramUrl,
-      iconUrl: socialIconDataUrls.Instagram
+      iconUrl: resolveSocialIconUrl('Instagram', inputs.instagramIconUrl.value)
     },
     {
       label: 'LinkedIn',
       url: linkedinUrl,
-      iconUrl: socialIconDataUrls.LinkedIn
+      iconUrl: resolveSocialIconUrl('LinkedIn', inputs.linkedinIconUrl.value)
     },
     {
       label: 'X',
       url: xUrl,
-      iconUrl: socialIconDataUrls.X
+      iconUrl: resolveSocialIconUrl('X', inputs.xIconUrl.value)
     },
     {
       label: 'YouTube',
       url: youtubeUrl,
-      iconUrl: socialIconDataUrls.YouTube
+      iconUrl: resolveSocialIconUrl('YouTube', inputs.youtubeIconUrl.value)
     }
-  ].filter((item) => item.url)
+  ].filter((item) => item.url && item.iconUrl)
 
   const socialTextRow = socialLinks.length
     ? `<tr><td style="padding-top:5px;">
@@ -786,6 +804,11 @@ installNewOutlookButton.addEventListener('click', () => {
 })
 bindFileInputToUrl(inputs.logoFile, inputs.logoUrl)
 bindFileInputToUrl(inputs.bannerFile, inputs.bannerUrl)
+bindFileInputToUrl(inputs.facebookIconFile, inputs.facebookIconUrl)
+bindFileInputToUrl(inputs.instagramIconFile, inputs.instagramIconUrl)
+bindFileInputToUrl(inputs.linkedinIconFile, inputs.linkedinIconUrl)
+bindFileInputToUrl(inputs.xIconFile, inputs.xIconUrl)
+bindFileInputToUrl(inputs.youtubeIconFile, inputs.youtubeIconUrl)
 enableLivePreview()
 
 if (!inputs.logoUrl.value.trim()) {
