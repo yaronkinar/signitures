@@ -337,6 +337,87 @@
         margin-top: 10px;
       }
 
+      .ai-panel summary {
+        color: var(--accent);
+      }
+
+      .ai-preset-label {
+        display: grid;
+        gap: 5px;
+        margin-bottom: 10px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #374151;
+      }
+
+      .ai-preset-label select {
+        font-weight: 400;
+      }
+
+      .ai-brief {
+        width: 100%;
+        min-height: 88px;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font: inherit;
+        font-size: 14px;
+        line-height: 1.45;
+        resize: vertical;
+        box-sizing: border-box;
+      }
+
+      .ai-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+        align-items: center;
+      }
+
+      .ai-status {
+        margin: 10px 0 0;
+        font-size: 13px;
+        line-height: 1.45;
+        color: var(--muted);
+      }
+
+      .ai-status.is-success {
+        color: #047857;
+      }
+
+      .ai-status.is-error {
+        color: #b91c1c;
+      }
+
+      .ai-preview-wrap {
+        margin-top: 14px;
+      }
+
+      .ai-preview-wrap .preview-frame {
+        min-height: 120px;
+      }
+
+      .ai-preview-wrap .preview {
+        max-width: 100%;
+        overflow: auto;
+      }
+
+      .card-preview .preview {
+        overflow: auto;
+      }
+
+      .card-preview.preview-highlight {
+        outline: 3px solid var(--accent);
+        outline-offset: 2px;
+        transition: outline-color 0.25s ease;
+      }
+
+      .ai-api-key {
+        flex: 1 1 200px;
+        min-width: 0;
+      }
+
       @media (max-width: 640px) {
         .page {
           padding: 16px 12px 32px;
@@ -361,6 +442,52 @@
         </div>
 
         <div class="panels">
+          <details class="panel ai-panel" open>
+            <summary data-i18n="aiDesignAssistant">AI design assistant</summary>
+            <div class="panel-body">
+              <p class="hint" data-i18n="aiDesignLead">
+                Describe the look you want — style, colors, language, tone — and the agent will
+                tune layout and colors. Your contact details are kept unless you ask to change them.
+              </p>
+              <label class="ai-preset-label">
+                <span data-i18n="aiPresetLabel">Quick prompts (from current design)</span>
+                <select id="aiBriefPreset">
+                  <option value="" data-i18n="aiPresetPlaceholder">
+                    Choose a preset…
+                  </option>
+                </select>
+              </label>
+              <textarea
+                id="aiBrief"
+                class="ai-brief"
+                data-i18n-placeholder="aiBriefPlaceholder"
+                placeholder="e.g. Minimal Hebrew signature for a law firm, navy accent, logo on the right, professional"
+              ></textarea>
+              <label class="ai-api-key" style="display: block; margin-top: 10px">
+                <span data-i18n="aiApiKeyLabel">OpenAI API key</span>
+                <input
+                  id="aiApiKey"
+                  type="password"
+                  autocomplete="off"
+                  data-i18n-placeholder="aiApiKeyPlaceholder"
+                  placeholder="sk-... (session only, or set VITE_OPENAI_API_KEY)"
+                />
+              </label>
+              <div class="ai-actions">
+                <button id="aiDesign" class="primary" type="button" data-i18n="aiDesignButton">
+                  Design with AI
+                </button>
+              </div>
+              <p id="aiStatus" class="ai-status" hidden></p>
+              <div id="aiPreviewWrap" class="ai-preview-wrap" hidden>
+                <p class="hint" data-i18n="aiSignaturePreview">Your signature preview</p>
+                <div class="preview-frame">
+                  <div id="aiPreview" class="preview"></div>
+                </div>
+              </div>
+            </div>
+          </details>
+
           <details class="panel" open>
             <summary data-i18n="contactDetails">Contact details</summary>
             <div class="panel-body">
@@ -739,7 +866,7 @@
         </div>
       </section>
 
-      <section class="card card-preview">
+      <section class="card card-preview" id="previewCard">
         <details class="panel" open style="border: 0; background: transparent">
           <summary data-i18n="preview">Preview</summary>
           <div class="panel-body" style="border-top: 0">

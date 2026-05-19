@@ -1,3 +1,16 @@
+import {
+  buildAiBriefPresets,
+  presetPromptsFromList
+} from './aiBriefPresets'
+import {
+  designSignatureWithAi,
+  hasConfiguredAiApiKey,
+  isUsingEnvApiKey,
+  loadStoredApiKey,
+  storeApiKey
+} from './aiAgent'
+import type { SignatureFormSnapshot } from './aiSignatureDesign'
+import { applyAiSignatureDesign } from './applyAiDesign'
 import { DEFAULT_LOGO_DATA_URL } from './defaultLogoDataUrl'
 import {
   applyUiLanguage,
@@ -117,8 +130,16 @@ const downloadButton = byId<HTMLButtonElement>('download')
 const installOutlookButton = byId<HTMLButtonElement>('installOutlook')
 const installNewOutlookButton = byId<HTMLButtonElement>('installNewOutlook')
 const previewElement = byId<HTMLDivElement>('preview')
+const previewCard = byId<HTMLElement>('previewCard')
+const aiPreviewWrap = byId<HTMLDivElement>('aiPreviewWrap')
+const aiPreviewElement = byId<HTMLDivElement>('aiPreview')
 const outputElement = byId<HTMLTextAreaElement>('output')
 const installGuideGif = document.getElementById('installGuideGif') as HTMLImageElement | null
+const aiBriefInput = byId<HTMLTextAreaElement>('aiBrief')
+const aiBriefPresetSelect = byId<HTMLSelectElement>('aiBriefPreset')
+const aiApiKeyInput = byId<HTMLInputElement>('aiApiKey')
+const aiDesignButton = byId<HTMLButtonElement>('aiDesign')
+const aiStatusElement = byId<HTMLParagraphElement>('aiStatus')
 
 const outlookHelpStatusElement = (() => {
   const element =
@@ -144,6 +165,8 @@ const socialIconDataUrls: Record<SocialPlatform, string> = {
 
 let socialIconsInitializationPromise: Promise<void> | null = null
 let livePreviewTimer: number | null = null
+let aiPresetRefreshTimer: number | null = null
+let aiBriefPresetPrompts = new Map<string, string>()
 
 const escapeHtml = (value: string): string =>
   value
@@ -404,6 +427,142 @@ const getLayoutSettings = (): SignatureLayoutSettings => ({
   backgroundColor: parseColorInput(inputs.backgroundColor.value, '#ffffff')
 })
 
+const getFormSnapshot = (): SignatureFormSnapshot => {
+  const layout = getLayoutSettings()
+  return {
+    signatureLanguage: getSignatureLanguage(),
+    fullName: inputs.fullName.value.trim(),
+    jobTitle: inputs.jobTitle.value.trim(),
+    company: inputs.company.value.trim(),
+    phone: inputs.phone.value.trim(),
+    email: inputs.email.value.trim(),
+    website: inputs.website.value.trim(),
+    fontFamily: layout.fontFamily,
+    nameFontSize: layout.nameFontSize,
+    titleFontSize: layout.titleFontSize,
+    bodyFontSize: layout.bodyFontSize,
+    lineSpacing: layout.lineSpacing,
+    signatureWidth: layout.signatureWidth,
+    signatureHeight: layout.signatureHeight,
+    textColumnWidth: layout.textColumnWidth,
+    logoMaxWidth: layout.logoMaxWidth,
+    textAlign: layout.textAlign,
+    nameTitleAlign: layout.nameTitleAlign,
+    emailAlign: layout.emailAlign,
+    logoAlign: layout.logoAlign,
+    verticalAlign: layout.verticalAlign,
+    accentColor: layout.accentColor,
+    secondaryTextColor: layout.secondaryTextColor,
+    socialIconGap: layout.socialIconGap,
+    dividerThickness: layout.dividerThickness
+  }
+}
+
+const hasLogoConfigured = (): boolean => Boolean(inputs.logoUrl.value.trim())
+
+const hasBannerConfigured = (): boolean => Boolean(inputs.bannerUrl.value.trim())
+
+const hasSocialConfigured = (): boolean =>
+  [
+    inputs.facebookUrl,
+    inputs.instagramUrl,
+    inputs.linkedinUrl,
+    inputs.xUrl,
+    inputs.youtubeUrl
+  ].some((input) => input.value.trim().length > 0)
+
+const refreshAiApiKeyFieldState = (): void => {
+  const lang = getSignatureLanguage()
+  const usingEnv = isUsingEnvApiKey(aiApiKeyInput.value)
+  aiApiKeyInput.placeholder = usingEnv ? t(lang, 'aiApiKeyUsingEnv') : t(lang, 'aiApiKeyPlaceholder')
+}
+
+const refreshAiBriefPresets = (): void => {
+  const lang = getSignatureLanguage()
+  const snapshot = getFormSnapshot()
+  const presets = buildAiBriefPresets(snapshot, {
+    hasLogo: hasLogoConfigured(),
+    hasBanner: hasBannerConfigured(),
+    hasSocial: hasSocialConfigured(),
+    hasWebsite: Boolean(snapshot.website.trim())
+  })
+  aiBriefPresetPrompts = presetPromptsFromList(presets)
+
+  const selectedId = aiBriefPresetSelect.value
+  aiBriefPresetSelect.innerHTML = ''
+
+  const placeholder = document.createElement('option')
+  placeholder.value = ''
+  placeholder.textContent = t(lang, 'aiPresetPlaceholder')
+  aiBriefPresetSelect.appendChild(placeholder)
+
+  for (const preset of presets) {
+    const option = document.createElement('option')
+    option.value = preset.id
+    option.textContent = preset.label
+    aiBriefPresetSelect.appendChild(option)
+  }
+
+  if (selectedId && aiBriefPresetPrompts.has(selectedId)) {
+    aiBriefPresetSelect.value = selectedId
+  }
+}
+
+const scheduleAiBriefPresetRefresh = (delayMs = 200): void => {
+  if (aiPresetRefreshTimer !== null) {
+    window.clearTimeout(aiPresetRefreshTimer)
+  }
+  aiPresetRefreshTimer = window.setTimeout(() => {
+    aiPresetRefreshTimer = null
+    refreshAiBriefPresets()
+  }, delayMs)
+}
+
+const setAiStatus = (message: string, tone: 'idle' | 'working' | 'success' | 'error'): void => {
+  aiStatusElement.hidden = !message
+  aiStatusElement.textContent = message
+  aiStatusElement.classList.remove('is-success', 'is-error')
+  if (tone === 'success') aiStatusElement.classList.add('is-success')
+  if (tone === 'error') aiStatusElement.classList.add('is-error')
+}
+
+const runAiDesign = async (): Promise<void> => {
+  const lang = getSignatureLanguage()
+  const brief = aiBriefInput.value.trim()
+  if (!brief) {
+    setAiStatus(t(lang, 'aiDesignMissingBrief'), 'error')
+    aiBriefInput.focus()
+    return
+  }
+
+  storeApiKey(aiApiKeyInput.value)
+  if (!hasConfiguredAiApiKey(aiApiKeyInput.value)) {
+    setAiStatus(t(lang, 'aiDesignMissingApiKey'), 'error')
+    aiApiKeyInput.focus()
+    return
+  }
+
+  aiDesignButton.disabled = true
+  setAiStatus(t(lang, 'aiDesignWorking'), 'working')
+
+  try {
+    const design = await designSignatureWithAi(brief, getFormSnapshot(), {
+      apiKey: aiApiKeyInput.value
+    })
+    applyAiSignatureDesign(inputs, design)
+    refreshUiLanguage()
+    await generate()
+    revealSignaturePreview({ scrollToMain: true, showInline: true })
+    refreshAiBriefPresets()
+    setAiStatus(`${t(lang, 'aiDesignSuccess')} ${design.designSummary}`, 'success')
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    setAiStatus(`${t(lang, 'aiDesignFailed')} ${message}`, 'error')
+  } finally {
+    aiDesignButton.disabled = false
+  }
+}
+
 const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
   const lang = getSignatureLanguage()
   const strings = getSignatureStrings()
@@ -576,23 +735,64 @@ const buildSignatureHtml = (layout: SignatureLayoutSettings): string => {
 </table>`
 }
 
+const renderSignaturePreview = (html: string, layout: SignatureLayoutSettings): void => {
+  outputElement.value = html
+  for (const element of [previewElement, aiPreviewElement]) {
+    element.style.width = `${layout.signatureWidth}px`
+    element.style.minHeight = `${layout.signatureHeight}px`
+    element.style.height = 'auto'
+    element.innerHTML = html
+  }
+}
+
+const revealSignaturePreview = (options?: { scrollToMain?: boolean; showInline?: boolean }): void => {
+  const scrollToMain = options?.scrollToMain ?? true
+  const showInline = options?.showInline ?? true
+
+  if (showInline) {
+    aiPreviewWrap.hidden = false
+  }
+
+  const previewDetails = previewCard.querySelector('details')
+  if (previewDetails && !previewDetails.open) {
+    previewDetails.open = true
+  }
+
+  if (scrollToMain) {
+    previewCard.classList.add('preview-highlight')
+    window.setTimeout(() => previewCard.classList.remove('preview-highlight'), 2200)
+    window.requestAnimationFrame(() => {
+      previewCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    })
+  }
+}
+
 const generate = async (): Promise<void> => {
   await initializeSocialIconDataUrls()
   const layout = getLayoutSettings()
   const html = buildSignatureHtml(layout)
-  outputElement.value = html
-  previewElement.style.width = `${layout.signatureWidth}px`
-  previewElement.style.height = `${layout.signatureHeight}px`
-  previewElement.innerHTML = html
+  renderSignaturePreview(html, layout)
 }
 
 const enableLivePreview = (): void => {
   Object.values(inputs).forEach((input) => {
-    input.addEventListener('input', () => scheduleLivePreviewUpdate())
-    input.addEventListener('change', () => scheduleLivePreviewUpdate())
+    input.addEventListener('input', () => {
+      scheduleLivePreviewUpdate()
+      scheduleAiBriefPresetRefresh()
+    })
+    input.addEventListener('change', () => {
+      scheduleLivePreviewUpdate()
+      scheduleAiBriefPresetRefresh()
+    })
   })
-  linkImagesContainer.addEventListener('input', () => scheduleLivePreviewUpdate())
-  linkImagesContainer.addEventListener('change', () => scheduleLivePreviewUpdate())
+  linkImagesContainer.addEventListener('input', () => {
+    scheduleLivePreviewUpdate()
+    scheduleAiBriefPresetRefresh()
+  })
+  linkImagesContainer.addEventListener('change', () => {
+    scheduleLivePreviewUpdate()
+    scheduleAiBriefPresetRefresh()
+  })
 }
 
 const copyOutput = async (): Promise<void> => {
@@ -899,6 +1099,25 @@ outlookHelpStatusElement.addEventListener('click', (event) => {
 })
 
 addLinkImageButton.addEventListener('click', () => addLinkImageRow())
+aiBriefPresetSelect.addEventListener('change', () => {
+  const presetId = aiBriefPresetSelect.value
+  if (!presetId) return
+  const prompt = aiBriefPresetPrompts.get(presetId)
+  if (prompt) {
+    aiBriefInput.value = prompt
+    aiBriefInput.dispatchEvent(new Event('input', { bubbles: true }))
+    aiBriefInput.focus()
+  }
+  aiBriefPresetSelect.value = ''
+})
+aiDesignButton.addEventListener('click', () => {
+  runAiDesign().catch(() => {
+    setAiStatus(t(getSignatureLanguage(), 'aiDesignFailed'), 'error')
+  })
+})
+aiApiKeyInput.value = loadStoredApiKey()
+aiApiKeyInput.addEventListener('input', () => refreshAiApiKeyFieldState())
+refreshAiApiKeyFieldState()
 generateButton.addEventListener('click', () => {
   generate().catch(() => {
     window.alert(t(getSignatureLanguage(), 'alertGenerateFailed'))
@@ -939,6 +1158,8 @@ inputs.signatureLanguage.addEventListener('change', () => {
     inputs.emailAlign.value = 'right'
   }
   refreshUiLanguage()
+  refreshAiBriefPresets()
+  refreshAiApiKeyFieldState()
   scheduleLivePreviewUpdate()
 })
 bindFileInputToUrl(inputs.logoFile, inputs.logoUrl)
@@ -955,6 +1176,8 @@ if (!inputs.logoUrl.value.trim()) {
 }
 
 refreshUiLanguage()
+refreshAiBriefPresets()
+refreshAiApiKeyFieldState()
 addLinkImageRow()
 generate().catch(() => {
   // Initial render should not block form usage.
