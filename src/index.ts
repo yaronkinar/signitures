@@ -700,25 +700,74 @@ const toBase64Utf8 = (value: string): string => {
   return btoa(binary)
 }
 
-const downloadOpenSignaturesFolderBat = (): void => {
-  const batchContent = `@echo off
-explorer "%APPDATA%\\Microsoft\\Signatures"
-`
-  const blob = new Blob([batchContent], { type: 'text/plain;charset=utf-8' })
+const downloadBinaryFile = (filename: string, content: string): void => {
+  const blob = new Blob([new TextEncoder().encode(content)], { type: 'application/octet-stream' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
-  link.download = 'open-signatures-folder.bat'
+  link.download = filename
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
 }
 
+const OUTLOOK_INSTALL_SCRIPT_MARKER = '# SIGSCRIPT'
+
+const escapePsSingleQuoted = (value: string): string => value.replace(/'/g, "''")
+
+const batConsolePreamble = (lang: AppLanguage): string =>
+  lang === 'he' ? 'chcp 65001 >nul\r\n' : ''
+
+const buildSelfContainedInstallBat = (scriptContent: string, lang: AppLanguage): string => {
+  const scriptLines = scriptContent.replace(/\r?\n/g, '\r\n').trimEnd()
+  const corruptMsg = escapePsSingleQuoted(t(lang, 'batInstallerCorrupt'))
+  const installComplete = t(lang, 'batInstallComplete')
+  const installFailed = t(lang, 'batInstallFailed')
+  const securityHint = t(lang, 'batInstallSecurityHint')
+
+  return `@echo off
+setlocal
+${batConsolePreamble(lang)}cd /d "%~dp0"
+set "SCRIPT=%TEMP%\\install-outlook-signature-%RANDOM%.ps1"
+"%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "$marker='${OUTLOOK_INSTALL_SCRIPT_MARKER}'; $lines=Get-Content -LiteralPath '%~f0' -Encoding UTF8; $start=[Array]::IndexOf($lines,$marker); if ($start -lt 0) { Write-Error '${corruptMsg}'; exit 1 }; $lines[($start+1)..($lines.Length-1)] | Set-Content -LiteralPath '%SCRIPT%' -Encoding UTF8"
+if errorlevel 1 goto :fail
+"%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT%"
+set "EC=%ERRORLEVEL%"
+del "%SCRIPT%" 2>nul
+if not "%EC%"=="0" goto :fail
+echo.
+echo ${installComplete}
+pause
+exit /b 0
+:fail
+echo.
+echo ${installFailed}
+echo ${securityHint}
+pause
+exit /b 1
+${OUTLOOK_INSTALL_SCRIPT_MARKER}
+${scriptLines}
+`
+}
+
+const downloadOpenSignaturesFolderBat = (lang: AppLanguage): void => {
+  downloadBinaryFile(
+    'open-signatures-folder.bat',
+    `@echo off
+setlocal
+${batConsolePreamble(lang)}if not exist "%APPDATA%\\Microsoft\\Signatures" mkdir "%APPDATA%\\Microsoft\\Signatures" 2>nul
+start "" "%SystemRoot%\\explorer.exe" "%APPDATA%\\Microsoft\\Signatures"
+exit /b 0
+`
+  )
+}
+
 const downloadOutlookInstaller = (): void => {
   const value = outputElement.value.trim()
   if (!value) return
 
+  const lang = getSignatureLanguage()
   const signatureName = sanitizeSignatureName(inputs.fullName.value)
   const htmlDocument = wrapHtmlDocument(value, getSignatureLanguage())
   const txtDocument = toPlainTextSignature()
@@ -765,49 +814,14 @@ foreach ($path in $mailSettingsPaths) {
   }
 }
 
-Write-Host "Signature installed successfully:" -ForegroundColor Green
+Write-Host '${escapePsSingleQuoted(t(lang, 'batPsInstallSuccess'))}' -ForegroundColor Green
 Write-Host $htmlFile
 Write-Host ""
-Write-Host "Set as default for New/Reply where supported."
-Write-Host "If Outlook was open, restart Outlook to refresh signatures."
-Write-Host "Note: works with classic Outlook desktop. New Outlook may ignore local signature files."
+Write-Host '${escapePsSingleQuoted(t(lang, 'batPsSetDefault'))}'
+Write-Host '${escapePsSingleQuoted(t(lang, 'batPsRestartOutlook'))}'
+Write-Host '${escapePsSingleQuoted(t(lang, 'batPsClassicNote'))}'
 `
-  const batchContent = `@echo off
-setlocal
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0install-outlook-signature.ps1"
-if errorlevel 1 (
-  echo.
-  echo Installation failed. If blocked by policy, right-click the .ps1 and run with PowerShell.
-  pause
-  exit /b 1
-)
-echo.
-echo Signature installation completed.
-pause
-`
-
-  const psBlob = new Blob([scriptContent], { type: 'text/plain;charset=utf-8' })
-  const psUrl = URL.createObjectURL(psBlob)
-  const psLink = document.createElement('a')
-  psLink.href = psUrl
-  psLink.download = 'install-outlook-signature.ps1'
-  document.body.appendChild(psLink)
-  psLink.click()
-  document.body.removeChild(psLink)
-  URL.revokeObjectURL(psUrl)
-
-  const batBlob = new Blob([batchContent], { type: 'text/plain;charset=utf-8' })
-  const batUrl = URL.createObjectURL(batBlob)
-  const batLink = document.createElement('a')
-  batLink.href = batUrl
-  batLink.download = 'run-install-outlook-signature.bat'
-  document.body.appendChild(batLink)
-  // Stagger download slightly so both files are reliably saved in all browsers.
-  window.setTimeout(() => {
-    batLink.click()
-    document.body.removeChild(batLink)
-    URL.revokeObjectURL(batUrl)
-  }, 120)
+  downloadBinaryFile('install-outlook-signature.bat', buildSelfContainedInstallBat(scriptContent, lang))
 }
 
 const installForNewOutlook = async (): Promise<void> => {
@@ -839,7 +853,7 @@ outlookHelpStatusElement.addEventListener('click', (event) => {
   const target = (event.target as HTMLElement).closest('.open-signatures-folder')
   if (!target) return
   event.preventDefault()
-  downloadOpenSignaturesFolderBat()
+  downloadOpenSignaturesFolderBat(getSignatureLanguage())
 })
 
 addLinkImageButton.addEventListener('click', () => addLinkImageRow())
