@@ -1,0 +1,1 @@
+drawtext=fontfile=images/fonts/arial.ttf:textfile=images/install-gif-frames/text/line1-3.txt:fontsize=28:fontcolor=0x1d4ed8:x=(w-text_w)/2:y=h/2-50,drawtext=fontfile=images/fonts/arial.ttf:textfile=images/install-gif-frames/text/line2-3.txt:fontsize=22:fontcolor=0x374151:x=(w-text_w)/2:y=h/2+10

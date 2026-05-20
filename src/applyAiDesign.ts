@@ -1,5 +1,9 @@
 import type { AiSignatureDesign, AppLanguage, TextAlign, VerticalAlign } from './aiSignatureDesign'
+import { applyAiSignatureDesignToState } from './lib/applyAiDesignState'
+import { createDefaultFormState } from './lib/defaultFormState'
+import type { SignatureFormState } from './types/signatureForm'
 
+/** @deprecated Use applyAiSignatureDesignToState with React form state */
 export type SignatureFormInputs = {
   signatureLanguage: HTMLSelectElement
   fullName: HTMLInputElement
@@ -156,6 +160,7 @@ const applySocial = (form: SignatureFormInputs, design: AiSignatureDesign): void
   if (social.youtubeUrl !== undefined) setInputValue(form.youtubeUrl, social.youtubeUrl)
 }
 
+/** @deprecated DOM-based helper; React app uses applyAiSignatureDesignToState */
 export const applyAiSignatureDesign = (
   form: SignatureFormInputs,
   design: AiSignatureDesign
@@ -172,3 +177,52 @@ export const applyAiSignatureDesign = (
     setSelectValue(form.emailAlign, 'right')
   }
 }
+
+export const applyAiSignatureDesignFromDom = applyAiSignatureDesign
+
+export const stateFromDomInputs = (form: SignatureFormInputs): SignatureFormState => {
+  const base = createDefaultFormState()
+  return {
+    ...base,
+    signatureLanguage: form.signatureLanguage.value as AppLanguage,
+    fullName: form.fullName.value,
+    jobTitle: form.jobTitle.value,
+    company: form.company.value,
+    phone: form.phone.value,
+    email: form.email.value,
+    website: form.website.value,
+    facebookUrl: form.facebookUrl.value,
+    instagramUrl: form.instagramUrl.value,
+    linkedinUrl: form.linkedinUrl.value,
+    xUrl: form.xUrl.value,
+    youtubeUrl: form.youtubeUrl.value,
+    fontFamily: form.fontFamily.value,
+    nameFontSize: Number(form.nameFontSize.value),
+    titleFontSize: Number(form.titleFontSize.value),
+    bodyFontSize: Number(form.bodyFontSize.value),
+    lineSpacing: Number(form.lineSpacing.value),
+    signatureWidth: Number(form.signatureWidth.value),
+    signatureHeight: Number(form.signatureHeight.value),
+    textColumnWidth: Number(form.textColumnWidth.value),
+    logoMaxWidth: Number(form.logoMaxWidth.value),
+    textAlign: form.textAlign.value as SignatureFormState['textAlign'],
+    nameTitleAlign: form.nameTitleAlign.value as SignatureFormState['nameTitleAlign'],
+    emailAlign: form.emailAlign.value as SignatureFormState['emailAlign'],
+    logoAlign: form.logoAlign.value as SignatureFormState['logoAlign'],
+    verticalAlign: form.verticalAlign.value as SignatureFormState['verticalAlign'],
+    textOffsetX: Number(form.textOffsetX.value),
+    textOffsetY: Number(form.textOffsetY.value),
+    logoOffsetX: Number(form.logoOffsetX.value),
+    logoOffsetY: Number(form.logoOffsetY.value),
+    dividerThickness: Number(form.dividerThickness.value),
+    socialIconGap: Number(form.socialIconGap.value),
+    accentColor: form.accentColor.value,
+    textColor: form.textColor.value,
+    secondaryTextColor: form.secondaryTextColor.value,
+    dividerColor: form.dividerColor.value,
+    linkColor: form.linkColor.value,
+    backgroundColor: form.backgroundColor.value
+  }
+}
+
+export { applyAiSignatureDesignToState }
