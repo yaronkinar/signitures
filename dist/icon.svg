@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Outlook Signature Generator">
+  <rect width="512" height="512" rx="108" fill="#1d4ed8"/>
+  <rect x="108" y="96" width="296" height="224" rx="28" fill="#ffffff"/>
+  <rect x="140" y="136" width="168" height="16" rx="8" fill="#dbe1ea"/>
+  <rect x="140" y="172" width="232" height="12" rx="6" fill="#e5e7eb"/>
+  <rect x="140" y="200" width="200" height="12" rx="6" fill="#e5e7eb"/>
+  <path
+    d="M148 300c52-36 104-36 156 0"
+    fill="none"
+    stroke="#92278f"
+    stroke-width="20"
+    stroke-linecap="round"
+  />
+  <path
+    d="M168 300c36 20 72 20 108 0"
+    fill="none"
+    stroke="#1d4ed8"
+    stroke-width="12"
+    stroke-linecap="round"
+    opacity="0.55"
+  />
+</svg>
