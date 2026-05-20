@@ -4,13 +4,14 @@
   "description": "",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/bundle-api.mjs",
     "preview": "vite preview",
     "image:html": "node scripts/convert-image-to-html.mjs",
     "capture:install-frames": "node scripts/capture-install-frames.mjs",
     "build:install-gif": "node scripts/capture-install-frames.mjs"
   },
   "devDependencies": {
+    "esbuild": "^0.25.0",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.2.0",

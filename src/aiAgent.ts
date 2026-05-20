@@ -160,19 +160,16 @@ const designViaServerProxy = async (
         'AI API route not found. Redeploy the site with the latest version (api/design-signature).'
       )
     }
+    const snippet = responseText.replace(/\s+/g, ' ').trim().slice(0, 240)
     throw new Error(
       responseText.startsWith('<')
         ? `Server returned HTML instead of JSON (${response.status}). Check Vercel deployment logs.`
-        : `Invalid server response (${response.status})`
+        : snippet || `Invalid server response (${response.status})`
     )
   }
 
   if (!response.ok) {
-    const fallback =
-      payload.error ||
-      (responseText.length > 0 && responseText.length < 500 ? responseText : '') ||
-      `Server error ${response.status}`
-    throw new Error(fallback)
+    throw new Error(payload.error || `Server error ${response.status}`)
   }
 
   if (!payload.design) {

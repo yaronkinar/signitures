@@ -12,5 +12,5 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src", "lib", "api"]
+  "include": ["src", "lib", "api", "api-src"]
 }

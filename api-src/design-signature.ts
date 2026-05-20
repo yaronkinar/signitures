@@ -18,6 +18,23 @@ const getServerApiKey = (): string =>
   normalizeApiKey(process.env.OPENAI_API_KEY) ||
   normalizeApiKey(process.env.VITE_OPENAI_API_KEY)
 
+const parseJsonBody = (body: unknown): Record<string, unknown> => {
+  if (body && typeof body === 'object' && !Array.isArray(body)) {
+    return body as Record<string, unknown>
+  }
+  if (typeof body === 'string' && body.trim()) {
+    try {
+      const parsed = JSON.parse(body) as unknown
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return parsed as Record<string, unknown>
+      }
+    } catch {
+      // fall through
+    }
+  }
+  return {}
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   try {
     if (req.method === 'GET') {
@@ -43,10 +60,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       return
     }
 
-    const brief = typeof req.body?.brief === 'string' ? req.body.brief.trim() : ''
-    const snapshot = req.body?.snapshot
-    const mode = req.body?.mode === 'create' ? 'create' : 'refine'
-    const keepContact = req.body?.keepContact !== false
+    const body = parseJsonBody(req.body)
+    const brief = typeof body.brief === 'string' ? body.brief.trim() : ''
+    const snapshot = body.snapshot
+    const mode = body.mode === 'create' ? 'create' : 'refine'
+    const keepContact = body.keepContact !== false
 
     if (!brief || !snapshot || typeof snapshot !== 'object') {
       res.status(400).json({ error: 'Missing brief or snapshot' })
