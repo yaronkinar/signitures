@@ -3,11 +3,8 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "functions": {
-    "api/design-signature.js": {
+    "api/**": {
       "maxDuration": 60
-    },
-    "api/health.ts": {
-      "maxDuration": 10
     }
   },
   "rewrites": [

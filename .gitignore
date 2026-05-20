@@ -12,6 +12,3 @@ yarn-error.log*
 .pnp.js
 
 .vscode/*
-
-# Built by scripts/bundle-api.mjs during npm run build
-api/design-signature.js
