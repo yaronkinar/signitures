@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { BulkSignaturesPanel } from './components/BulkSignaturesPanel'
 import { Field, SelectInput, TextInput } from './components/Field'
 import { Panel } from './components/Panel'
 import { useSignatureApp } from './hooks/useSignatureApp'
@@ -259,6 +260,8 @@ export default function App() {
               </Field>
             </div>
           </Panel>
+
+          <BulkSignaturesPanel template={form} lang={lang} />
 
           <Panel summary={t(lang, 'logoBanner')}>
             <p className="hint">{t(lang, 'logoBannerHint')}</p>

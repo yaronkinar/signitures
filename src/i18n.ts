@@ -161,7 +161,25 @@ const translations = {
     alertNewOutlookOpenedNoCopy:
       'New Outlook settings opened, but clipboard copy was blocked. Copy from "Generated HTML", paste into signature editor, and click Save.',
     alertNewOutlookManual:
-      'Could not auto-open settings or copy automatically. Open New Outlook > Settings > Mail > Compose and reply, paste from "Generated HTML", and click Save.'
+      'Could not auto-open settings or copy automatically. Open New Outlook > Settings > Mail > Compose and reply, paste from "Generated HTML", and click Save.',
+    bulkSignatures: 'Bulk signatures (Excel)',
+    bulkSignaturesLead:
+      'Upload a spreadsheet with one person per row. Each row gets an HTML signature file using your current design (logo, colors, layout).',
+    bulkSignaturesColumns:
+      'Columns: fullName (or name), jobTitle, company, phone, email, website — optional language (en/he). First row must be headers.',
+    bulkDownloadTemplate: 'Download Excel template',
+    bulkUploadExcel: 'Upload Excel & download ZIP',
+    bulkWorking: 'Generating signatures…',
+    bulkSuccessOne: 'Downloaded signatures.zip with 1 signature.',
+    bulkSuccessMany: 'Downloaded signatures.zip with {count} signatures.',
+    bulkFailed: 'Bulk export failed.',
+    bulkUsesCurrentDesign: 'Uses the design settings from the form above (not AI-generated per row).',
+    bulkErrorNoSheets: 'The file has no worksheets.',
+    bulkErrorNoDataRows: 'Add a header row and at least one data row.',
+    bulkErrorNoColumns: 'No recognized columns. Use the template or headers like fullName, email, phone.',
+    bulkErrorNoValidRows: 'No rows with a name or email were found.',
+    bulkErrorTooManyRows: 'Maximum 500 people per file.',
+    bulkErrorUnknown: 'Could not read the spreadsheet.'
   },
   he: {
     pageTitle: 'מחולל חתימות Outlook',
@@ -310,7 +328,25 @@ const translations = {
     alertNewOutlookOpenedNoCopy:
       'הגדרות Outlook החדש נפתחו, אך ההעתקה ללוח נחסמה. העתיקו מ-"HTML שנוצר", הדביקו בעורך החתימה ולחצו שמור.',
     alertNewOutlookManual:
-      'לא ניתן לפתוח הגדרות או להעתיק אוטומטית. פתחו Outlook החדש > הגדרות > דואר > כתיבה ומענה, והדביקו מ-"HTML שנוצר".'
+      'לא ניתן לפתוח הגדרות או להעתיק אוטומטית. פתחו Outlook החדש > הגדרות > דואר > כתיבה ומענה, והדביקו מ-"HTML שנוצר".',
+    bulkSignatures: 'חתימות בכמות (Excel)',
+    bulkSignaturesLead:
+      'העלו קובץ Excel עם שורה לכל אדם. לכל שורה נוצר קובץ HTML לפי העיצוב הנוכחי (לוגו, צבעים, פריסה).',
+    bulkSignaturesColumns:
+      'עמודות: fullName (או שם), jobTitle, company, phone, email, website — שפה אופציונלית (en/he). שורה ראשונה = כותרות.',
+    bulkDownloadTemplate: 'הורדת תבנית Excel',
+    bulkUploadExcel: 'העלאת Excel והורדת ZIP',
+    bulkWorking: 'יוצר חתימות…',
+    bulkSuccessOne: 'הורד signatures.zip עם חתימה אחת.',
+    bulkSuccessMany: 'הורד signatures.zip עם {count} חתימות.',
+    bulkFailed: 'ייצוא מרובה נכשל.',
+    bulkUsesCurrentDesign: 'משתמש בהגדרות העיצוב מהטופס למעלה (לא AI לכל שורה).',
+    bulkErrorNoSheets: 'אין גיליונות בקובץ.',
+    bulkErrorNoDataRows: 'הוסיפו שורת כותרות ולפחות שורת נתונים אחת.',
+    bulkErrorNoColumns: 'לא זוהו עמודות. השתמשו בתבנית או בכותרות כמו fullName, email, phone.',
+    bulkErrorNoValidRows: 'לא נמצאו שורות עם שם או דוא"ל.',
+    bulkErrorTooManyRows: 'מקסימום 500 אנשים לקובץ.',
+    bulkErrorUnknown: 'לא ניתן לקרוא את קובץ ה-Excel.'
   }
 } as const
 

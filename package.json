@@ -20,10 +20,12 @@
   },
   "private": true,
   "dependencies": {
-    "esbuild": "^0.25.0",
     "@vercel/node": "^5.8.3",
+    "esbuild": "^0.25.0",
+    "jszip": "^3.10.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "simple-icons": "^16.20.0"
+    "simple-icons": "^16.20.0",
+    "xlsx": "^0.18.5"
   }
 }
