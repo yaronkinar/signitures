@@ -4,14 +4,13 @@
   "description": "",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/bundle-api.mjs",
+    "build": "vite build",
     "preview": "vite preview",
     "image:html": "node scripts/convert-image-to-html.mjs",
     "capture:install-frames": "node scripts/capture-install-frames.mjs",
     "build:install-gif": "node scripts/capture-install-frames.mjs"
   },
   "devDependencies": {
-    "esbuild": "^0.25.0",
     "playwright": "^1.51.0",
     "typescript": "^5.5.3",
     "vite": "^7.3.3"
@@ -19,6 +18,8 @@
   "private": true,
   "dependencies": {
     "@vercel/node": "^5.8.3",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
     "simple-icons": "^16.20.0"
   }
 }
