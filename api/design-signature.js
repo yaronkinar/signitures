@@ -123,6 +123,20 @@ ${SHARED_RULES}
 JSON schema:
 ${AI_DESIGN_JSON_SCHEMA}`;
 };
+var buildImageExtractionSystemPrompt = () => `You are an expert at reading email signature screenshots and converting them into structured Outlook signature form data.
+
+Rules:
+${SHARED_RULES}
+- Extract visible contact details exactly as shown: name, job title, company, phone, email, website.
+- Detect the signature language. Use "he" for Hebrew/RTL signatures and align text right.
+- Preserve the uploaded image's colors as closely as possible. Sample the visible palette and return a full "colors" object: accentColor for the main brand/name/link color, secondaryTextColor for title/labels, dividerColor for separators, linkColor for website links, textColor for body text, and backgroundColor for the signature background.
+- If a company logo is visible, infer only layout/color choices from it. Do not return image URLs.
+- If social icons are visible but profile URLs are not visible, omit the "social" object so existing URLs can stay unchanged.
+- Do not invent personal contact data or social URLs.
+- Return complete "layout" and "colors" objects to recreate the uploaded signature style with the site's existing logo and icon controls.
+
+JSON schema:
+${AI_DESIGN_JSON_SCHEMA}`;
 var isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var pickString = (value) => typeof value === "string" && value.trim() ? value.trim() : void 0;
 var pickNumber = (value) => {
@@ -275,6 +289,7 @@ Return the JSON design object only.`;
 // api-src/design-signature.ts
 var DEFAULT_BASE_URL = "https://api.openai.com/v1";
 var DEFAULT_MODEL = "gpt-4o-mini";
+var IMAGE_EXTRACTION_BRIEF = "Extract the contact details and visual style from this uploaded email signature image. Preserve the visible colors as closely as possible and fill the signature form so the site can recreate it as editable Outlook HTML.";
 var normalizeApiKey = (value) => {
   const trimmed = value?.trim() ?? "";
   if (!trimmed) return "";
@@ -318,16 +333,33 @@ async function handler(req, res) {
       return;
     }
     const body = parseJsonBody(req.body);
+    const imageDataUrl = typeof body.imageDataUrl === "string" ? body.imageDataUrl.trim() : "";
     const brief = typeof body.brief === "string" ? body.brief.trim() : "";
     const snapshot = body.snapshot;
     const mode = body.mode === "create" ? "create" : "refine";
     const keepContact = body.keepContact !== false;
-    if (!brief || !snapshot || typeof snapshot !== "object") {
+    if (!imageDataUrl && (!brief || !snapshot || typeof snapshot !== "object")) {
       res.status(400).json({ error: "Missing brief or snapshot" });
       return;
     }
     const baseUrl = (process.env.OPENAI_BASE_URL?.trim() || DEFAULT_BASE_URL).replace(/\/$/, "");
     const model = process.env.OPENAI_MODEL?.trim() || DEFAULT_MODEL;
+    const messages = imageDataUrl ? [
+      { role: "system", content: buildImageExtractionSystemPrompt() },
+      {
+        role: "user",
+        content: [
+          { type: "text", text: IMAGE_EXTRACTION_BRIEF },
+          { type: "image_url", image_url: { url: imageDataUrl } }
+        ]
+      }
+    ] : [
+      { role: "system", content: buildAiSystemPrompt(mode) },
+      {
+        role: "user",
+        content: buildAiUserPrompt(brief, snapshot, { mode, keepContact })
+      }
+    ];
     const response = await fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
@@ -336,15 +368,9 @@ async function handler(req, res) {
       },
       body: JSON.stringify({
         model,
-        temperature: mode === "create" ? 0.55 : 0.4,
+        temperature: imageDataUrl ? 0.2 : mode === "create" ? 0.55 : 0.4,
         response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: buildAiSystemPrompt(mode) },
-          {
-            role: "user",
-            content: buildAiUserPrompt(brief, snapshot, { mode, keepContact })
-          }
-        ]
+        messages
       })
     });
     if (!response.ok) {

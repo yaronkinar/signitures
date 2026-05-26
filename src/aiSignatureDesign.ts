@@ -1,6 +1,7 @@
 export {
   ALLOWED_FONT_FAMILIES,
   AI_DESIGN_JSON_SCHEMA,
+  buildImageExtractionSystemPrompt,
   buildAiSystemPrompt,
   buildAiUserPrompt,
   parseAiSignatureDesign,

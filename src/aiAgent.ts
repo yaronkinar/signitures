@@ -1,6 +1,7 @@
 import {
   buildAiSystemPrompt,
   buildAiUserPrompt,
+  buildImageExtractionSystemPrompt,
   parseAiSignatureDesign,
   type AiDesignMode,
   type AiSignatureDesign,
@@ -18,6 +19,8 @@ export type AiAgentConfig = {
 const DEFAULT_BASE_URL = 'https://api.openai.com/v1'
 const DEFAULT_MODEL = 'gpt-4o-mini'
 const DESIGN_API_PATH = '/api/design-signature'
+const IMAGE_EXTRACTION_BRIEF =
+  'Extract the contact details and visual style from this uploaded email signature image. Preserve the visible colors as closely as possible and fill the signature form so the site can recreate it as editable Outlook HTML.'
 
 const readViteEnv = (name: 'VITE_OPENAI_API_KEY' | 'VITE_OPENAI_BASE_URL' | 'VITE_OPENAI_MODEL'): string => {
   if (!import.meta.env.DEV) return ''
@@ -134,6 +137,66 @@ const designViaDirectOpenAi = async (
   return parseAiSignatureDesign(content)
 }
 
+const extractImageViaDirectOpenAi = async (
+  imageDataUrl: string,
+  config: AiAgentConfig
+): Promise<AiSignatureDesign> => {
+  const apiKey = resolveAiApiKey(config.apiKey)
+  if (!apiKey) {
+    throw new Error('MISSING_API_KEY')
+  }
+
+  const baseUrl = (config.baseUrl?.trim() || getEnvBaseUrl()).replace(/\/$/, '')
+  const model = config.model?.trim() || getEnvModel()
+
+  const response = await fetch(`${baseUrl}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model,
+      temperature: 0.2,
+      response_format: { type: 'json_object' },
+      messages: [
+        {
+          role: 'system',
+          content: buildImageExtractionSystemPrompt()
+        },
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: IMAGE_EXTRACTION_BRIEF },
+            { type: 'image_url', image_url: { url: imageDataUrl } }
+          ]
+        }
+      ]
+    })
+  })
+
+  if (!response.ok) {
+    let detail = response.statusText
+    try {
+      const errorBody = (await response.json()) as { error?: { message?: string } }
+      detail = errorBody.error?.message ?? detail
+    } catch {
+      // ignore parse errors
+    }
+    throw new Error(detail || `API error ${response.status}`)
+  }
+
+  const payload = (await response.json()) as {
+    choices?: Array<{ message?: { content?: string } }>
+  }
+  const content = payload.choices?.[0]?.message?.content
+  if (!content?.trim()) {
+    throw new Error('Empty response from AI')
+  }
+
+  return parseAiSignatureDesign(content)
+}
+
 const designViaServerProxy = async (
   brief: string,
   snapshot: SignatureFormSnapshot,
@@ -189,4 +252,45 @@ export const designSignatureWithAi = async (
     return designViaServerProxy(brief, snapshot, config)
   }
   return designViaDirectOpenAi(brief, snapshot, config)
+}
+
+export const extractSignatureFromImageWithAi = async (
+  imageDataUrl: string,
+  config: AiAgentConfig
+): Promise<AiSignatureDesign> => {
+  if (usesServerAiProxy()) {
+    const response = await fetch(DESIGN_API_PATH, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageDataUrl })
+    })
+
+    const responseText = await response.text()
+    let payload: { design?: AiSignatureDesign; error?: string } = {}
+    try {
+      payload = JSON.parse(responseText) as { design?: AiSignatureDesign; error?: string }
+    } catch {
+      if (response.status === 404) {
+        throw new Error(
+          'AI API route not found. Redeploy the site with the latest version (api/design-signature).'
+        )
+      }
+      const snippet = responseText.replace(/\s+/g, ' ').trim().slice(0, 240)
+      throw new Error(
+        responseText.startsWith('<')
+          ? `Server returned HTML instead of JSON (${response.status}). Check Vercel deployment logs.`
+          : snippet || `Invalid server response (${response.status})`
+      )
+    }
+
+    if (!response.ok) {
+      throw new Error(payload.error || `Server error ${response.status}`)
+    }
+    if (!payload.design) {
+      throw new Error(payload.error || 'Invalid server response')
+    }
+    return payload.design
+  }
+
+  return extractImageViaDirectOpenAi(imageDataUrl, config)
 }

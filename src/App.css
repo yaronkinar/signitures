@@ -407,6 +407,23 @@ margin-top: 10px;
 align-items: center;
 }
 
+.image-import-actions {
+display: grid;
+grid-template-columns: minmax(220px, 1fr) auto;
+gap: 10px;
+align-items: end;
+margin-top: 12px;
+}
+
+.image-import-actions button {
+white-space: nowrap;
+}
+
+button:disabled {
+opacity: 0.55;
+cursor: not-allowed;
+}
+
 .ai-status {
 margin: 10px 0 0;
 font-size: 13px;
@@ -481,5 +498,9 @@ padding: 16px 12px 32px;
 .actions button {
 flex: 1 1 auto;
 min-width: calc(50% - 4px);
+}
+
+.image-import-actions {
+grid-template-columns: 1fr;
 }
 }

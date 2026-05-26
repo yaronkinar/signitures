@@ -6,6 +6,7 @@ import {
 } from '../aiBriefPresets'
 import {
   designSignatureWithAi,
+  extractSignatureFromImageWithAi,
   hasConfiguredAiApiKey,
   isUsingEnvApiKey,
   isUsingServerAiProxy,
@@ -35,6 +36,7 @@ import { t, type AppLanguage } from '../i18n'
 import type { LinkImage, SignatureFormState } from '../types/signatureForm'
 
 export type AiStatusTone = 'idle' | 'working' | 'success' | 'error'
+const MAX_SIGNATURE_IMAGE_BYTES = 5 * 1024 * 1024
 
 export const useSignatureApp = () => {
   const [form, setForm] = useState<SignatureFormState>(createDefaultFormState)
@@ -51,6 +53,9 @@ export const useSignatureApp = () => {
   const [aiStatus, setAiStatus] = useState('')
   const [aiStatusTone, setAiStatusTone] = useState<AiStatusTone>('idle')
   const [aiWorking, setAiWorking] = useState(false)
+  const [imageImportStatus, setImageImportStatus] = useState('')
+  const [imageImportStatusTone, setImageImportStatusTone] = useState<AiStatusTone>('idle')
+  const [imageImportWorking, setImageImportWorking] = useState(false)
 
   const previewCardRef = useRef<HTMLElement>(null)
   const debounceRef = useRef<number | null>(null)
@@ -266,6 +271,52 @@ export const useSignatureApp = () => {
     ]
   )
 
+  const runImageImport = useCallback(
+    async (file: File | undefined) => {
+      if (!file) return
+      if (file.size > MAX_SIGNATURE_IMAGE_BYTES) {
+        setImageImportStatus(t(lang, 'imageImportTooLarge'))
+        setImageImportStatusTone('error')
+        return
+      }
+
+      storeApiKey(aiApiKey)
+      if (!hasConfiguredAiApiKey(aiApiKey)) {
+        setImageImportStatus(t(lang, 'aiDesignMissingApiKey'))
+        setImageImportStatusTone('error')
+        return
+      }
+
+      setImageImportWorking(true)
+      setImageImportStatus(t(lang, 'imageImportWorking'))
+      setImageImportStatusTone('working')
+
+      try {
+        const imageDataUrl = await fileToDataUrl(file)
+        const design = await extractSignatureFromImageWithAi(imageDataUrl, { apiKey: aiApiKey })
+        let nextForm: SignatureFormState | undefined
+        setForm((prev) => {
+          nextForm = applyAiSignatureDesignToState(
+            { ...prev, fullName: '', jobTitle: '', company: '', phone: '', email: '', website: '' },
+            design
+          )
+          return nextForm
+        })
+        await generate(nextForm)
+        revealSignaturePreview({ scrollToMain: true, showInline: true })
+        setImageImportStatus(`${t(lang, 'imageImportSuccess')} ${design.designSummary}`)
+        setImageImportStatusTone('success')
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        setImageImportStatus(`${t(lang, 'imageImportFailed')} ${message}`)
+        setImageImportStatusTone('error')
+      } finally {
+        setImageImportWorking(false)
+      }
+    },
+    [aiApiKey, generate, lang, revealSignaturePreview]
+  )
+
   const apiKeyPlaceholder = isUsingServerAiProxy(aiApiKey)
     ? t(lang, 'aiApiKeyUsingServer')
     : isUsingEnvApiKey(aiApiKey)
@@ -339,9 +390,13 @@ export const useSignatureApp = () => {
     aiStatus,
     aiStatusTone,
     aiWorking,
+    imageImportStatus,
+    imageImportStatusTone,
+    imageImportWorking,
     aiPresets,
     applyAiPreset,
     runAiDesign,
+    runImageImport,
     generate,
     copyOutput,
     handleDownload,

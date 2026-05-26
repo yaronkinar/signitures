@@ -55,6 +55,7 @@ export default function App() {
   const app = useSignatureApp()
   const { form, updateForm, lang } = app
   const [aiPresetId, setAiPresetId] = useState('')
+  const [signatureImageFile, setSignatureImageFile] = useState<File | undefined>()
 
   const alignOptions = [
     { value: 'left', label: t(lang, 'alignLeft') },
@@ -88,6 +89,12 @@ export default function App() {
     app.aiStatusTone === 'success'
       ? 'ai-status is-success'
       : app.aiStatusTone === 'error'
+        ? 'ai-status is-error'
+        : 'ai-status'
+  const imageImportStatusClass =
+    app.imageImportStatusTone === 'success'
+      ? 'ai-status is-success'
+      : app.imageImportStatusTone === 'error'
         ? 'ai-status is-error'
         : 'ai-status'
 
@@ -203,6 +210,28 @@ export default function App() {
                 </div>
               </div>
             )}
+          </Panel>
+
+          <Panel defaultOpen summary={t(lang, 'imageImport')}>
+            <p className="hint">{t(lang, 'imageImportLead')}</p>
+            <div className="image-import-actions">
+              <Field label={t(lang, 'imageImportFile')}>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  onChange={(e) => setSignatureImageFile(e.target.files?.[0])}
+                />
+              </Field>
+              <button
+                type="button"
+                className="primary"
+                disabled={!signatureImageFile || app.imageImportWorking}
+                onClick={() => app.runImageImport(signatureImageFile)}
+              >
+                {t(lang, 'imageImportButton')}
+              </button>
+            </div>
+            {app.imageImportStatus && <p className={imageImportStatusClass}>{app.imageImportStatus}</p>}
           </Panel>
 
           <Panel defaultOpen summary={t(lang, 'contactDetails')}>

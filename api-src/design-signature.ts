@@ -2,11 +2,14 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import {
   buildAiSystemPrompt,
   buildAiUserPrompt,
+  buildImageExtractionSystemPrompt,
   parseAiSignatureDesign
 } from '../lib/aiSignatureDesign'
 
 const DEFAULT_BASE_URL = 'https://api.openai.com/v1'
 const DEFAULT_MODEL = 'gpt-4o-mini'
+const IMAGE_EXTRACTION_BRIEF =
+  'Extract the contact details and visual style from this uploaded email signature image. Preserve the visible colors as closely as possible and fill the signature form so the site can recreate it as editable Outlook HTML.'
 
 const normalizeApiKey = (value: string | undefined): string => {
   const trimmed = value?.trim() ?? ''
@@ -61,18 +64,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     }
 
     const body = parseJsonBody(req.body)
+    const imageDataUrl = typeof body.imageDataUrl === 'string' ? body.imageDataUrl.trim() : ''
     const brief = typeof body.brief === 'string' ? body.brief.trim() : ''
     const snapshot = body.snapshot
     const mode = body.mode === 'create' ? 'create' : 'refine'
     const keepContact = body.keepContact !== false
 
-    if (!brief || !snapshot || typeof snapshot !== 'object') {
+    if (!imageDataUrl && (!brief || !snapshot || typeof snapshot !== 'object')) {
       res.status(400).json({ error: 'Missing brief or snapshot' })
       return
     }
 
     const baseUrl = (process.env.OPENAI_BASE_URL?.trim() || DEFAULT_BASE_URL).replace(/\/$/, '')
     const model = process.env.OPENAI_MODEL?.trim() || DEFAULT_MODEL
+
+    const messages = imageDataUrl
+      ? [
+          { role: 'system', content: buildImageExtractionSystemPrompt() },
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: IMAGE_EXTRACTION_BRIEF },
+              { type: 'image_url', image_url: { url: imageDataUrl } }
+            ]
+          }
+        ]
+      : [
+          { role: 'system', content: buildAiSystemPrompt(mode) },
+          {
+            role: 'user',
+            content: buildAiUserPrompt(brief, snapshot as never, { mode, keepContact })
+          }
+        ]
 
     const response = await fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
@@ -82,15 +105,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       },
       body: JSON.stringify({
         model,
-        temperature: mode === 'create' ? 0.55 : 0.4,
+        temperature: imageDataUrl ? 0.2 : mode === 'create' ? 0.55 : 0.4,
         response_format: { type: 'json_object' },
-        messages: [
-          { role: 'system', content: buildAiSystemPrompt(mode) },
-          {
-            role: 'user',
-            content: buildAiUserPrompt(brief, snapshot as never, { mode, keepContact })
-          }
-        ]
+        messages
       })
     })
 

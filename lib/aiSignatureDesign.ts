@@ -185,6 +185,21 @@ JSON schema:
 ${AI_DESIGN_JSON_SCHEMA}`
 }
 
+export const buildImageExtractionSystemPrompt = (): string => `You are an expert at reading email signature screenshots and converting them into structured Outlook signature form data.
+
+Rules:
+${SHARED_RULES}
+- Extract visible contact details exactly as shown: name, job title, company, phone, email, website.
+- Detect the signature language. Use "he" for Hebrew/RTL signatures and align text right.
+- Preserve the uploaded image's colors as closely as possible. Sample the visible palette and return a full "colors" object: accentColor for the main brand/name/link color, secondaryTextColor for title/labels, dividerColor for separators, linkColor for website links, textColor for body text, and backgroundColor for the signature background.
+- If a company logo is visible, infer only layout/color choices from it. Do not return image URLs.
+- If social icons are visible but profile URLs are not visible, omit the "social" object so existing URLs can stay unchanged.
+- Do not invent personal contact data or social URLs.
+- Return complete "layout" and "colors" objects to recreate the uploaded signature style with the site's existing logo and icon controls.
+
+JSON schema:
+${AI_DESIGN_JSON_SCHEMA}`
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 

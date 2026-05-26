@@ -162,6 +162,15 @@ const translations = {
       'New Outlook settings opened, but clipboard copy was blocked. Copy from "Generated HTML", paste into signature editor, and click Save.',
     alertNewOutlookManual:
       'Could not auto-open settings or copy automatically. Open New Outlook > Settings > Mail > Compose and reply, paste from "Generated HTML", and click Save.',
+    imageImport: 'Create from image',
+    imageImportLead:
+      'Upload a screenshot or PNG/JPG of an existing signature. AI will read the visible details, keep the colors, fill the form, and generate an editable HTML signature.',
+    imageImportFile: 'Signature image',
+    imageImportButton: 'Read image & create signature',
+    imageImportWorking: 'Reading the image and creating the signature...',
+    imageImportSuccess: 'Signature created from image.',
+    imageImportFailed: 'Could not create a signature from the image.',
+    imageImportTooLarge: 'Upload an image smaller than 5 MB.',
     bulkSignatures: 'Bulk signatures (Excel)',
     bulkSignaturesLead:
       'Upload a spreadsheet with one person per row. Each row gets an HTML signature file using your current design (logo, colors, layout).',
@@ -329,6 +338,15 @@ const translations = {
       'הגדרות Outlook החדש נפתחו, אך ההעתקה ללוח נחסמה. העתיקו מ-"HTML שנוצר", הדביקו בעורך החתימה ולחצו שמור.',
     alertNewOutlookManual:
       'לא ניתן לפתוח הגדרות או להעתיק אוטומטית. פתחו Outlook החדש > הגדרות > דואר > כתיבה ומענה, והדביקו מ-"HTML שנוצר".',
+    imageImport: 'יצירה מתמונה',
+    imageImportLead:
+      'העלו צילום מסך או קובץ PNG/JPG של חתימה קיימת. ה-AI יקרא את הפרטים הגלויים, ישמור על הצבעים, ימלא את הטופס וייצור חתימת HTML שניתן לערוך.',
+    imageImportFile: 'תמונת חתימה',
+    imageImportButton: 'קריאת תמונה ויצירת חתימה',
+    imageImportWorking: 'קורא את התמונה ויוצר חתימה...',
+    imageImportSuccess: 'החתימה נוצרה מהתמונה.',
+    imageImportFailed: 'לא ניתן ליצור חתימה מהתמונה.',
+    imageImportTooLarge: 'העלו תמונה קטנה מ-5MB.',
     bulkSignatures: 'חתימות בכמות (Excel)',
     bulkSignaturesLead:
       'העלו קובץ Excel עם שורה לכל אדם. לכל שורה נוצר קובץ HTML לפי העיצוב הנוכחי (לוגו, צבעים, פריסה).',
