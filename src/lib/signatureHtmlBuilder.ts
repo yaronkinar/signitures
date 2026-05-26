@@ -14,7 +14,7 @@ export const buildSignatureHtml = (
   const jobTitle = escapeHtml(form.jobTitle.trim())
   const company = escapeHtml(form.company.trim())
   const phone = escapeHtml(form.phone.trim())
-  const email = escapeHtml(form.email.trim())
+  const email = form.email.trim()
   const website = normalizeUrl(form.website)
   const facebookUrl = normalizeUrl(form.facebookUrl)
   const instagramUrl = normalizeUrl(form.instagramUrl)
@@ -50,10 +50,12 @@ export const buildSignatureHtml = (
   const dividerInset = 12
 
   const contactRowBorder = dividerColor
+  const formatBreakableText = (value: string): string =>
+    escapeHtml(value).replace(/([@._-])/g, '$1<wbr>')
   const buildContactRow = (labelHtml: string, valueHtml: string): string =>
     `<tr>
       <td dir="${contactDirection}" align="${contentAlignAttr}" style="padding:3px ${edgeInset}px 6px;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};text-align:${contentAlign};border-bottom:1px solid ${contactRowBorder};">
-        <span style="font-weight:700;color:${secondaryTextColor};">${labelHtml}</span>&nbsp;<span style="unicode-bidi:plaintext;">${valueHtml}</span>
+        <span style="font-weight:700;color:${secondaryTextColor};">${labelHtml}</span>&nbsp;<span style="unicode-bidi:plaintext;overflow-wrap:anywhere;word-break:break-word;">${valueHtml}</span>
       </td>
     </tr>`
 
@@ -66,20 +68,20 @@ export const buildSignatureHtml = (
       )
     )
   }
-  if (email.trim()) {
+  if (email) {
     contactRows.push(
       buildContactRow(
         strings.emailLabel,
-        `<a href="${escapeHtml(normalizeUrl(`mailto:${form.email.trim()}`))}" style="text-decoration:underline;color:${accentColor};word-break:break-all;">${email}</a>`
+        `<a href="${escapeHtml(normalizeUrl(`mailto:${email}`))}" style="text-decoration:underline;color:${accentColor};overflow-wrap:anywhere;word-break:break-word;">${formatBreakableText(email)}</a>`
       )
     )
   }
   if (website) {
-    const websiteLabel = escapeHtml(website.replace(/^https?:\/\//i, ''))
+    const websiteDisplayText = website.replace(/^https?:\/\//i, '')
     contactRows.push(
       buildContactRow(
         strings.websiteLabel,
-        `<a href="${escapeHtml(website)}" style="text-decoration:underline;color:${linkColor};word-break:break-all;">${websiteLabel}</a>`
+        `<a href="${escapeHtml(website)}" style="text-decoration:underline;color:${linkColor};overflow-wrap:anywhere;word-break:break-word;">${formatBreakableText(websiteDisplayText)}</a>`
       )
     )
   }
