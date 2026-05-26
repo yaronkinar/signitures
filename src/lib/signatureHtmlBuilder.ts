@@ -33,6 +33,7 @@ export const buildSignatureHtml = (
   const logoColumnWidth = Math.max(60, signatureWidth - textColumnWidth - layout.dividerThickness)
   const fontFamilyCss = escapeHtml(layout.fontFamily)
   const bodyFontSizePx = `${layout.bodyFontSize}px`
+  const compactLinkFontSizePx = `${Math.max(9, layout.bodyFontSize - 2)}px`
   const detailsLineHeight = Math.max(1, layout.lineSpacing - 0.15)
   const nameLineHeight = Math.max(1, layout.lineSpacing - 0.35)
   const titleLineHeight = Math.max(1, layout.lineSpacing - 0.3)
@@ -52,10 +53,14 @@ export const buildSignatureHtml = (
   const contactRowBorder = dividerColor
   const formatBreakableText = (value: string): string =>
     escapeHtml(value).replace(/([@._-])/g, '$1<wbr>')
-  const buildContactRow = (labelHtml: string, valueHtml: string): string =>
+  const buildContactRow = (
+    labelHtml: string,
+    valueHtml: string,
+    valueStyle = 'unicode-bidi:plaintext;overflow-wrap:anywhere;word-break:break-word;'
+  ): string =>
     `<tr>
       <td dir="${contactDirection}" align="${contentAlignAttr}" style="padding:3px ${edgeInset}px 6px;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};text-align:${contentAlign};border-bottom:1px solid ${contactRowBorder};">
-        <span style="font-weight:700;color:${secondaryTextColor};">${labelHtml}</span>&nbsp;<span style="unicode-bidi:plaintext;overflow-wrap:anywhere;word-break:break-word;">${valueHtml}</span>
+        <span style="font-weight:700;color:${secondaryTextColor};">${labelHtml}</span>&nbsp;<span style="${valueStyle}">${valueHtml}</span>
       </td>
     </tr>`
 
@@ -72,7 +77,8 @@ export const buildSignatureHtml = (
     contactRows.push(
       buildContactRow(
         strings.emailLabel,
-        `<a href="${escapeHtml(normalizeUrl(`mailto:${email}`))}" style="text-decoration:underline;color:${accentColor};overflow-wrap:anywhere;word-break:break-word;">${formatBreakableText(email)}</a>`
+        `<a href="${escapeHtml(normalizeUrl(`mailto:${email}`))}" style="text-decoration:underline;color:${accentColor};font-size:${compactLinkFontSizePx};white-space:nowrap;">${escapeHtml(email)}</a>`,
+        'unicode-bidi:plaintext;white-space:nowrap;'
       )
     )
   }
