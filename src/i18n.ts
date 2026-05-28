@@ -21,6 +21,11 @@ const translations = {
     formSaveFailed: 'Could not save. Browser storage may be full.',
     resetForm: 'Reset to defaults',
     resetFormConfirm: 'Reset all fields to the default template? Your saved draft will be cleared.',
+    exportParams: 'Export settings',
+    importParams: 'Import settings',
+    paramsExportSuccess: 'Settings exported.',
+    paramsImportSuccess: 'Settings imported.',
+    paramsImportFailed: 'Could not import settings. Check that the file is valid JSON.',
     aiDesignAssistant: 'AI design assistant',
     aiDesignLead:
       'Describe the look you want — style, colors, language, tone — and the agent will tune layout and colors. Your contact details are kept unless you ask to change them.',
@@ -225,6 +230,11 @@ const translations = {
     formSaveFailed: 'לא ניתן לשמור. ייתכן שאחסון הדפדפן מלא.',
     resetForm: 'איפוס לברירת מחדל',
     resetFormConfirm: 'לאפס את כל השדות לתבנית ברירת המחדל? הטיוטה השמורה תימחק.',
+    exportParams: 'ייצוא הגדרות',
+    importParams: 'ייבוא הגדרות',
+    paramsExportSuccess: 'ההגדרות יוצאו.',
+    paramsImportSuccess: 'ההגדרות יובאו.',
+    paramsImportFailed: 'לא ניתן לייבא הגדרות. ודאו שהקובץ הוא JSON תקין.',
     aiDesignAssistant: 'עוזר עיצוב AI',
     aiDesignLead:
       'תארו את המראה הרצוי — סגנון, צבעים, שפה, טון — והסוכן יכוון פריסה וצבעים. פרטי הקשר נשמרים אלא אם ביקשתם לשנות אותם.',

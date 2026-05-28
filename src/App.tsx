@@ -163,6 +163,22 @@ export default function App() {
               <p className="lead">{t(lang, 'pageLead')}</p>
             </div>
             <div className="form-storage-bar">
+              <button type="button" className="secondary" onClick={app.handleExportParams}>
+                {t(lang, 'exportParams')}
+              </button>
+              <label className="params-import-label">
+                <span className="secondary params-import-button">{t(lang, 'importParams')}</span>
+                <input
+                  type="file"
+                  accept=".json,application/json"
+                  hidden
+                  onChange={(event) => {
+                    const file = event.target.files?.[0]
+                    app.handleImportParams(file).catch(() => undefined)
+                    event.target.value = ''
+                  }}
+                />
+              </label>
               <button type="button" className="secondary" onClick={app.resetFormToDefaults}>
                 {t(lang, 'resetForm')}
               </button>

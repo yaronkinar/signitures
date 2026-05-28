@@ -1,4 +1,5 @@
 import { createDefaultFormState } from './defaultFormState'
+import { sanitizeFileName } from './fileNames'
 import { getLayoutSettings } from './signatureUtils'
 import type { AppLanguage } from '../i18n'
 import type { LinkImage, SignatureFormState } from '../types/signatureForm'
@@ -69,3 +70,27 @@ export const clearStoredFormState = (): void => {
 
 export const createInitialFormState = (): SignatureFormState =>
   loadStoredFormState() ?? createDefaultFormState()
+
+export const parseFormStateJson = (raw: string): SignatureFormState | null => {
+  try {
+    return parseStoredFormState(JSON.parse(raw))
+  } catch {
+    return null
+  }
+}
+
+const downloadTextFile = (content: string, filename: string, mimeType: string): void => {
+  const url = URL.createObjectURL(new Blob([content], { type: mimeType }))
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+export const downloadFormStateExport = (form: SignatureFormState): void => {
+  const base = sanitizeFileName(form.fullName.trim() || form.company.trim() || 'signature-params')
+  downloadTextFile(JSON.stringify(form, null, 2), `${base}-params.json`, 'application/json')
+}

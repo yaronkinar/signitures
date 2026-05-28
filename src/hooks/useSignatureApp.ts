@@ -15,7 +15,13 @@ import {
 } from '../aiAgent'
 import type { AiDesignMode } from '../aiSignatureDesign'
 import { applyAiSignatureDesignToState } from '../lib/applyAiDesignState'
-import { clearStoredFormState, createInitialFormState, storeFormState } from '../lib/formStorage'
+import {
+  clearStoredFormState,
+  createInitialFormState,
+  downloadFormStateExport,
+  parseFormStateJson,
+  storeFormState
+} from '../lib/formStorage'
 import { createDefaultFormState } from '../lib/defaultFormState'
 import {
   downloadHtmlOutput,
@@ -401,6 +407,31 @@ export const useSignatureApp = () => {
     generate(defaults).catch(() => undefined)
   }, [generate, lang])
 
+  const handleExportParams = useCallback(() => {
+    downloadFormStateExport(form)
+    addToast(t(lang, 'paramsExportSuccess'), 'success')
+  }, [addToast, form, lang])
+
+  const handleImportParams = useCallback(
+    async (file: File | undefined) => {
+      if (!file) return
+      try {
+        const imported = parseFormStateJson(await file.text())
+        if (!imported) {
+          addToast(t(lang, 'paramsImportFailed'), 'error')
+          return
+        }
+        skipNextSaveToastRef.current = true
+        setForm(imported)
+        await generate(imported)
+        addToast(t(lang, 'paramsImportSuccess'), 'success')
+      } catch {
+        addToast(t(lang, 'paramsImportFailed'), 'error')
+      }
+    },
+    [addToast, generate, lang]
+  )
+
   return {
     form,
     updateForm,
@@ -444,6 +475,8 @@ export const useSignatureApp = () => {
     toasts,
     dismissToast,
     resetFormToDefaults,
+    handleExportParams,
+    handleImportParams,
     lang,
     wrapHtmlDocument: (body: string) => wrapHtmlDocument(body, lang)
   }
