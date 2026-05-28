@@ -222,7 +222,10 @@ const translations = {
     bulkErrorNoColumns: 'No recognized columns. Use the template or headers like fullName, email, phone.',
     bulkErrorNoValidRows: 'No rows with a name or email were found.',
     bulkErrorTooManyRows: 'Maximum 500 people per file.',
-    bulkErrorUnknown: 'Could not read the spreadsheet.'
+    bulkErrorUnknown: 'Could not read the spreadsheet.',
+    appUpdateAvailable: 'A new version is available. Reload to get the latest changes.',
+    appUpdateReload: 'Reload',
+    appUpdateDismiss: 'Later'
   },
   he: {
     pageTitle: 'מחולל חתימות Outlook',
@@ -432,7 +435,10 @@ const translations = {
     bulkErrorNoColumns: 'לא זוהו עמודות. השתמשו בתבנית או בכותרות כמו fullName, email, phone.',
     bulkErrorNoValidRows: 'לא נמצאו שורות עם שם או דוא"ל.',
     bulkErrorTooManyRows: 'מקסימום 500 אנשים לקובץ.',
-    bulkErrorUnknown: 'לא ניתן לקרוא את קובץ ה-Excel.'
+    bulkErrorUnknown: 'לא ניתן לקרוא את קובץ ה-Excel.',
+    appUpdateAvailable: 'גרסה חדשה זמינה. רעננו כדי לקבל את העדכון האחרון.',
+    appUpdateReload: 'רענון',
+    appUpdateDismiss: 'אחר כך'
   }
 } as const
 

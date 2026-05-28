@@ -4,6 +4,7 @@ import { BulkSignaturesPanel } from './components/BulkSignaturesPanel'
 import { Field, SelectInput, TextInput } from './components/Field'
 import { Panel } from './components/Panel'
 import { Toaster } from './components/Toaster'
+import { UpdatePrompt } from './components/UpdatePrompt'
 import { useSignatureApp } from './hooks/useSignatureApp'
 import { outlookHelpStatusHtml, t } from './i18n'
 import { fileToDataUrl } from './lib/signatureUtils'
@@ -868,6 +869,7 @@ export default function App() {
         </details>
       </section>
       <Toaster toasts={app.toasts} onDismiss={app.dismissToast} />
+      <UpdatePrompt lang={lang} />
     </main>
   )
 }

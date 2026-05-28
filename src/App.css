@@ -224,6 +224,48 @@ transform: translateY(0);
 }
 }
 
+.update-prompt {
+position: fixed;
+top: 16px;
+inset-inline: 16px;
+z-index: 1100;
+display: flex;
+flex-wrap: wrap;
+align-items: center;
+justify-content: space-between;
+gap: 12px;
+max-width: min(640px, calc(100vw - 32px));
+margin-inline: auto;
+padding: 14px 16px;
+border-radius: 12px;
+border: 1px solid #c7d7e8;
+background: #fff;
+box-shadow: 0 10px 28px rgba(76, 76, 78, 0.16);
+animation: toast-in 180ms ease-out;
+}
+
+.update-prompt-message {
+margin: 0;
+flex: 1 1 220px;
+font-size: 14px;
+font-weight: 600;
+line-height: 1.45;
+color: var(--brand-charcoal);
+}
+
+.update-prompt-actions {
+display: flex;
+flex-wrap: wrap;
+gap: 8px;
+}
+
+.update-prompt-reload,
+.update-prompt-dismiss {
+min-width: 88px;
+padding: 8px 14px;
+font-size: 13px;
+}
+
 h1 {
 margin: 0 0 6px;
 font-size: 24px;
