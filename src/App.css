@@ -121,6 +121,30 @@ cursor: pointer;
 transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
+.history-controls {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+}
+
+.history-controls button:disabled {
+opacity: 0.45;
+cursor: not-allowed;
+}
+
+.btn-undo,
+.btn-redo {
+background: #fff;
+color: var(--ink);
+border: 1px solid var(--border);
+}
+
+.btn-undo:hover:not(:disabled),
+.btn-redo:hover:not(:disabled) {
+background: #f8fafc;
+border-color: #cbd5e1;
+}
+
 .btn-export {
 background: var(--brand-cyan);
 color: #fff;

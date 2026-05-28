@@ -42,6 +42,7 @@ import {
   wrapHtmlDocument
 } from '../lib/signatureUtils'
 import { t, type AppLanguage } from '../i18n'
+import { useFormHistory } from './useFormHistory'
 import { useToasts } from './useToasts'
 import type { LinkImage, SignatureFormState } from '../types/signatureForm'
 
@@ -50,7 +51,16 @@ const MAX_SIGNATURE_IMAGE_BYTES = 5 * 1024 * 1024
 
 export const useSignatureApp = () => {
   const { toasts, addToast, dismissToast } = useToasts()
-  const [form, setForm] = useState<SignatureFormState>(createInitialFormState)
+  const {
+    form,
+    setForm,
+    updateForm,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    historyVersion
+  } = useFormHistory(createInitialFormState())
   const [outputHtml, setOutputHtml] = useState('')
   const [layout, setLayout] = useState(() => getLayoutSettings(createInitialFormState()))
   const [previewOpen, setPreviewOpen] = useState(true)
@@ -127,16 +137,18 @@ export const useSignatureApp = () => {
     }
   }, [form, addToast])
 
-  const updateForm = useCallback((patch: Partial<SignatureFormState>) => {
-    setForm((prev) => ({ ...prev, ...patch }))
-  }, [])
-
-  const handleLanguageChange = useCallback((nextLang: AppLanguage) => {
-    setForm((prev) => {
-      const updated = { ...prev, signatureLanguage: nextLang }
-      return nextLang === 'he' ? alignForHebrew(updated) : updated
-    })
-  }, [])
+  const handleLanguageChange = useCallback(
+    (nextLang: AppLanguage) => {
+      setForm(
+        (prev) => {
+          const updated = { ...prev, signatureLanguage: nextLang }
+          return nextLang === 'he' ? alignForHebrew(updated) : updated
+        },
+        { immediate: true }
+      )
+    },
+    [setForm]
+  )
 
   const handleFileToField = useCallback(
     async (file: File | undefined, field: keyof SignatureFormState) => {
@@ -151,35 +163,50 @@ export const useSignatureApp = () => {
     [updateForm]
   )
 
-  const addLinkImage = useCallback((seed?: Partial<LinkImage>) => {
-    const id = crypto.randomUUID()
-    setForm((prev) => ({
-      ...prev,
-      linkImages: [
-        ...prev.linkImages,
-        {
-          id,
-          imageUrl: seed?.imageUrl ?? '',
-          href: seed?.href ?? '',
-          alt: seed?.alt ?? t(prev.signatureLanguage, 'linkedImageAlt')
-        }
-      ]
-    }))
-  }, [])
+  const addLinkImage = useCallback(
+    (seed?: Partial<LinkImage>) => {
+      const id = crypto.randomUUID()
+      setForm(
+        (prev) => ({
+          ...prev,
+          linkImages: [
+            ...prev.linkImages,
+            {
+              id,
+              imageUrl: seed?.imageUrl ?? '',
+              href: seed?.href ?? '',
+              alt: seed?.alt ?? t(prev.signatureLanguage, 'linkedImageAlt')
+            }
+          ]
+        }),
+        { immediate: true }
+      )
+    },
+    [setForm]
+  )
 
-  const updateLinkImage = useCallback((id: string, patch: Partial<LinkImage>) => {
-    setForm((prev) => ({
-      ...prev,
-      linkImages: prev.linkImages.map((row) => (row.id === id ? { ...row, ...patch } : row))
-    }))
-  }, [])
+  const updateLinkImage = useCallback(
+    (id: string, patch: Partial<LinkImage>) => {
+      setForm((prev) => ({
+        ...prev,
+        linkImages: prev.linkImages.map((row) => (row.id === id ? { ...row, ...patch } : row))
+      }))
+    },
+    [setForm]
+  )
 
-  const removeLinkImage = useCallback((id: string) => {
-    setForm((prev) => ({
-      ...prev,
-      linkImages: prev.linkImages.filter((row) => row.id !== id)
-    }))
-  }, [])
+  const removeLinkImage = useCallback(
+    (id: string) => {
+      setForm(
+        (prev) => ({
+          ...prev,
+          linkImages: prev.linkImages.filter((row) => row.id !== id)
+        }),
+        { immediate: true }
+      )
+    },
+    [setForm]
+  )
 
   const revealSignaturePreview = useCallback((options?: { scrollToMain?: boolean; showInline?: boolean }) => {
     const scrollToMain = options?.scrollToMain ?? true
@@ -253,20 +280,31 @@ export const useSignatureApp = () => {
 
       const keepContact = mode === 'refine' || aiKeepContact
       if (mode === 'create') {
-        setForm((prev) => {
-          let next = {
-            ...prev,
-            facebookUrl: '',
-            instagramUrl: '',
-            linkedinUrl: '',
-            xUrl: '',
-            youtubeUrl: ''
-          }
-          if (!keepContact) {
-            next = { ...next, fullName: '', jobTitle: '', company: '', phone: '', email: '', website: '' }
-          }
-          return next
-        })
+        setForm(
+          (prev) => {
+            let next = {
+              ...prev,
+              facebookUrl: '',
+              instagramUrl: '',
+              linkedinUrl: '',
+              xUrl: '',
+              youtubeUrl: ''
+            }
+            if (!keepContact) {
+              next = {
+                ...next,
+                fullName: '',
+                jobTitle: '',
+                company: '',
+                phone: '',
+                email: '',
+                website: ''
+              }
+            }
+            return next
+          },
+          { immediate: true }
+        )
       }
 
       setAiWorking(true)
@@ -280,7 +318,7 @@ export const useSignatureApp = () => {
           mode,
           keepContact
         })
-        setForm((prev) => applyAiSignatureDesignToState(prev, design))
+        setForm((prev) => applyAiSignatureDesignToState(prev, design), { immediate: true })
         await generate()
         revealSignaturePreview({ scrollToMain: true, showInline: true })
         const successPrefix =
@@ -330,13 +368,16 @@ export const useSignatureApp = () => {
         const imageDataUrl = await fileToDataUrl(file)
         const design = await extractSignatureFromImageWithAi(imageDataUrl, { apiKey: aiApiKey })
         let nextForm: SignatureFormState | undefined
-        setForm((prev) => {
-          nextForm = applyAiSignatureDesignToState(
-            { ...prev, fullName: '', jobTitle: '', company: '', phone: '', email: '', website: '' },
-            design
-          )
-          return nextForm
-        })
+        setForm(
+          (prev) => {
+            nextForm = applyAiSignatureDesignToState(
+              { ...prev, fullName: '', jobTitle: '', company: '', phone: '', email: '', website: '' },
+              design
+            )
+            return nextForm
+          },
+          { immediate: true }
+        )
         await generate(nextForm)
         revealSignaturePreview({ scrollToMain: true, showInline: true })
         setImageImportStatus(`${t(lang, 'imageImportSuccess')} ${design.designSummary}`)
@@ -405,9 +446,9 @@ export const useSignatureApp = () => {
     if (!window.confirm(t(lang, 'resetFormConfirm'))) return
     clearStoredFormState()
     const defaults = createDefaultFormState()
-    setForm(defaults)
+    setForm(defaults, { immediate: true })
     generate(defaults).catch(() => undefined)
-  }, [generate, lang])
+  }, [generate, lang, setForm])
 
   const handleExportParams = useCallback(() => {
     downloadFormStateExport(form)
@@ -432,7 +473,7 @@ export const useSignatureApp = () => {
         skipNextSaveToastRef.current = true
         const nextForm =
           imported.kind === 'style' ? applyStyleImport(form, imported.style) : imported.form
-        setForm(nextForm)
+        setForm(nextForm, { immediate: true })
         await generate(nextForm)
         addToast(
           t(lang, imported.kind === 'style' ? 'paramsStyleImportSuccess' : 'paramsImportSuccess'),
@@ -442,8 +483,39 @@ export const useSignatureApp = () => {
         addToast(t(lang, 'paramsImportFailed'), 'error')
       }
     },
-    [addToast, form, generate, lang]
+    [addToast, form, generate, lang, setForm]
   )
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement
+      ) {
+        return
+      }
+      const mod = event.ctrlKey || event.metaKey
+      if (!mod) return
+      const key = event.key.toLowerCase()
+      if (key === 'z' && !event.shiftKey) {
+        if (!canUndo) return
+        event.preventDefault()
+        undo()
+      } else if (key === 'z' && event.shiftKey) {
+        if (!canRedo) return
+        event.preventDefault()
+        redo()
+      } else if (key === 'y') {
+        if (!canRedo) return
+        event.preventDefault()
+        redo()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [canRedo, canUndo, redo, undo, historyVersion])
 
   return {
     form,
@@ -491,6 +563,10 @@ export const useSignatureApp = () => {
     handleExportParams,
     handleExportStyle,
     handleImportParams,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
     lang,
     wrapHtmlDocument: (body: string) => wrapHtmlDocument(body, lang, form.fontFamily)
   }

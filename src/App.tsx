@@ -137,7 +137,7 @@ export default function App() {
 
   const applyBrandPreset = (presetId: string) => {
     const preset = SBA_BRAND_PRESETS.find((item) => item.id === presetId)
-    if (preset) updateForm(preset.values)
+    if (preset) updateForm(preset.values, { immediate: true })
     setBrandPresetId('')
   }
 
@@ -165,6 +165,26 @@ export default function App() {
               <p className="lead">{t(lang, 'pageLead')}</p>
             </div>
             <div className="form-storage-bar">
+              <div className="history-controls" role="group" aria-label={t(lang, 'undo')}>
+                <button
+                  type="button"
+                  className="btn-undo"
+                  disabled={!app.canUndo}
+                  title={t(lang, 'undoShortcut')}
+                  onClick={app.undo}
+                >
+                  {t(lang, 'undo')}
+                </button>
+                <button
+                  type="button"
+                  className="btn-redo"
+                  disabled={!app.canRedo}
+                  title={t(lang, 'redoShortcut')}
+                  onClick={app.redo}
+                >
+                  {t(lang, 'redo')}
+                </button>
+              </div>
               <button type="button" className="btn-export" onClick={app.handleExportParams}>
                 {t(lang, 'exportParams')}
               </button>
