@@ -1,16 +1,23 @@
-﻿:root {
+﻿@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap');
+
+:root {
 color-scheme: light;
 font-family: Arial, Helvetica, sans-serif;
---border: #dbe1ea;
---muted: #6b7280;
---surface: #f8fafc;
---accent: #1d4ed8;
+--brand-charcoal: #4c4c4e;
+--brand-light: #dadee7;
+--brand-magenta: #88236f;
+--brand-magenta-soft: #a74e8d;
+--brand-cyan: #30bbed;
+--border: #dadee7;
+--muted: #4d4c4f;
+--surface: #f7f8fb;
+--accent: #88236f;
 }
 
 body {
 margin: 0;
-background: #f0f4f9;
-color: #1f2937;
+background: #eef3f8;
+color: var(--brand-charcoal);
 }
 
 .page {
@@ -70,7 +77,7 @@ font-size: 14px;
 font-weight: 700;
 cursor: pointer;
 user-select: none;
-color: #111827;
+color: var(--brand-charcoal);
 }
 
 .panel > summary::-webkit-details-marker {
@@ -82,8 +89,8 @@ content: '';
 flex-shrink: 0;
 width: 8px;
 height: 8px;
-border-right: 2px solid #64748b;
-border-bottom: 2px solid #64748b;
+border-right: 2px solid var(--brand-magenta-soft);
+border-bottom: 2px solid var(--brand-magenta-soft);
 transform: rotate(45deg);
 transition: transform 0.15s ease;
 margin-top: -4px;
@@ -95,7 +102,7 @@ margin-top: 4px;
 }
 
 .panel > summary:hover {
-background: #f1f5f9;
+background: #f2f5fa;
 }
 
 .panel-body {
@@ -174,7 +181,7 @@ display: grid;
 gap: 5px;
 font-size: 12px;
 font-weight: 600;
-color: #374151;
+color: var(--brand-charcoal);
 }
 
 input,
@@ -191,8 +198,8 @@ background: #fff;
 
 input:focus,
 select:focus {
-outline: 2px solid #bfdbfe;
-border-color: #93c5fd;
+outline: 2px solid rgba(48, 187, 237, 0.35);
+border-color: var(--brand-cyan);
 }
 
 .hint {
@@ -215,7 +222,7 @@ cursor: pointer;
 }
 
 .hint .text-link:hover {
-color: #1e40af;
+color: var(--brand-magenta-soft);
 }
 
 .hint .outlook-folder-path {
@@ -263,16 +270,16 @@ color: #fff;
 }
 
 .primary:hover {
-background: #1e40af;
+background: #6f1c5b;
 }
 
 .secondary {
-background: #e5e7eb;
-color: #111827;
+background: var(--brand-light);
+color: var(--brand-charcoal);
 }
 
 .secondary:hover {
-background: #d1d5db;
+background: #cfd5df;
 }
 
 .link-image-row {
@@ -298,7 +305,7 @@ font-size: 15px;
 
 .preview-frame {
 min-height: 200px;
-border: 1px dashed #cbd5e1;
+border: 1px dashed var(--brand-cyan);
 border-radius: 8px;
 padding: 12px;
 background: #fff;
@@ -340,7 +347,7 @@ gap: 5px;
 margin-bottom: 10px;
 font-size: 12px;
 font-weight: 600;
-color: #374151;
+color: var(--brand-charcoal);
 }
 
 .ai-preset-label select {
@@ -367,7 +374,7 @@ gap: 12px 16px;
 margin-bottom: 10px;
 font-size: 13px;
 font-weight: 600;
-color: #374151;
+color: var(--brand-charcoal);
 }
 
 .ai-mode label {
@@ -390,7 +397,7 @@ gap: 8px;
 margin-bottom: 10px;
 font-size: 13px;
 font-weight: 600;
-color: #374151;
+color: var(--brand-charcoal);
 cursor: pointer;
 }
 

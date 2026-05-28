@@ -8,6 +8,7 @@ import { fileToDataUrl } from './lib/signatureUtils'
 import type { SignatureFormState } from './types/signatureForm'
 
 const FONT_OPTIONS = [
+  { value: "'Rubik', Arial, Helvetica, sans-serif", label: 'Rubik' },
   { value: 'Arial, Helvetica, sans-serif', label: 'Arial' },
   {
     value: "'Comeback SemiBold', 'Comeback Semi', Comeback, Arial, Helvetica, sans-serif",

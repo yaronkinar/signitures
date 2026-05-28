@@ -3,6 +3,7 @@ export type VerticalAlign = 'top' | 'middle' | 'bottom'
 export type AppLanguage = 'en' | 'he'
 
 export const ALLOWED_FONT_FAMILIES = [
+  "'Rubik', Arial, Helvetica, sans-serif",
   'Arial, Helvetica, sans-serif',
   "'Comeback SemiBold', 'Comeback Semi', Comeback, Arial, Helvetica, sans-serif",
   "'Calibri', Arial, Helvetica, sans-serif",

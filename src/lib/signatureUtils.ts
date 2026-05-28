@@ -14,7 +14,7 @@ export const hasHebrew = (value: string): boolean => /[\u0590-\u05FF]/.test(valu
 
 export const sanitizeFontFamily = (value: string): string => {
   const cleaned = value.replace(/[;{}<>]/g, '').trim()
-  return cleaned || "'Comeback SemiBold', 'Comeback Semi', Comeback, Arial, Helvetica, sans-serif"
+  return cleaned || "'Rubik', Arial, Helvetica, sans-serif"
 }
 
 export const parseNumberInput = (
@@ -100,11 +100,11 @@ export const getLayoutSettings = (form: SignatureFormState): SignatureLayoutSett
   logoOffsetY: parseNumberInput(form.logoOffsetY, 6, -120, 120),
   dividerThickness: parseNumberInput(form.dividerThickness, 2, 0, 10),
   socialIconGap: parseNumberInput(form.socialIconGap, 5, 0, 20),
-  accentColor: parseColorInput(form.accentColor, '#92278f'),
-  textColor: parseColorInput(form.textColor, '#111827'),
-  secondaryTextColor: parseColorInput(form.secondaryTextColor, '#666666'),
-  dividerColor: parseColorInput(form.dividerColor, '#bcbec0'),
-  linkColor: parseColorInput(form.linkColor, '#5a5a5a'),
+  accentColor: parseColorInput(form.accentColor, '#88236f'),
+  textColor: parseColorInput(form.textColor, '#4c4c4e'),
+  secondaryTextColor: parseColorInput(form.secondaryTextColor, '#4d4c4f'),
+  dividerColor: parseColorInput(form.dividerColor, '#30bbed'),
+  linkColor: parseColorInput(form.linkColor, '#4c4c4e'),
   backgroundColor: parseColorInput(form.backgroundColor, '#ffffff')
 })
 
@@ -147,7 +147,7 @@ export const getDefaultDesignSnapshot = (lang: AppLanguage): SignatureFormSnapsh
   phone: '',
   email: '',
   website: '',
-  fontFamily: "'Comeback SemiBold', 'Comeback Semi', Comeback, Arial, Helvetica, sans-serif",
+  fontFamily: "'Rubik', Arial, Helvetica, sans-serif",
   nameFontSize: 28,
   titleFontSize: 19,
   bodyFontSize: 12,
@@ -161,8 +161,8 @@ export const getDefaultDesignSnapshot = (lang: AppLanguage): SignatureFormSnapsh
   emailAlign: 'right',
   logoAlign: 'right',
   verticalAlign: 'top',
-  accentColor: '#92278f',
-  secondaryTextColor: '#666666',
+  accentColor: '#88236f',
+  secondaryTextColor: '#4d4c4f',
   socialIconGap: 5,
   dividerThickness: 2
 })

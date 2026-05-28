@@ -23,8 +23,7 @@ export const createDefaultFormState = (): SignatureFormState => ({
   bannerUrl: '',
   bannerLink: '',
   linkImages: [{ id: 'initial-link-image', imageUrl: '', href: '', alt: '' }],
-  fontFamily:
-    "'Comeback SemiBold', 'Comeback Semi', Comeback, Arial, Helvetica, sans-serif",
+  fontFamily: "'Rubik', Arial, Helvetica, sans-serif",
   nameFontSize: 28,
   titleFontSize: 19,
   bodyFontSize: 12,
@@ -44,10 +43,10 @@ export const createDefaultFormState = (): SignatureFormState => ({
   logoOffsetY: 6,
   dividerThickness: 2,
   socialIconGap: 5,
-  accentColor: '#92278f',
-  textColor: '#111827',
-  secondaryTextColor: '#666666',
-  dividerColor: '#bcbec0',
-  linkColor: '#5a5a5a',
+  accentColor: '#88236f',
+  textColor: '#4c4c4e',
+  secondaryTextColor: '#4d4c4f',
+  dividerColor: '#30bbed',
+  linkColor: '#4c4c4e',
   backgroundColor: '#ffffff'
 })
