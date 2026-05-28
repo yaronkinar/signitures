@@ -4,6 +4,7 @@ export type AppLanguage = 'en' | 'he'
 
 export const ALLOWED_FONT_FAMILIES = [
   "'Rubik', Arial, Helvetica, sans-serif",
+  "'Cairo', Arial, Helvetica, sans-serif",
   'Arial, Helvetica, sans-serif',
   "'Comeback SemiBold', 'Comeback Semi', Comeback, Arial, Helvetica, sans-serif",
   "'Calibri', Arial, Helvetica, sans-serif",
@@ -30,6 +31,9 @@ export type AiSignatureDesign = {
   }
   layout?: {
     fontFamily?: string
+    nameFontWeight?: number
+    titleFontWeight?: number
+    bodyFontWeight?: number
     nameFontSize?: number
     titleFontSize?: number
     bodyFontSize?: number
@@ -76,6 +80,9 @@ export type SignatureFormSnapshot = {
   email: string
   website: string
   fontFamily: string
+  nameFontWeight: number
+  titleFontWeight: number
+  bodyFontWeight: number
   nameFontSize: number
   titleFontSize: number
   bodyFontSize: number
@@ -108,6 +115,9 @@ export const AI_DESIGN_JSON_SCHEMA = `{
   },
   "layout": {
     "fontFamily": "one of the allowed font stack values",
+    "nameFontWeight": "300 | 400 | 500 | 600 | 700 | 800",
+    "titleFontWeight": "300 | 400 | 500 | 600 | 700 | 800",
+    "bodyFontWeight": "300 | 400 | 500 | 600 | 700 | 800",
     "nameFontSize": 14-72,
     "titleFontSize": 10-48,
     "bodyFontSize": 9-24,

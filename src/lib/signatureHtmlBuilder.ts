@@ -29,6 +29,9 @@ export const buildSignatureHtml = (
   const linkColor = layout.linkColor
   const backgroundColor = layout.backgroundColor
   const signatureWidth = layout.signatureWidth
+  const nameFontWeight = layout.nameFontWeight
+  const titleFontWeight = layout.titleFontWeight
+  const bodyFontWeight = layout.bodyFontWeight
   const textColumnWidth = Math.min(layout.textColumnWidth, signatureWidth - 80)
   const logoColumnWidth = Math.max(60, signatureWidth - textColumnWidth - layout.dividerThickness)
   const fontFamilyCss = escapeHtml(layout.fontFamily)
@@ -60,7 +63,7 @@ export const buildSignatureHtml = (
   ): string =>
     `<tr>
       <td dir="${contactDirection}" align="${contentAlignAttr}" style="padding:3px ${edgeInset}px 6px;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};text-align:${contentAlign};border-bottom:1px solid ${contactRowBorder};">
-        <span style="font-weight:700;color:${secondaryTextColor};">${labelHtml}</span>&nbsp;<span style="${valueStyle}">${valueHtml}</span>
+        <span style="font-weight:${titleFontWeight};color:${secondaryTextColor};">${labelHtml}</span>&nbsp;<span style="${valueStyle}font-weight:${bodyFontWeight};">${valueHtml}</span>
       </td>
     </tr>`
 
@@ -149,8 +152,8 @@ export const buildSignatureHtml = (
       layout.textOffsetY
     ) + edgeInset}px;padding-bottom:${Math.max(0, -layout.textOffsetY) + edgeInset}px;width:${textColumnWidth}px;max-width:${textColumnWidth}px;text-align:${contentAlign};unicode-bidi:plaintext;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contentAlignAttr}" dir="${nameTitleDirection}" style="text-align:${contentAlign};">
-        <tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="font-size:${layout.nameFontSize}px;line-height:${nameLineHeight};font-weight:700;color:${accentColor};padding:0 0 1px;text-align:${contentAlign};unicode-bidi:plaintext;">${fullName || strings.fullNamePlaceholder}</td></tr>
-        <tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="font-size:${layout.titleFontSize}px;line-height:${titleLineHeight};font-weight:700;color:${secondaryTextColor};padding:0 0 3px;text-align:${contentAlign};unicode-bidi:plaintext;">${jobTitle || strings.jobTitlePlaceholder}${company ? `<br style="line-height:${titleLineHeight};" /><span style="font-weight:700;line-height:${titleLineHeight};">${company}</span>` : ''}</td></tr>
+        <tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="font-size:${layout.nameFontSize}px;line-height:${nameLineHeight};font-weight:${nameFontWeight};color:${accentColor};padding:0 0 1px;text-align:${contentAlign};unicode-bidi:plaintext;">${fullName || strings.fullNamePlaceholder}</td></tr>
+        <tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="font-size:${layout.titleFontSize}px;line-height:${titleLineHeight};font-weight:${titleFontWeight};color:${secondaryTextColor};padding:0 0 3px;text-align:${contentAlign};unicode-bidi:plaintext;">${jobTitle || strings.jobTitlePlaceholder}${company ? `<br style="line-height:${titleLineHeight};" /><span style="font-weight:${titleFontWeight};line-height:${titleLineHeight};">${company}</span>` : ''}</td></tr>
         ${contactRows.length ? `<tr><td dir="${contactDirection}" align="${contentAlignAttr}" style="padding-top:2px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contentAlignAttr}" dir="${contactDirection}" style="text-align:${contentAlign};border-collapse:collapse;">${contactRows.join('')}</table></td></tr>` : ''}
         ${socialTextRow}
       </table>

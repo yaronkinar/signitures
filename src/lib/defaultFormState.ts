@@ -1,5 +1,8 @@
 import { DEFAULT_LOGO_DATA_URL } from '../defaultLogoDataUrl'
+import { SBA_BRAND_PRESETS } from '../brandPresets'
 import type { SignatureFormState } from '../types/signatureForm'
+
+const DEFAULT_BRAND_PRESET = SBA_BRAND_PRESETS[0].values
 
 export const createDefaultFormState = (): SignatureFormState => ({
   signatureLanguage: 'he',
@@ -23,7 +26,10 @@ export const createDefaultFormState = (): SignatureFormState => ({
   bannerUrl: '',
   bannerLink: '',
   linkImages: [{ id: 'initial-link-image', imageUrl: '', href: '', alt: '' }],
-  fontFamily: "'Rubik', Arial, Helvetica, sans-serif",
+  fontFamily: DEFAULT_BRAND_PRESET.fontFamily,
+  nameFontWeight: 700,
+  titleFontWeight: 600,
+  bodyFontWeight: 400,
   nameFontSize: 28,
   titleFontSize: 19,
   bodyFontSize: 12,
@@ -43,10 +49,10 @@ export const createDefaultFormState = (): SignatureFormState => ({
   logoOffsetY: 6,
   dividerThickness: 2,
   socialIconGap: 5,
-  accentColor: '#88236f',
-  textColor: '#4c4c4e',
-  secondaryTextColor: '#4d4c4f',
-  dividerColor: '#30bbed',
-  linkColor: '#4c4c4e',
-  backgroundColor: '#ffffff'
+  accentColor: DEFAULT_BRAND_PRESET.accentColor,
+  textColor: DEFAULT_BRAND_PRESET.textColor,
+  secondaryTextColor: DEFAULT_BRAND_PRESET.secondaryTextColor,
+  dividerColor: DEFAULT_BRAND_PRESET.dividerColor,
+  linkColor: DEFAULT_BRAND_PRESET.linkColor,
+  backgroundColor: DEFAULT_BRAND_PRESET.backgroundColor
 })

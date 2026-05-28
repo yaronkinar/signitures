@@ -31,6 +31,15 @@ const applyLayout = (
 
   let next = { ...state }
   if (layout.fontFamily) next.fontFamily = layout.fontFamily
+  if (layout.nameFontWeight !== undefined) {
+    next.nameFontWeight = clamp(layout.nameFontWeight, 300, 800)
+  }
+  if (layout.titleFontWeight !== undefined) {
+    next.titleFontWeight = clamp(layout.titleFontWeight, 300, 800)
+  }
+  if (layout.bodyFontWeight !== undefined) {
+    next.bodyFontWeight = clamp(layout.bodyFontWeight, 300, 800)
+  }
   if (layout.nameFontSize !== undefined) {
     next.nameFontSize = clamp(layout.nameFontSize, 14, 72)
   }

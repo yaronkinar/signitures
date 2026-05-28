@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { SBA_BRAND_COLORS, SBA_BRAND_PRESETS } from './brandPresets'
 import { BulkSignaturesPanel } from './components/BulkSignaturesPanel'
 import { Field, SelectInput, TextInput } from './components/Field'
 import { Panel } from './components/Panel'
@@ -9,6 +10,7 @@ import type { SignatureFormState } from './types/signatureForm'
 
 const FONT_OPTIONS = [
   { value: "'Rubik', Arial, Helvetica, sans-serif", label: 'Rubik' },
+  { value: "'Cairo', Arial, Helvetica, sans-serif", label: 'Cairo' },
   { value: 'Arial, Helvetica, sans-serif', label: 'Arial' },
   {
     value: "'Comeback SemiBold', 'Comeback Semi', Comeback, Arial, Helvetica, sans-serif",
@@ -21,6 +23,15 @@ const FONT_OPTIONS = [
   { value: "'Trebuchet MS', Arial, Helvetica, sans-serif", label: 'Trebuchet MS' },
   { value: "'Times New Roman', Times, serif", label: 'Times New Roman' },
   { value: "'Georgia', serif", label: 'Georgia' }
+] as const
+
+const FONT_WEIGHT_OPTIONS = [
+  { value: 300, label: 'Light 300' },
+  { value: 400, label: 'Regular 400' },
+  { value: 500, label: 'Medium 500' },
+  { value: 600, label: 'SemiBold 600' },
+  { value: 700, label: 'Bold 700' },
+  { value: 800, label: 'ExtraBold 800' }
 ] as const
 
 const SOCIAL_NETWORKS = [
@@ -56,6 +67,7 @@ export default function App() {
   const app = useSignatureApp()
   const { form, updateForm, lang } = app
   const [aiPresetId, setAiPresetId] = useState('')
+  const [brandPresetId, setBrandPresetId] = useState('')
   const [signatureImageFile, setSignatureImageFile] = useState<File | undefined>()
 
   const alignOptions = [
@@ -84,6 +96,12 @@ export default function App() {
   const applyPreset = (presetId: string) => {
     if (presetId) app.applyAiPreset(presetId)
     setAiPresetId('')
+  }
+
+  const applyBrandPreset = (presetId: string) => {
+    const preset = SBA_BRAND_PRESETS.find((item) => item.id === presetId)
+    if (preset) updateForm(preset.values)
+    setBrandPresetId('')
   }
 
   const aiStatusClass =
@@ -369,6 +387,29 @@ export default function App() {
 
           <Panel summary={t(lang, 'layoutTypography')}>
             <div className="grid">
+              <div className="brand-preset-row">
+                <Field label={t(lang, 'brandPreset')}>
+                  <SelectInput value={brandPresetId} onChange={(e) => applyBrandPreset(e.target.value)}>
+                    <option value="">{t(lang, 'brandPresetPlaceholder')}</option>
+                    {SBA_BRAND_PRESETS.map((preset) => (
+                      <option key={preset.id} value={preset.id}>
+                        {preset.label[lang]}
+                      </option>
+                    ))}
+                  </SelectInput>
+                </Field>
+                <div className="brand-swatches" aria-label={t(lang, 'brandColors')}>
+                  {SBA_BRAND_COLORS.map((color) => (
+                    <span
+                      key={color}
+                      className="brand-swatch"
+                      title={color}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+                <p className="hint">{t(lang, 'brandPresetHint')}</p>
+              </div>
               <Field label={t(lang, 'fontFamily')}>
                 <SelectInput
                   value={form.fontFamily}
@@ -381,6 +422,26 @@ export default function App() {
                   ))}
                 </SelectInput>
               </Field>
+              {(
+                [
+                  ['nameFontWeight', 'nameFontWeight'],
+                  ['titleFontWeight', 'titleFontWeight'],
+                  ['bodyFontWeight', 'bodyFontWeight']
+                ] as const
+              ).map(([key, labelKey]) => (
+                <Field key={key} label={t(lang, labelKey)}>
+                  <SelectInput
+                    value={String(form[key])}
+                    onChange={(e) => updateForm({ [key]: Number(e.target.value) })}
+                  >
+                    {FONT_WEIGHT_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </SelectInput>
+                </Field>
+              ))}
               <Field label={t(lang, 'nameFontSize')}>
                 <input
                   type="number"

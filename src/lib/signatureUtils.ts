@@ -40,6 +40,9 @@ export const parseEnumInput = <T extends string>(
 export const parseColorInput = (value: string, fallback: string): string =>
   /^#[0-9a-fA-F]{6}$/.test(value.trim()) ? value.trim() : fallback
 
+export const parseFontWeightInput = (value: string | number, fallback: number): number =>
+  Number(parseEnumInput(String(value), ['300', '400', '500', '600', '700', '800'] as const, String(fallback)))
+
 export const normalizeUrl = (value: string): string => {
   const trimmed = value.trim()
   if (!trimmed) return ''
@@ -73,6 +76,9 @@ ${bodyHtml}
 
 export const getLayoutSettings = (form: SignatureFormState): SignatureLayoutSettings => ({
   fontFamily: sanitizeFontFamily(form.fontFamily),
+  nameFontWeight: parseFontWeightInput(form.nameFontWeight, 700),
+  titleFontWeight: parseFontWeightInput(form.titleFontWeight, 600),
+  bodyFontWeight: parseFontWeightInput(form.bodyFontWeight, 400),
   nameFontSize: parseNumberInput(form.nameFontSize, 28, 14, 72),
   titleFontSize: parseNumberInput(form.titleFontSize, 19, 10, 48),
   bodyFontSize: parseNumberInput(form.bodyFontSize, 12, 9, 24),
@@ -104,7 +110,7 @@ export const getLayoutSettings = (form: SignatureFormState): SignatureLayoutSett
   textColor: parseColorInput(form.textColor, '#4c4c4e'),
   secondaryTextColor: parseColorInput(form.secondaryTextColor, '#4d4c4f'),
   dividerColor: parseColorInput(form.dividerColor, '#30bbed'),
-  linkColor: parseColorInput(form.linkColor, '#4c4c4e'),
+  linkColor: parseColorInput(form.linkColor, '#33ccff'),
   backgroundColor: parseColorInput(form.backgroundColor, '#ffffff')
 })
 
@@ -119,6 +125,9 @@ export const formToSnapshot = (form: SignatureFormState): SignatureFormSnapshot 
     email: form.email.trim(),
     website: form.website.trim(),
     fontFamily: layout.fontFamily,
+    nameFontWeight: layout.nameFontWeight,
+    titleFontWeight: layout.titleFontWeight,
+    bodyFontWeight: layout.bodyFontWeight,
     nameFontSize: layout.nameFontSize,
     titleFontSize: layout.titleFontSize,
     bodyFontSize: layout.bodyFontSize,
@@ -148,6 +157,9 @@ export const getDefaultDesignSnapshot = (lang: AppLanguage): SignatureFormSnapsh
   email: '',
   website: '',
   fontFamily: "'Rubik', Arial, Helvetica, sans-serif",
+  nameFontWeight: 700,
+  titleFontWeight: 600,
+  bodyFontWeight: 400,
   nameFontSize: 28,
   titleFontSize: 19,
   bodyFontSize: 12,

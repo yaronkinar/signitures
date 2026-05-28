@@ -12,6 +12,9 @@ export type LinkImage = {
 
 export type SignatureLayoutSettings = {
   fontFamily: string
+  nameFontWeight: number
+  titleFontWeight: number
+  bodyFontWeight: number
   nameFontSize: number
   titleFontSize: number
   bodyFontSize: number
