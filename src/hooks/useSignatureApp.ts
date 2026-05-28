@@ -34,13 +34,14 @@ import {
   wrapHtmlDocument
 } from '../lib/signatureUtils'
 import { t, type AppLanguage } from '../i18n'
+import { useToasts } from './useToasts'
 import type { LinkImage, SignatureFormState } from '../types/signatureForm'
 
 export type AiStatusTone = 'idle' | 'working' | 'success' | 'error'
-export type FormSaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 const MAX_SIGNATURE_IMAGE_BYTES = 5 * 1024 * 1024
 
 export const useSignatureApp = () => {
+  const { toasts, addToast, dismissToast } = useToasts()
   const [form, setForm] = useState<SignatureFormState>(createInitialFormState)
   const [outputHtml, setOutputHtml] = useState('')
   const [layout, setLayout] = useState(() => getLayoutSettings(createInitialFormState()))
@@ -58,13 +59,10 @@ export const useSignatureApp = () => {
   const [imageImportStatus, setImageImportStatus] = useState('')
   const [imageImportStatusTone, setImageImportStatusTone] = useState<AiStatusTone>('idle')
   const [imageImportWorking, setImageImportWorking] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<FormSaveStatus>('idle')
-
   const previewCardRef = useRef<HTMLElement>(null)
   const debounceRef = useRef<number | null>(null)
   const saveDebounceRef = useRef<number | null>(null)
-  const saveStatusTimeoutRef = useRef<number | null>(null)
-  const skipNextSaveStatusRef = useRef(true)
+  const skipNextSaveToastRef = useRef(true)
 
   const lang = form.signatureLanguage
 
@@ -102,42 +100,24 @@ export const useSignatureApp = () => {
     if (saveDebounceRef.current !== null) {
       window.clearTimeout(saveDebounceRef.current)
     }
-    if (!skipNextSaveStatusRef.current) {
-      setSaveStatus('saving')
-    }
     saveDebounceRef.current = window.setTimeout(() => {
       saveDebounceRef.current = null
       const saved = storeFormState(form)
-      if (skipNextSaveStatusRef.current) {
-        skipNextSaveStatusRef.current = false
+      if (skipNextSaveToastRef.current) {
+        skipNextSaveToastRef.current = false
         return
       }
-      setSaveStatus(saved ? 'saved' : 'error')
-      if (saveStatusTimeoutRef.current !== null) {
-        window.clearTimeout(saveStatusTimeoutRef.current)
-      }
-      if (saved) {
-        saveStatusTimeoutRef.current = window.setTimeout(() => {
-          saveStatusTimeoutRef.current = null
-          setSaveStatus('idle')
-        }, 2000)
-      }
+      addToast(
+        saved ? t(form.signatureLanguage, 'formSaved') : t(form.signatureLanguage, 'formSaveFailed'),
+        saved ? 'success' : 'error'
+      )
     }, 400)
     return () => {
       if (saveDebounceRef.current !== null) {
         window.clearTimeout(saveDebounceRef.current)
       }
     }
-  }, [form])
-
-  useEffect(
-    () => () => {
-      if (saveStatusTimeoutRef.current !== null) {
-        window.clearTimeout(saveStatusTimeoutRef.current)
-      }
-    },
-    []
-  )
+  }, [form, addToast])
 
   const updateForm = useCallback((patch: Partial<SignatureFormState>) => {
     setForm((prev) => ({ ...prev, ...patch }))
@@ -417,7 +397,6 @@ export const useSignatureApp = () => {
     if (!window.confirm(t(lang, 'resetFormConfirm'))) return
     clearStoredFormState()
     const defaults = createDefaultFormState()
-    setSaveStatus('idle')
     setForm(defaults)
     generate(defaults).catch(() => undefined)
   }, [generate, lang])
@@ -462,7 +441,8 @@ export const useSignatureApp = () => {
     addLinkImage,
     updateLinkImage,
     removeLinkImage,
-    saveStatus,
+    toasts,
+    dismissToast,
     resetFormToDefaults,
     lang,
     wrapHtmlDocument: (body: string) => wrapHtmlDocument(body, lang)

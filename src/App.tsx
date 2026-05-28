@@ -3,6 +3,7 @@ import { SBA_BRAND_COLORS, SBA_BRAND_PRESETS } from './brandPresets'
 import { BulkSignaturesPanel } from './components/BulkSignaturesPanel'
 import { Field, SelectInput, TextInput } from './components/Field'
 import { Panel } from './components/Panel'
+import { Toaster } from './components/Toaster'
 import { useSignatureApp } from './hooks/useSignatureApp'
 import { outlookHelpStatusHtml, t } from './i18n'
 import { fileToDataUrl } from './lib/signatureUtils'
@@ -153,7 +154,8 @@ export default function App() {
 
   return (
     <main className="page">
-      <section className="card">
+      <div className="workspace">
+      <section className="card card-editor">
         <div className="card-header">
           <div className="card-header-row">
             <div>
@@ -161,17 +163,6 @@ export default function App() {
               <p className="lead">{t(lang, 'pageLead')}</p>
             </div>
             <div className="form-storage-bar">
-              {app.saveStatus !== 'idle' && (
-                <span
-                  className={`save-status save-status--${app.saveStatus}`}
-                  role="status"
-                  aria-live="polite"
-                >
-                  {app.saveStatus === 'saving' && t(lang, 'formSaving')}
-                  {app.saveStatus === 'saved' && t(lang, 'formSaved')}
-                  {app.saveStatus === 'error' && t(lang, 'formSaveFailed')}
-                </span>
-              )}
               <button type="button" className="secondary" onClick={app.resetFormToDefaults}>
                 {t(lang, 'resetForm')}
               </button>
@@ -830,28 +821,24 @@ export default function App() {
         </div>
       </section>
 
-      <section
+      <aside
         ref={app.previewCardRef}
-        className={`card card-preview${app.previewHighlight ? ' preview-highlight' : ''}`}
+        className={`card card-preview sidebar-preview${app.previewHighlight ? ' preview-highlight' : ''}`}
+        aria-label={t(lang, 'preview')}
       >
-        <details
-          className="panel"
-          open={app.previewOpen}
-          onToggle={(e) => app.setPreviewOpen(e.currentTarget.open)}
-          style={{ border: 0, background: 'transparent' }}
-        >
-          <summary>{t(lang, 'preview')}</summary>
-          <div className="panel-body" style={{ borderTop: 0 }}>
-            <div className="preview-frame">
-              <PreviewBox
-                html={app.outputHtml}
-                width={app.layout.signatureWidth}
-                minHeight={app.layout.signatureHeight}
-              />
-            </div>
-          </div>
-        </details>
-      </section>
+        <div className="sidebar-preview-header">
+          <h2>{t(lang, 'preview')}</h2>
+          <p className="hint">{t(lang, 'livePreviewHint')}</p>
+        </div>
+        <div className="preview-frame">
+          <PreviewBox
+            html={app.outputHtml}
+            width={app.layout.signatureWidth}
+            minHeight={app.layout.signatureHeight}
+          />
+        </div>
+      </aside>
+      </div>
 
       <section className="card card-output">
         <details className="panel" style={{ border: 0, background: 'transparent' }}>
@@ -861,6 +848,7 @@ export default function App() {
           </div>
         </details>
       </section>
+      <Toaster toasts={app.toasts} onDismiss={app.dismissToast} />
     </main>
   )
 }
