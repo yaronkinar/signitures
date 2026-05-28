@@ -66,6 +66,7 @@ var AI_DESIGN_JSON_SCHEMA = `{
     "nameTitleAlign": "left | center | right",
     "emailAlign": "left | center | right",
     "logoAlign": "left | center | right",
+    "logoSide": "left | right",
     "verticalAlign": "top | middle | bottom",
     "textOffsetX": -120 to 120,
     "textOffsetY": -120 to 120,
@@ -154,6 +155,7 @@ var pickNumber = (value) => {
 };
 var pickAlign = (value) => value === "left" || value === "center" || value === "right" ? value : void 0;
 var pickVerticalAlign = (value) => value === "top" || value === "middle" || value === "bottom" ? value : void 0;
+var pickLogoSide = (value) => value === "left" || value === "right" ? value : void 0;
 var pickLanguage = (value) => value === "en" || value === "he" ? value : void 0;
 var pickHexColor = (value) => {
   const raw = pickString(value);
@@ -220,6 +222,7 @@ var parseAiSignatureDesign = (raw) => {
       nameTitleAlign: pickAlign(parsed.layout.nameTitleAlign),
       emailAlign: pickAlign(parsed.layout.emailAlign),
       logoAlign: pickAlign(parsed.layout.logoAlign),
+      logoSide: pickLogoSide(parsed.layout.logoSide),
       verticalAlign: pickVerticalAlign(parsed.layout.verticalAlign),
       textOffsetX: pickNumber(parsed.layout.textOffsetX),
       textOffsetY: pickNumber(parsed.layout.textOffsetY),

@@ -61,6 +61,8 @@ export const buildAiBriefPresets = (
   const font = fontDisplayName(snapshot.fontFamily)
   const align = alignWord(snapshot.signatureLanguage, snapshot.nameTitleAlign)
   const logoAlign = alignWord(snapshot.signatureLanguage, snapshot.logoAlign)
+  const logoSide = snapshot.logoSide ?? 'right'
+  const oppositeLogoSide = logoSide === 'right' ? 'left' : 'right'
   const widerTarget = Math.min(900, snapshot.signatureWidth + 80)
   const narrowerTarget = Math.max(250, snapshot.signatureWidth - 60)
 
@@ -476,11 +478,11 @@ export const buildAiBriefPresets = (
         snapshot,
         {
           label: 'Move logo to opposite side',
-          prompt: `Swap logo to the opposite side from current ${snapshot.logoAlign}: mirror layout, keep ${snapshot.signatureWidth}px and ${snapshot.accentColor}.`
+          prompt: `Move the logo from the ${logoSide} side to the ${oppositeLogoSide} side (set logoSide to "${oppositeLogoSide}"). Keep ${snapshot.signatureWidth}px width and ${snapshot.accentColor} accent.`
         },
         {
           label: 'העבר לוגו לצד השני',
-          prompt: `העבר לוגו לצד הנגדי מ-${logoAlign} הנוכחי: פריסה מראית, שמור ${snapshot.signatureWidth}px ודגש ${snapshot.accentColor}.`
+          prompt: `העבר את הלוגו מצד ${logoSide === 'right' ? 'ימין' : 'שמאל'} לצד ${oppositeLogoSide === 'right' ? 'ימין' : 'שמאל'} (logoSide: "${oppositeLogoSide}"). שמור ${snapshot.signatureWidth}px ודגש ${snapshot.accentColor}.`
         }
       )
     )

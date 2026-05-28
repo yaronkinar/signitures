@@ -191,6 +191,37 @@ background: #fff;
 border-top: 1px solid #e2e8f0;
 }
 
+.placement-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.placement-control input[type='range'] {
+  flex: 1;
+  min-width: 0;
+}
+
+.placement-control input[type='number'] {
+  width: 4.5rem;
+  flex-shrink: 0;
+}
+
+.placement-subsection {
+  margin-top: 12px;
+}
+
+.placement-subsection:first-of-type {
+  margin-top: 0;
+}
+
+.placement-subsection h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-charcoal);
+}
+
 .grid {
 display: grid;
 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -236,6 +267,13 @@ gap: 5px;
 font-size: 12px;
 font-weight: 600;
 color: var(--brand-charcoal);
+}
+
+.field-hint {
+font-size: 11px;
+font-weight: 400;
+color: var(--muted);
+line-height: 1.35;
 }
 
 input,

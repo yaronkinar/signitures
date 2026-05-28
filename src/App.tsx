@@ -47,6 +47,35 @@ const SOCIAL_NETWORKS = [
   iconFileKey: keyof SignatureFormState
 }>
 
+const PlacementControl = ({
+  value,
+  min,
+  max,
+  onChange
+}: {
+  value: number
+  min: number
+  max: number
+  onChange: (value: number) => void
+}) => (
+  <div className="placement-control">
+    <input
+      type="range"
+      min={min}
+      max={max}
+      value={value}
+      onChange={(e) => onChange(Number(e.target.value))}
+    />
+    <input
+      type="number"
+      min={min}
+      max={max}
+      value={value}
+      onChange={(e) => onChange(Number(e.target.value))}
+    />
+  </div>
+)
+
 const PreviewBox = ({
   html,
   width,
@@ -80,6 +109,11 @@ export default function App() {
     { value: 'top', label: t(lang, 'alignTop') },
     { value: 'middle', label: t(lang, 'alignMiddle') },
     { value: 'bottom', label: t(lang, 'alignBottom') }
+  ] as const
+
+  const logoSideOptions = [
+    { value: 'left', label: t(lang, 'logoSideLeft') },
+    { value: 'right', label: t(lang, 'logoSideRight') }
   ] as const
 
   const onOutlookHelpClick = useCallback(
@@ -348,6 +382,103 @@ export default function App() {
                   onChange={(e) => app.handleFileToField(e.target.files?.[0], 'logoUrl')}
                 />
               </Field>
+            </div>
+            <details className="sub-panel" open>
+              <summary>{t(lang, 'logoPlacement')}</summary>
+              <div className="sub-panel-body">
+                <p className="hint">{t(lang, 'logoPlacementHint')}</p>
+                <div className="placement-subsection">
+                  <h4>{t(lang, 'logoPlacementHorizontal')}</h4>
+                  <div className="grid">
+                    <Field label={t(lang, 'logoSide')}>
+                      <SelectInput
+                        value={form.logoSide}
+                        onChange={(e) =>
+                          updateForm({
+                            logoSide: e.target.value as SignatureFormState['logoSide']
+                          })
+                        }
+                      >
+                        {logoSideOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </SelectInput>
+                    </Field>
+                    <Field label={t(lang, 'logoAlign')}>
+                      <SelectInput
+                        value={form.logoAlign}
+                        onChange={(e) =>
+                          updateForm({
+                            logoAlign: e.target.value as SignatureFormState['logoAlign']
+                          })
+                        }
+                      >
+                        {alignOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </SelectInput>
+                    </Field>
+                    <Field label={t(lang, 'logoMaxWidth')}>
+                      <input
+                        type="number"
+                        min={60}
+                        max={400}
+                        value={form.logoMaxWidth}
+                        onChange={(e) => updateForm({ logoMaxWidth: Number(e.target.value) })}
+                      />
+                    </Field>
+                    <Field
+                      label={t(lang, 'logoHorizontalPlacement')}
+                      hint={t(lang, 'logoHorizontalPlacementHint')}
+                    >
+                      <PlacementControl
+                        min={-120}
+                        max={120}
+                        value={form.logoOffsetX}
+                        onChange={(logoOffsetX) => updateForm({ logoOffsetX })}
+                      />
+                    </Field>
+                  </div>
+                </div>
+                <div className="placement-subsection">
+                  <h4>{t(lang, 'logoPlacementVertical')}</h4>
+                  <div className="grid">
+                    <Field label={t(lang, 'verticalAlign')}>
+                      <SelectInput
+                        value={form.verticalAlign}
+                        onChange={(e) =>
+                          updateForm({
+                            verticalAlign: e.target.value as SignatureFormState['verticalAlign']
+                          })
+                        }
+                      >
+                        {verticalAlignOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </SelectInput>
+                    </Field>
+                    <Field
+                      label={t(lang, 'logoVerticalPlacement')}
+                      hint={t(lang, 'logoVerticalPlacementHint')}
+                    >
+                      <PlacementControl
+                        min={-120}
+                        max={120}
+                        value={form.logoOffsetY}
+                        onChange={(logoOffsetY) => updateForm({ logoOffsetY })}
+                      />
+                    </Field>
+                  </div>
+                </div>
+              </div>
+            </details>
+            <div className="grid">
               <Field label={t(lang, 'bannerUrl')}>
                 <TextInput
                   value={form.bannerUrl}
@@ -526,15 +657,6 @@ export default function App() {
                   onChange={(e) => updateForm({ textColumnWidth: Number(e.target.value) })}
                 />
               </Field>
-              <Field label={t(lang, 'logoMaxWidth')}>
-                <input
-                  type="number"
-                  min={60}
-                  max={400}
-                  value={form.logoMaxWidth}
-                  onChange={(e) => updateForm({ logoMaxWidth: Number(e.target.value) })}
-                />
-              </Field>
             </div>
           </Panel>
 
@@ -544,8 +666,7 @@ export default function App() {
                 [
                   ['textAlign', 'mainTextAlign'],
                   ['nameTitleAlign', 'nameTitleAlign'],
-                  ['emailAlign', 'emailAlign'],
-                  ['logoAlign', 'logoAlign']
+                  ['emailAlign', 'emailAlign']
                 ] as const
               ).map(([key, labelKey]) => (
                 <Field key={key} label={t(lang, labelKey)}>
@@ -563,28 +684,10 @@ export default function App() {
                   </SelectInput>
                 </Field>
               ))}
-              <Field label={t(lang, 'verticalAlign')}>
-                <SelectInput
-                  value={form.verticalAlign}
-                  onChange={(e) =>
-                    updateForm({
-                      verticalAlign: e.target.value as SignatureFormState['verticalAlign']
-                    })
-                  }
-                >
-                  {verticalAlignOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </SelectInput>
-              </Field>
               {(
                 [
                   ['textOffsetX', 'textOffsetX'],
                   ['textOffsetY', 'textOffsetY'],
-                  ['logoOffsetX', 'logoOffsetX'],
-                  ['logoOffsetY', 'logoOffsetY'],
                   ['dividerThickness', 'dividerThickness'],
                   ['socialIconGap', 'socialIconGap']
                 ] as const

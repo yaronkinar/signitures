@@ -3,13 +3,15 @@ import type { CSSProperties, InputHTMLAttributes, ReactNode, SelectHTMLAttribute
 type FieldProps = {
   label: ReactNode
   children: ReactNode
+  hint?: ReactNode
   className?: string
   style?: CSSProperties
 }
 
-export const Field = ({ label, children, className, style }: FieldProps) => (
+export const Field = ({ label, children, hint, className, style }: FieldProps) => (
   <label className={className} style={style}>
     <span>{label}</span>
+    {hint ? <span className="field-hint">{hint}</span> : null}
     {children}
   </label>
 )

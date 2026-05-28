@@ -2,6 +2,7 @@ import type { AppLanguage } from '../i18n'
 
 export type TextAlign = 'left' | 'center' | 'right'
 export type VerticalAlign = 'top' | 'middle' | 'bottom'
+export type LogoSide = 'left' | 'right'
 
 export type LinkImage = {
   id: string
@@ -27,6 +28,7 @@ export type SignatureLayoutSettings = {
   nameTitleAlign: TextAlign
   emailAlign: TextAlign
   logoAlign: TextAlign
+  logoSide: LogoSide
   verticalAlign: VerticalAlign
   textOffsetX: number
   textOffsetY: number

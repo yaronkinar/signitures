@@ -68,6 +68,7 @@ const applyLayout = (
   if (layout.nameTitleAlign) next.nameTitleAlign = layout.nameTitleAlign as TextAlign
   if (layout.emailAlign) next.emailAlign = layout.emailAlign as TextAlign
   if (layout.logoAlign) next.logoAlign = layout.logoAlign as TextAlign
+  if (layout.logoSide) next.logoSide = layout.logoSide
   if (layout.verticalAlign) next.verticalAlign = layout.verticalAlign as VerticalAlign
   if (layout.textOffsetX !== undefined) {
     next.textOffsetX = clamp(layout.textOffsetX, -120, 120)

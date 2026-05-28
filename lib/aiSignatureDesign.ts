@@ -46,6 +46,7 @@ export type AiSignatureDesign = {
     nameTitleAlign?: TextAlign
     emailAlign?: TextAlign
     logoAlign?: TextAlign
+    logoSide?: 'left' | 'right'
     verticalAlign?: VerticalAlign
     textOffsetX?: number
     textOffsetY?: number
@@ -95,6 +96,7 @@ export type SignatureFormSnapshot = {
   nameTitleAlign: TextAlign
   emailAlign: TextAlign
   logoAlign: TextAlign
+  logoSide: 'left' | 'right'
   verticalAlign: VerticalAlign
   accentColor: string
   secondaryTextColor: string
@@ -130,6 +132,7 @@ export const AI_DESIGN_JSON_SCHEMA = `{
     "nameTitleAlign": "left | center | right",
     "emailAlign": "left | center | right",
     "logoAlign": "left | center | right",
+    "logoSide": "left | right",
     "verticalAlign": "top | middle | bottom",
     "textOffsetX": -120 to 120,
     "textOffsetY": -120 to 120,
@@ -232,6 +235,9 @@ const pickAlign = (value: unknown): TextAlign | undefined =>
 const pickVerticalAlign = (value: unknown): VerticalAlign | undefined =>
   value === 'top' || value === 'middle' || value === 'bottom' ? value : undefined
 
+const pickLogoSide = (value: unknown): 'left' | 'right' | undefined =>
+  value === 'left' || value === 'right' ? value : undefined
+
 const pickLanguage = (value: unknown): AppLanguage | undefined =>
   value === 'en' || value === 'he' ? value : undefined
 
@@ -308,6 +314,7 @@ export const parseAiSignatureDesign = (raw: string): AiSignatureDesign => {
       nameTitleAlign: pickAlign(parsed.layout.nameTitleAlign),
       emailAlign: pickAlign(parsed.layout.emailAlign),
       logoAlign: pickAlign(parsed.layout.logoAlign),
+      logoSide: pickLogoSide(parsed.layout.logoSide),
       verticalAlign: pickVerticalAlign(parsed.layout.verticalAlign),
       textOffsetX: pickNumber(parsed.layout.textOffsetX),
       textOffsetY: pickNumber(parsed.layout.textOffsetY),

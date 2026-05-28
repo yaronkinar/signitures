@@ -42,6 +42,7 @@ export const createDefaultFormState = (): SignatureFormState => ({
   nameTitleAlign: 'right',
   emailAlign: 'right',
   logoAlign: 'right',
+  logoSide: 'right',
   verticalAlign: 'top',
   textOffsetX: 0,
   textOffsetY: 0,

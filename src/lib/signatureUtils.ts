@@ -95,6 +95,7 @@ export const getLayoutSettings = (form: SignatureFormState): SignatureLayoutSett
   ),
   emailAlign: parseEnumInput(form.emailAlign, ['left', 'center', 'right'] as const, 'right'),
   logoAlign: parseEnumInput(form.logoAlign, ['left', 'center', 'right'] as const, 'right'),
+  logoSide: parseEnumInput(form.logoSide, ['left', 'right'] as const, 'right'),
   verticalAlign: parseEnumInput(
     form.verticalAlign,
     ['top', 'middle', 'bottom'] as const,
@@ -140,6 +141,7 @@ export const formToSnapshot = (form: SignatureFormState): SignatureFormSnapshot 
     nameTitleAlign: layout.nameTitleAlign,
     emailAlign: layout.emailAlign,
     logoAlign: layout.logoAlign,
+    logoSide: layout.logoSide,
     verticalAlign: layout.verticalAlign,
     accentColor: layout.accentColor,
     secondaryTextColor: layout.secondaryTextColor,
@@ -172,6 +174,7 @@ export const getDefaultDesignSnapshot = (lang: AppLanguage): SignatureFormSnapsh
   nameTitleAlign: 'right',
   emailAlign: 'right',
   logoAlign: 'right',
+  logoSide: 'right',
   verticalAlign: 'top',
   accentColor: '#88236f',
   secondaryTextColor: '#4d4c4f',

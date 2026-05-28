@@ -45,8 +45,6 @@ export const buildSignatureHtml = (
   const nameTitleDirection = rtlContent ? 'rtl' : 'ltr'
   const textOffsetLeft = Math.max(layout.textOffsetX, 0)
   const textOffsetRight = Math.max(-layout.textOffsetX, 0)
-  const logoOffsetLeft = Math.max(layout.logoOffsetX, 0)
-  const logoOffsetRight = Math.max(-layout.logoOffsetX, 0)
   const contentAlign = rtlContent ? 'right' : layout.nameTitleAlign
   const contentAlignAttr =
     contentAlign === 'left' ? 'left' : contentAlign === 'center' ? 'center' : 'right'
@@ -145,30 +143,45 @@ export const buildSignatureHtml = (
     </td></tr>`
     : ''
 
-  const signatureTable = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${layout.emailAlign}" style="font-family:${fontFamilyCss};color:${textColor};background:${backgroundColor};width:${signatureWidth}px;max-width:${signatureWidth}px;mso-line-height-rule:exactly;">
-  <tr>
-    <td style="vertical-align:${layout.verticalAlign};padding-left:${textOffsetLeft + edgeInset}px;padding-right:${textOffsetRight + dividerInset}px;padding-top:${Math.max(
-      0,
-      layout.textOffsetY
-    ) + edgeInset}px;padding-bottom:${Math.max(0, -layout.textOffsetY) + edgeInset}px;width:${textColumnWidth}px;max-width:${textColumnWidth}px;text-align:${contentAlign};unicode-bidi:plaintext;">
+  const logoOnLeft = layout.logoSide === 'left'
+  const textPaddingLeft = textOffsetLeft + (logoOnLeft ? dividerInset : edgeInset)
+  const textPaddingRight = textOffsetRight + (logoOnLeft ? edgeInset : dividerInset)
+  const logoPaddingLeft = logoOnLeft ? edgeInset : dividerInset
+  const logoPaddingRight = logoOnLeft ? dividerInset : edgeInset
+  const logoHorizontalShift = layout.logoOffsetX
+
+  const textCell = `<td style="vertical-align:${layout.verticalAlign};padding-left:${textPaddingLeft}px;padding-right:${textPaddingRight}px;padding-top:${Math.max(
+    0,
+    layout.textOffsetY
+  ) + edgeInset}px;padding-bottom:${Math.max(0, -layout.textOffsetY) + edgeInset}px;width:${textColumnWidth}px;max-width:${textColumnWidth}px;text-align:${contentAlign};unicode-bidi:plaintext;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contentAlignAttr}" dir="${nameTitleDirection}" style="text-align:${contentAlign};">
         <tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="font-size:${layout.nameFontSize}px;line-height:${nameLineHeight};font-weight:${nameFontWeight};color:${accentColor};padding:0 0 1px;text-align:${contentAlign};unicode-bidi:plaintext;">${fullName || strings.fullNamePlaceholder}</td></tr>
         <tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="font-size:${layout.titleFontSize}px;line-height:${titleLineHeight};font-weight:${titleFontWeight};color:${secondaryTextColor};padding:0 0 3px;text-align:${contentAlign};unicode-bidi:plaintext;">${jobTitle || strings.jobTitlePlaceholder}${company ? `<br style="line-height:${titleLineHeight};" /><span style="font-weight:${titleFontWeight};line-height:${titleLineHeight};">${company}</span>` : ''}</td></tr>
         ${contactRows.length ? `<tr><td dir="${contactDirection}" align="${contentAlignAttr}" style="padding-top:2px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contentAlignAttr}" dir="${contactDirection}" style="text-align:${contentAlign};border-collapse:collapse;">${contactRows.join('')}</table></td></tr>` : ''}
         ${socialTextRow}
       </table>
-    </td>
-    <td style="width:${layout.dividerThickness}px;min-width:${layout.dividerThickness}px;background:${dividerColor};font-size:0;line-height:0;padding:0;">&nbsp;</td>
-    <td style="vertical-align:${layout.verticalAlign};padding-left:${logoOffsetLeft + dividerInset}px;padding-right:${logoOffsetRight + edgeInset}px;padding-top:${Math.max(
-      0,
-      layout.logoOffsetY
-    ) + edgeInset}px;padding-bottom:${Math.max(0, -layout.logoOffsetY) + edgeInset}px;width:${logoColumnWidth}px;max-width:${logoColumnWidth}px;text-align:${layout.logoAlign};">
-      ${
-        logoUrl
-          ? `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(strings.companyLogoAlt)}" width="${layout.logoMaxWidth}" style="display:block;border:0;max-width:${layout.logoMaxWidth}px;height:auto;margin-left:${layout.logoAlign === 'left' ? '0' : 'auto'};margin-right:${layout.logoAlign === 'right' ? '0' : 'auto'};" />`
-          : `<div style="font-size:14px;color:${accentColor};font-weight:700;">${strings.companyLogoPlaceholder}</div>`
-      }
-    </td>
+    </td>`
+
+  const dividerCell = `<td style="width:${layout.dividerThickness}px;min-width:${layout.dividerThickness}px;background:${dividerColor};font-size:0;line-height:0;padding:0;">&nbsp;</td>`
+
+  const logoGraphic = logoUrl
+    ? `<span style="display:inline-block;line-height:0;font-size:0;margin-left:${logoHorizontalShift}px;vertical-align:top;">
+          <img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(strings.companyLogoAlt)}" width="${layout.logoMaxWidth}" style="display:block;border:0;max-width:${layout.logoMaxWidth}px;height:auto;" />
+        </span>`
+    : `<div style="display:inline-block;font-size:14px;color:${accentColor};font-weight:700;margin-left:${logoHorizontalShift}px;">${strings.companyLogoPlaceholder}</div>`
+
+  const logoCell = `<td style="vertical-align:${layout.verticalAlign};padding-left:${logoPaddingLeft}px;padding-right:${logoPaddingRight}px;padding-top:${Math.max(
+    0,
+    layout.logoOffsetY
+  ) + edgeInset}px;padding-bottom:${Math.max(0, -layout.logoOffsetY) + edgeInset}px;width:${logoColumnWidth}px;max-width:${logoColumnWidth}px;text-align:${layout.logoAlign};font-size:0;line-height:0;">
+      ${logoGraphic}
+    </td>`
+
+  const rowCells = logoOnLeft ? [logoCell, dividerCell, textCell] : [textCell, dividerCell, logoCell]
+
+  const signatureTable = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${layout.emailAlign}" style="font-family:${fontFamilyCss};color:${textColor};background:${backgroundColor};width:${signatureWidth}px;max-width:${signatureWidth}px;mso-line-height-rule:exactly;">
+  <tr>
+    ${rowCells.join('\n    ')}
   </tr>
 </table>`
 
