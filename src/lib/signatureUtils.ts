@@ -77,11 +77,13 @@ export type WrapHtmlDocumentOptions = {
   fontFamily?: string
   /** Relative folder for bundled .woff2 files (e.g. "fonts" in bulk ZIP). */
   bundledFontAssetsBase?: string
+  /** Limit @font-face rules to these bundled files. */
+  bundledFontFileNames?: string[]
 }
 
 export const getSignatureFontHeadContent = (
   fontFamily: string,
-  options: { bundledFontAssetsBase?: string } = {}
+  options: { bundledFontAssetsBase?: string; bundledFontFileNames?: string[] } = {}
 ): string => {
   const seen = new Set<string>()
   const parts: string[] = []
@@ -93,7 +95,11 @@ export const getSignatureFontHeadContent = (
   }
 
   if (options.bundledFontAssetsBase) {
-    const bundledCss = buildBundledFontFaceCss(fontFamily, options.bundledFontAssetsBase)
+    const bundledCss = buildBundledFontFaceCss(
+      fontFamily,
+      options.bundledFontAssetsBase,
+      options.bundledFontFileNames
+    )
     if (bundledCss) parts.push(bundledCss.trimEnd())
   }
 
@@ -112,7 +118,8 @@ export const wrapHtmlDocument = (
 
   const fontHead = options.fontFamily
     ? getSignatureFontHeadContent(options.fontFamily, {
-        bundledFontAssetsBase: options.bundledFontAssetsBase
+        bundledFontAssetsBase: options.bundledFontAssetsBase,
+        bundledFontFileNames: options.bundledFontFileNames
       })
     : ''
 

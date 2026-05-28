@@ -8,6 +8,11 @@ import { StyleSummary } from './components/StyleSummary'
 import { UpdatePrompt } from './components/UpdatePrompt'
 import { useSignatureApp } from './hooks/useSignatureApp'
 import { outlookHelpStatusHtml, t } from './i18n'
+import {
+  getBundledFontCssFamily,
+  googleFontDownloadUrl,
+  isBundledWebFont
+} from './lib/signatureFonts'
 import { fileToDataUrl } from './lib/signatureUtils'
 import type { SignatureFormState } from './types/signatureForm'
 
@@ -118,6 +123,10 @@ export default function App() {
     { value: 'left', label: t(lang, 'logoSideLeft') },
     { value: 'right', label: t(lang, 'logoSideRight') }
   ] as const
+
+  const bundledFontName = getBundledFontCssFamily(form.fontFamily)
+  const bundledFontDownloadUrl = googleFontDownloadUrl(form.fontFamily)
+  const showOutlookFontNotice = isBundledWebFont(form.fontFamily)
 
   const onOutlookHelpClick = useCallback(
     (event: React.MouseEvent<HTMLParagraphElement>) => {
@@ -605,6 +614,30 @@ export default function App() {
                   ))}
                 </SelectInput>
               </Field>
+              {showOutlookFontNotice && bundledFontName && (
+                <div className="outlook-font-notice">
+                  <p className="hint">{t(lang, 'outlookFontHint')}</p>
+                  <div className="outlook-font-actions">
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={app.handleInstallWindowsFont}
+                    >
+                      {t(lang, 'installWindowsFont').replace('{font}', bundledFontName)}
+                    </button>
+                    {bundledFontDownloadUrl && (
+                      <a
+                        className="btn-link"
+                        href={bundledFontDownloadUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {t(lang, 'downloadFontFromGoogle')}
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
               {(
                 [
                   ['nameFontWeight', 'nameFontWeight'],

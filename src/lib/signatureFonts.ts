@@ -44,27 +44,99 @@ export const allBundledSignatureFontFileNames = (fontFamily: string): string[] =
   return names
 }
 
+export const isBundledWebFont = (fontFamily: string): boolean =>
+  resolveBundledSignatureFonts(fontFamily).length > 0
+
+export const getBundledFontCssFamily = (fontFamily: string): string | null => {
+  for (const font of resolveBundledSignatureFonts(fontFamily)) {
+    return BUNDLED_FONT_META[font].cssFamily
+  }
+  return null
+}
+
+
+const GOOGLE_FONT_DOWNLOAD_NAMES: Record<BundledSignatureFont, string> = {
+  rubik: 'Rubik',
+  cairo: 'Cairo'
+}
+
+export const googleFontDownloadUrl = (fontFamily: string): string | null => {
+  for (const font of resolveBundledSignatureFonts(fontFamily)) {
+    const name = GOOGLE_FONT_DOWNLOAD_NAMES[font]
+    return `https://fonts.google.com/specimen/${encodeURIComponent(name)}`
+  }
+  return null
+}
+
+export const requiredWindowsFontTtfFileNames = (fontFamily: string): string[] =>
+  resolveBundledSignatureFonts(fontFamily).map((font) => `${font}.ttf`)
+
+export const signatureFontTtfPublicUrl = (fileName: string): string => {
+  const base = import.meta.env.BASE_URL ?? '/'
+  return `${base}signature-fonts-ttf/${fileName}`
+}
+
+export const requiredBundledFontFileNames = (
+  fontFamily: string,
+  weights: number[]
+): string[] => {
+  const fonts = resolveBundledSignatureFonts(fontFamily)
+  if (!fonts.length) return []
+
+  const weightSet = new Set<number>([400, ...weights])
+  const names: string[] = []
+
+  for (const font of fonts) {
+    const { subsets } = BUNDLED_FONT_META[font]
+    for (const weight of weightSet) {
+      if (!SIGNATURE_FONT_WEIGHTS.includes(weight as (typeof SIGNATURE_FONT_WEIGHTS)[number])) {
+        continue
+      }
+      for (const subset of subsets) {
+        names.push(`${font}-${subset}-${weight}-normal.woff2`)
+      }
+    }
+  }
+
+  return names
+}
+
 export const signatureFontPublicUrl = (fileName: string): string => {
   const base = import.meta.env.BASE_URL ?? '/'
   return `${base}signature-fonts/${fileName}`
 }
 
-export const buildBundledFontFaceCss = (fontFamily: string, assetsBase: string): string => {
+const buildFontFaceRule = (
+  font: BundledSignatureFont,
+  fileName: string,
+  assetsBase: string
+): string => {
+  const { cssFamily, subsets } = BUNDLED_FONT_META[font]
+  const weightMatch = fileName.match(/-(\d+)-normal\.woff2$/)
+  const weight = weightMatch?.[1] ?? '400'
+  const subsetMatch = fileName.match(new RegExp(`^${font}-([a-z]+)-\\d+`))
+  const subset = subsetMatch?.[1] ?? subsets[0]
+  const unicodeRange = SUBSET_UNICODE_RANGE[subset]
+  const src = `${assetsBase.replace(/\/$/, '')}/${fileName}`
+  const rangeCss = unicodeRange ? `unicode-range:${unicodeRange};` : ''
+  return `@font-face{font-family:'${cssFamily}';font-style:normal;font-weight:${weight};font-display:swap;${rangeCss}src:url('${src}') format('woff2');}`
+}
+
+export const buildBundledFontFaceCss = (
+  fontFamily: string,
+  assetsBase: string,
+  fileNames?: string[]
+): string => {
   const rules: string[] = []
+  const allowed = fileNames ? new Set(fileNames) : null
 
   for (const font of resolveBundledSignatureFonts(fontFamily)) {
-    const { cssFamily, subsets } = BUNDLED_FONT_META[font]
-    for (const fileName of bundledSignatureFontFileNames(font)) {
-      const weightMatch = fileName.match(/-(\d+)-normal\.woff2$/)
-      const weight = weightMatch?.[1] ?? '400'
-      const subsetMatch = fileName.match(new RegExp(`^${font}-([a-z]+)-\\d+`))
-      const subset = subsetMatch?.[1] ?? subsets[0]
-      const unicodeRange = SUBSET_UNICODE_RANGE[subset]
-      const src = `${assetsBase.replace(/\/$/, '')}/${fileName}`
-      const rangeCss = unicodeRange ? `unicode-range:${unicodeRange};` : ''
-      rules.push(
-        `@font-face{font-family:'${cssFamily}';font-style:normal;font-weight:${weight};font-display:swap;${rangeCss}src:url('${src}') format('woff2');}`
-      )
+    const candidates = allowed
+      ? fileNames!.filter((fileName) => fileName.startsWith(`${font}-`))
+      : bundledSignatureFontFileNames(font)
+    for (const fileName of candidates) {
+      if (allowed && !allowed.has(fileName)) continue
+      rules.push(buildFontFaceRule(font, fileName, assetsBase))
     }
   }
 

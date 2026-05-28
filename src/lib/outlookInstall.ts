@@ -1,53 +1,52 @@
-import type { AppLanguage, I18nKey } from '../i18n'
+import type { AppLanguage } from '../i18n'
 import { t } from '../i18n'
 import { signatureStrings } from '../i18n'
 import type { SignatureFormState } from '../types/signatureForm'
 import { normalizeUrl, wrapHtmlDocument } from './signatureUtils'
+import {
+  buildWriteFontFilesPs,
+  buildWindowsFontInstallPsForForm,
+  fetchSignatureFontPayloads,
+  getOutlookSignatureFontFileNames
+} from './fontInstallScripts'
+import {
+  OUTLOOK_INSTALL_SCRIPT_MARKER,
+  POWERSHELL_EXE,
+  batUtf8Preamble,
+  encodeBatFile,
+  prefixPowerShellScript,
+  psConsoleMessage,
+  psHostStatement,
+  psInlinePreamble,
+  psReadHostStatement,
+  psWarningStatement,
+  psWriteErrorStatement
+} from './batScriptUtils'
 
 export const NEW_OUTLOOK_SIGNATURE_SETTINGS_URL =
   'https://outlook.office.com/mail/options/mail/layout/EmailSignature'
 
-const OUTLOOK_INSTALL_SCRIPT_MARKER = '# SIGSCRIPT'
-const POWERSHELL_EXE = '%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'
-
-const escapePsSingleQuoted = (value: string): string => value.replace(/'/g, "''")
-
-const fixConsoleHebrew = (text: string, lang: AppLanguage): string => {
-  if (lang !== 'he') return text
-  if (!/[A-Za-z]/.test(text)) {
-    return [...text].reverse().join('')
-  }
-  return text.replace(/[\u0590-\u05FF]+/g, (run) => [...run].reverse().join(''))
-}
-
-const psConsoleMessage = (lang: AppLanguage, key: I18nKey): string =>
-  escapePsSingleQuoted(fixConsoleHebrew(t(lang, key), lang))
-
-const batUtf8Preamble = (lang: AppLanguage): string =>
-  lang === 'he' ? 'chcp 65001 >nul\r\n' : ''
-
 const buildBatPauseCommand = (lang: AppLanguage, outcome: 'success' | 'failure'): string => {
-  const utf8Console =
-    lang === 'he' ? '[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false); ' : ''
   const pressEnter = psConsoleMessage(lang, 'batPressEnterToClose')
   const lines =
     outcome === 'success'
       ? [psConsoleMessage(lang, 'batInstallComplete')]
       : [psConsoleMessage(lang, 'batInstallFailed'), psConsoleMessage(lang, 'batInstallSecurityHint')]
-  const writeLines = lines.map((line) => `Write-Host '${line}'`).join('; ')
-  return `"${POWERSHELL_EXE}" -NoProfile -ExecutionPolicy Bypass -Command "${utf8Console}${writeLines}; Read-Host '${pressEnter}'"`
+  const writeLines = lines.map((line) => psHostStatement(lang, line)).join('; ')
+  return `"${POWERSHELL_EXE}" -NoProfile -ExecutionPolicy Bypass -Command "${psInlinePreamble(lang)}${writeLines}; ${psReadHostStatement(lang, pressEnter)}"`
 }
 
 const buildSelfContainedInstallBat = (scriptContent: string, lang: AppLanguage): string => {
   const scriptLines = scriptContent.replace(/\r?\n/g, '\r\n').trimEnd()
   const corruptMsg = psConsoleMessage(lang, 'batInstallerCorrupt')
+  const corruptError = psWriteErrorStatement(lang, corruptMsg)
 
   return `@echo off
 setlocal
 ${batUtf8Preamble(lang)}cd /d "%~dp0"
 set "EC=0"
 set "SCRIPT=%TEMP%\\install-outlook-signature-%RANDOM%.ps1"
-"${POWERSHELL_EXE}" -NoProfile -ExecutionPolicy Bypass -Command "$marker='${OUTLOOK_INSTALL_SCRIPT_MARKER}'; $lines=Get-Content -LiteralPath '%~f0' -Encoding UTF8; $start=[Array]::IndexOf($lines,$marker); if ($start -lt 0) { Write-Error '${corruptMsg}'; exit 1 }; $lines[($start+1)..($lines.Length-1)] | Set-Content -LiteralPath '%SCRIPT%' -Encoding UTF8"
+"${POWERSHELL_EXE}" -NoProfile -ExecutionPolicy Bypass -Command "${psInlinePreamble(lang)}$marker='${OUTLOOK_INSTALL_SCRIPT_MARKER}'; $lines=Get-Content -LiteralPath '%~f0' -Encoding UTF8; $start=[Array]::IndexOf($lines,$marker); if ($start -lt 0) { ${corruptError}; exit 1 }; $lines[($start+1)..($lines.Length-1)] | Set-Content -LiteralPath '%SCRIPT%' -Encoding UTF8"
 if errorlevel 1 set "EC=1" & goto :finish
 "${POWERSHELL_EXE}" -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT%"
 set "EC=%ERRORLEVEL%"
@@ -64,16 +63,6 @@ goto :eof
 ${OUTLOOK_INSTALL_SCRIPT_MARKER}
 ${scriptLines}
 `
-}
-
-const encodeBatFile = (content: string): Uint8Array => {
-  const normalized = content.replace(/\r?\n/g, '\r\n')
-  const body = new TextEncoder().encode(normalized)
-  const bom = new Uint8Array([0xef, 0xbb, 0xbf])
-  const out = new Uint8Array(bom.length + body.length)
-  out.set(bom, 0)
-  out.set(body, bom.length)
-  return out
 }
 
 const downloadBatFile = (filename: string, content: string): void => {
@@ -133,8 +122,6 @@ const plainTextToRtf = (plainText: string): string => {
 }
 
 export const downloadOpenSignaturesFolderBat = (lang: AppLanguage): void => {
-  const utf8Console =
-    lang === 'he' ? '[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false); ' : ''
   const folderOpened = psConsoleMessage(lang, 'batFolderOpened')
   const pressEnter = psConsoleMessage(lang, 'batPressEnterToClose')
 
@@ -145,28 +132,45 @@ setlocal
 ${batUtf8Preamble(lang)}cd /d "%~dp0"
 if not exist "%APPDATA%\\Microsoft\\Signatures" mkdir "%APPDATA%\\Microsoft\\Signatures" 2>nul
 start "" "%SystemRoot%\\explorer.exe" "%APPDATA%\\Microsoft\\Signatures"
-"${POWERSHELL_EXE}" -NoProfile -ExecutionPolicy Bypass -Command "${utf8Console}Write-Host '${folderOpened}'; Read-Host '${pressEnter}'"
+"${POWERSHELL_EXE}" -NoProfile -ExecutionPolicy Bypass -Command "${psInlinePreamble(lang)}${psHostStatement(lang, folderOpened)}; ${psReadHostStatement(lang, pressEnter)}"
 exit /b 0
 `
   )
 }
 
-export const downloadOutlookInstaller = (
+export const downloadOutlookInstaller = async (
   htmlBody: string,
   form: SignatureFormState
-): void => {
+): Promise<void> => {
   const lang = form.signatureLanguage
   const signatureName = sanitizeSignatureName(form.fullName)
-  const htmlDocument = wrapHtmlDocument(htmlBody, lang, form.fontFamily)
+  const filesFolderName = `${signatureName}_files`
+  const fontFileNames = getOutlookSignatureFontFileNames(form)
+  const fontPayloads = fontFileNames.length ? await fetchSignatureFontPayloads(fontFileNames) : []
+  const htmlDocument = wrapHtmlDocument(htmlBody, lang, {
+    fontFamily: form.fontFamily,
+    bundledFontAssetsBase: filesFolderName,
+    bundledFontFileNames: fontFileNames
+  })
   const txtDocument = toPlainTextSignature(form)
   const rtfDocument = plainTextToRtf(txtDocument)
   const htmlBase64 = toBase64Utf8(htmlDocument)
   const txtBase64 = toBase64Utf8(txtDocument)
   const rtfBase64 = toBase64Utf8(rtfDocument)
+  const writeFontFilesPs = buildWriteFontFilesPs('$filesDir', fontPayloads)
+  const windowsFontInstallPs = await buildWindowsFontInstallPsForForm(lang, form)
+  const installSuccessLine = psHostStatement(lang, psConsoleMessage(lang, 'batPsInstallSuccess'), {
+    foregroundColor: 'Green'
+  })
+  const setDefaultLine = psHostStatement(lang, psConsoleMessage(lang, 'batPsSetDefault'))
+  const restartOutlookLine = psHostStatement(lang, psConsoleMessage(lang, 'batPsRestartOutlook'))
+  const classicNoteLine = psHostStatement(lang, psConsoleMessage(lang, 'batPsClassicNote'))
 
-  const scriptContent = `$ErrorActionPreference = "Stop"
+  const scriptContent = prefixPowerShellScript(
+    lang,
+    `$ErrorActionPreference = "Stop"
 
-$signatureName = "${signatureName.replace(/"/g, "'")}"
+${windowsFontInstallPs ? `${windowsFontInstallPs}\n` : ''}$signatureName = "${signatureName.replace(/"/g, "'")}"
 $signatureDir = Join-Path $env:APPDATA "Microsoft\\Signatures"
 $htmlFile = Join-Path $signatureDir "$signatureName.htm"
 $txtFile = Join-Path $signatureDir "$signatureName.txt"
@@ -189,7 +193,7 @@ $rtfContent = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase6
 [System.IO.File]::WriteAllText($htmlFile, $htmlContent, [System.Text.Encoding]::UTF8)
 [System.IO.File]::WriteAllText($txtFile, $txtContent, [System.Text.Encoding]::UTF8)
 [System.IO.File]::WriteAllText($rtfFile, $rtfContent, [System.Text.Encoding]::UTF8)
-
+${writeFontFilesPs ? `\n${writeFontFilesPs}\n` : ''}
 $mailSettingsPaths = @(
   "HKCU:\\Software\\Microsoft\\Office\\16.0\\Common\\MailSettings",
   "HKCU:\\Software\\Microsoft\\Office\\15.0\\Common\\MailSettings"
@@ -202,13 +206,14 @@ foreach ($path in $mailSettingsPaths) {
   }
 }
 
-Write-Host '${psConsoleMessage(lang, 'batPsInstallSuccess')}' -ForegroundColor Green
+${installSuccessLine}
 Write-Host $htmlFile
 Write-Host ""
-Write-Host '${psConsoleMessage(lang, 'batPsSetDefault')}'
-Write-Host '${psConsoleMessage(lang, 'batPsRestartOutlook')}'
-Write-Host '${psConsoleMessage(lang, 'batPsClassicNote')}'
+${setDefaultLine}
+${restartOutlookLine}
+${classicNoteLine}
 `
+  )
   downloadBatFile('install-outlook-signature.bat', buildSelfContainedInstallBat(scriptContent, lang))
 }
 

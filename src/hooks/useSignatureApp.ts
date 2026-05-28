@@ -31,6 +31,7 @@ import {
   downloadOutlookInstaller,
   installForNewOutlook
 } from '../lib/outlookInstall'
+import { downloadWindowsFontInstaller } from '../lib/fontInstallScripts'
 import { buildSignatureHtml } from '../lib/signatureHtmlBuilder'
 import { initializeSocialIconDataUrls } from '../lib/socialIcons'
 import {
@@ -414,12 +415,21 @@ export const useSignatureApp = () => {
   const handleInstallOutlook = useCallback(async () => {
     try {
       const html = outputHtml.trim() ? outputHtml : await generate()
-      downloadOutlookInstaller(html, form)
+      await downloadOutlookInstaller(html, form)
       window.alert(t(lang, 'alertOutlookInstallSuccess'))
     } catch {
       window.alert(t(lang, 'alertOutlookInstallFailed'))
     }
   }, [form, generate, lang, outputHtml])
+
+  const handleInstallWindowsFont = useCallback(async () => {
+    try {
+      await downloadWindowsFontInstaller(form)
+      window.alert(t(lang, 'alertWindowsFontInstallSuccess'))
+    } catch {
+      window.alert(t(lang, 'alertWindowsFontInstallFailed'))
+    }
+  }, [form, lang])
 
   const handleInstallNewOutlook = useCallback(async () => {
     try {
@@ -553,6 +563,7 @@ export const useSignatureApp = () => {
     handleDownload,
     handleInstallOutlook,
     handleInstallNewOutlook,
+    handleInstallWindowsFont,
     handleOpenSignaturesFolder,
     addLinkImage,
     updateLinkImage,

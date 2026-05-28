@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Rubik:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Rubik:wght@300;400;500;600;700;800&display=swap');
 
 :root {
 color-scheme: light;
@@ -181,6 +181,33 @@ border: 1px solid #fecdca;
 .btn-reset:hover {
 background: #fef3f2;
 border-color: #fda29b;
+}
+
+.outlook-font-notice {
+grid-column: 1 / -1;
+padding: 12px 14px;
+border-radius: 10px;
+border: 1px solid #dbeafe;
+background: #f8fbff;
+}
+
+.outlook-font-actions {
+display: flex;
+flex-wrap: wrap;
+align-items: center;
+gap: 10px;
+margin-top: 8px;
+}
+
+.outlook-font-actions .btn-link {
+font-size: 13px;
+font-weight: 600;
+color: var(--brand-cyan);
+text-decoration: none;
+}
+
+.outlook-font-actions .btn-link:hover {
+text-decoration: underline;
 }
 
 .params-import-label {
