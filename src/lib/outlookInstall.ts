@@ -157,7 +157,7 @@ export const downloadOutlookInstaller = (
 ): void => {
   const lang = form.signatureLanguage
   const signatureName = sanitizeSignatureName(form.fullName)
-  const htmlDocument = wrapHtmlDocument(htmlBody, lang)
+  const htmlDocument = wrapHtmlDocument(htmlBody, lang, form.fontFamily)
   const txtDocument = toPlainTextSignature(form)
   const rtfDocument = plainTextToRtf(txtDocument)
   const htmlBase64 = toBase64Utf8(htmlDocument)
@@ -273,8 +273,12 @@ export const installForNewOutlook = async (htmlBody: string, lang: AppLanguage):
   window.alert(t(lang, 'alertNewOutlookManual'))
 }
 
-export const downloadHtmlOutput = (htmlBody: string, lang: AppLanguage): void => {
-  const htmlDocument = wrapHtmlDocument(htmlBody, lang)
+export const downloadHtmlOutput = (
+  htmlBody: string,
+  lang: AppLanguage,
+  fontFamily?: string
+): void => {
+  const htmlDocument = wrapHtmlDocument(htmlBody, lang, fontFamily)
   const blob = new Blob([htmlDocument], { type: 'text/html;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')

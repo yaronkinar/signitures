@@ -4,7 +4,8 @@
   "description": "",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/generate-pwa-icons.mjs && vite build && node scripts/bundle-api.mjs",
+    "build": "node scripts/generate-pwa-icons.mjs && node scripts/copy-signature-fonts.mjs && vite build && node scripts/bundle-api.mjs",
+    "fonts": "node scripts/copy-signature-fonts.mjs",
     "icons": "node scripts/generate-pwa-icons.mjs",
     "preview": "vite preview",
     "image:html": "node scripts/convert-image-to-html.mjs",
@@ -16,13 +17,15 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.2.0",
     "playwright": "^1.51.0",
-    "typescript": "^5.5.3",
     "sharp": "^0.34.2",
+    "typescript": "^5.5.3",
     "vite": "^7.3.3",
     "vite-plugin-pwa": "^1.0.1"
   },
   "private": true,
   "dependencies": {
+    "@fontsource/cairo": "^5.2.7",
+    "@fontsource/rubik": "^5.2.8",
     "@vercel/node": "^5.8.3",
     "esbuild": "^0.25.0",
     "jszip": "^3.10.1",

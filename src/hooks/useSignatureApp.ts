@@ -367,8 +367,8 @@ export const useSignatureApp = () => {
   const handleDownload = useCallback(() => {
     const value = outputHtml.trim()
     if (!value) return
-    downloadHtmlOutput(value, lang)
-  }, [lang, outputHtml])
+    downloadHtmlOutput(value, lang, form.fontFamily)
+  }, [form.fontFamily, lang, outputHtml])
 
   const handleInstallOutlook = useCallback(async () => {
     try {
@@ -492,6 +492,6 @@ export const useSignatureApp = () => {
     handleExportStyle,
     handleImportParams,
     lang,
-    wrapHtmlDocument: (body: string) => wrapHtmlDocument(body, lang)
+    wrapHtmlDocument: (body: string) => wrapHtmlDocument(body, lang, form.fontFamily)
   }
 }

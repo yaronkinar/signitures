@@ -1,6 +1,7 @@
 import type { AppLanguage } from '../i18n'
 import type { SignatureFormState, SignatureLayoutSettings, TextAlign } from '../types/signatureForm'
 import type { SignatureFormSnapshot } from '../aiSignatureDesign'
+import { buildBundledFontFaceCss } from './signatureFonts'
 
 export const escapeHtml = (value: string): string =>
   value
@@ -61,18 +62,72 @@ export const fileToDataUrl = (file: File): Promise<string> =>
     reader.readAsDataURL(file)
   })
 
-export const wrapHtmlDocument = (bodyHtml: string, lang: AppLanguage): string =>
-  `<!doctype html>
+const SIGNATURE_GOOGLE_FONT_STYLESHEETS: { match: RegExp; href: string }[] = [
+  {
+    match: /rubik/i,
+    href: 'https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&display=swap'
+  },
+  {
+    match: /cairo/i,
+    href: 'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap'
+  }
+]
+
+export type WrapHtmlDocumentOptions = {
+  fontFamily?: string
+  /** Relative folder for bundled .woff2 files (e.g. "fonts" in bulk ZIP). */
+  bundledFontAssetsBase?: string
+}
+
+export const getSignatureFontHeadContent = (
+  fontFamily: string,
+  options: { bundledFontAssetsBase?: string } = {}
+): string => {
+  const seen = new Set<string>()
+  const parts: string[] = []
+
+  for (const { match, href } of SIGNATURE_GOOGLE_FONT_STYLESHEETS) {
+    if (!match.test(fontFamily) || seen.has(href)) continue
+    seen.add(href)
+    parts.push(`    <link rel="stylesheet" href="${href}" />`)
+  }
+
+  if (options.bundledFontAssetsBase) {
+    const bundledCss = buildBundledFontFaceCss(fontFamily, options.bundledFontAssetsBase)
+    if (bundledCss) parts.push(bundledCss.trimEnd())
+  }
+
+  return parts.length ? `${parts.join('\n')}\n` : ''
+}
+
+export const wrapHtmlDocument = (
+  bodyHtml: string,
+  lang: AppLanguage,
+  fontFamilyOrOptions?: string | WrapHtmlDocumentOptions
+): string => {
+  const options: WrapHtmlDocumentOptions =
+    typeof fontFamilyOrOptions === 'string'
+      ? { fontFamily: fontFamilyOrOptions }
+      : (fontFamilyOrOptions ?? {})
+
+  const fontHead = options.fontFamily
+    ? getSignatureFontHeadContent(options.fontFamily, {
+        bundledFontAssetsBase: options.bundledFontAssetsBase
+      })
+    : ''
+
+  return `<!doctype html>
 <html lang="${lang}"${lang === 'he' ? ' dir="rtl"' : ''}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Outlook Signature</title>
-  </head>
+${fontHead}  </head>
   <body>
 ${bodyHtml}
   </body>
 </html>`
+}
 
 export const getLayoutSettings = (form: SignatureFormState): SignatureLayoutSettings => ({
   fontFamily: sanitizeFontFamily(form.fontFamily),

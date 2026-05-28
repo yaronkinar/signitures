@@ -4,6 +4,10 @@ import type { AppLanguage, I18nKey } from '../i18n'
 import type { SignatureFormState } from '../types/signatureForm'
 import { buildSignatureHtml } from './signatureHtmlBuilder'
 import { sanitizeFileName, uniqueFileName } from './fileNames'
+import {
+  allBundledSignatureFontFileNames,
+  signatureFontPublicUrl
+} from './signatureFonts'
 import { getLayoutSettings, wrapHtmlDocument } from './signatureUtils'
 import { initializeSocialIconDataUrls } from './socialIcons'
 
@@ -147,6 +151,24 @@ export const mergeBulkRowIntoForm = (
   website: row.website || template.website
 })
 
+const addBundledFontsToZip = async (zip: JSZip, fontFamily: string): Promise<void> => {
+  const fileNames = allBundledSignatureFontFileNames(fontFamily)
+  if (!fileNames.length) return
+
+  const folder = zip.folder('fonts')
+  if (!folder) return
+
+  await Promise.all(
+    fileNames.map(async (fileName) => {
+      const response = await fetch(signatureFontPublicUrl(fileName))
+      if (!response.ok) {
+        throw new Error(`Missing bundled font: ${fileName}`)
+      }
+      folder.file(fileName, await response.arrayBuffer())
+    })
+  )
+}
+
 export const generateBulkSignaturesZip = async (
   template: SignatureFormState,
   rows: BulkPersonRow[]
@@ -155,12 +177,17 @@ export const generateBulkSignaturesZip = async (
 
   const zip = new JSZip()
   const usedNames = new Set<string>()
+  const templateLayout = getLayoutSettings(template)
+  await addBundledFontsToZip(zip, templateLayout.fontFamily)
 
   for (const row of rows) {
     const form = mergeBulkRowIntoForm(template, row)
     const layout = getLayoutSettings(form)
     const bodyHtml = buildSignatureHtml(form, layout)
-    const htmlDocument = wrapHtmlDocument(bodyHtml, form.signatureLanguage)
+    const htmlDocument = wrapHtmlDocument(bodyHtml, form.signatureLanguage, {
+      fontFamily: layout.fontFamily,
+      bundledFontAssetsBase: 'fonts'
+    })
 
     const label = row.fullName.trim() || row.email.trim() || 'signature'
     const base = sanitizeFileName(label)
