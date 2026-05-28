@@ -26,6 +26,8 @@ module.exports = __toCommonJS(design_signature_exports);
 
 // lib/aiSignatureDesign.ts
 var ALLOWED_FONT_FAMILIES = [
+  "'Rubik', Arial, Helvetica, sans-serif",
+  "'Cairo', Arial, Helvetica, sans-serif",
   "Arial, Helvetica, sans-serif",
   "'Comeback SemiBold', 'Comeback Semi', Comeback, Arial, Helvetica, sans-serif",
   "'Calibri', Arial, Helvetica, sans-serif",
@@ -49,6 +51,9 @@ var AI_DESIGN_JSON_SCHEMA = `{
   },
   "layout": {
     "fontFamily": "one of the allowed font stack values",
+    "nameFontWeight": "300 | 400 | 500 | 600 | 700 | 800",
+    "titleFontWeight": "300 | 400 | 500 | 600 | 700 | 800",
+    "bodyFontWeight": "300 | 400 | 500 | 600 | 700 | 800",
     "nameFontSize": 14-72,
     "titleFontSize": 10-48,
     "bodyFontSize": 9-24,

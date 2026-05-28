@@ -15,6 +15,7 @@ import {
 } from '../aiAgent'
 import type { AiDesignMode } from '../aiSignatureDesign'
 import { applyAiSignatureDesignToState } from '../lib/applyAiDesignState'
+import { clearStoredFormState, createInitialFormState, storeFormState } from '../lib/formStorage'
 import { createDefaultFormState } from '../lib/defaultFormState'
 import {
   downloadHtmlOutput,
@@ -36,12 +37,13 @@ import { t, type AppLanguage } from '../i18n'
 import type { LinkImage, SignatureFormState } from '../types/signatureForm'
 
 export type AiStatusTone = 'idle' | 'working' | 'success' | 'error'
+export type FormSaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 const MAX_SIGNATURE_IMAGE_BYTES = 5 * 1024 * 1024
 
 export const useSignatureApp = () => {
-  const [form, setForm] = useState<SignatureFormState>(createDefaultFormState)
+  const [form, setForm] = useState<SignatureFormState>(createInitialFormState)
   const [outputHtml, setOutputHtml] = useState('')
-  const [layout, setLayout] = useState(() => getLayoutSettings(createDefaultFormState()))
+  const [layout, setLayout] = useState(() => getLayoutSettings(createInitialFormState()))
   const [previewOpen, setPreviewOpen] = useState(true)
   const [previewHighlight, setPreviewHighlight] = useState(false)
   const [showAiPreview, setShowAiPreview] = useState(false)
@@ -56,9 +58,13 @@ export const useSignatureApp = () => {
   const [imageImportStatus, setImageImportStatus] = useState('')
   const [imageImportStatusTone, setImageImportStatusTone] = useState<AiStatusTone>('idle')
   const [imageImportWorking, setImageImportWorking] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<FormSaveStatus>('idle')
 
   const previewCardRef = useRef<HTMLElement>(null)
   const debounceRef = useRef<number | null>(null)
+  const saveDebounceRef = useRef<number | null>(null)
+  const saveStatusTimeoutRef = useRef<number | null>(null)
+  const skipNextSaveStatusRef = useRef(true)
 
   const lang = form.signatureLanguage
 
@@ -91,6 +97,47 @@ export const useSignatureApp = () => {
       }
     }
   }, [form, generate])
+
+  useEffect(() => {
+    if (saveDebounceRef.current !== null) {
+      window.clearTimeout(saveDebounceRef.current)
+    }
+    if (!skipNextSaveStatusRef.current) {
+      setSaveStatus('saving')
+    }
+    saveDebounceRef.current = window.setTimeout(() => {
+      saveDebounceRef.current = null
+      const saved = storeFormState(form)
+      if (skipNextSaveStatusRef.current) {
+        skipNextSaveStatusRef.current = false
+        return
+      }
+      setSaveStatus(saved ? 'saved' : 'error')
+      if (saveStatusTimeoutRef.current !== null) {
+        window.clearTimeout(saveStatusTimeoutRef.current)
+      }
+      if (saved) {
+        saveStatusTimeoutRef.current = window.setTimeout(() => {
+          saveStatusTimeoutRef.current = null
+          setSaveStatus('idle')
+        }, 2000)
+      }
+    }, 400)
+    return () => {
+      if (saveDebounceRef.current !== null) {
+        window.clearTimeout(saveDebounceRef.current)
+      }
+    }
+  }, [form])
+
+  useEffect(
+    () => () => {
+      if (saveStatusTimeoutRef.current !== null) {
+        window.clearTimeout(saveStatusTimeoutRef.current)
+      }
+    },
+    []
+  )
 
   const updateForm = useCallback((patch: Partial<SignatureFormState>) => {
     setForm((prev) => ({ ...prev, ...patch }))
@@ -366,6 +413,15 @@ export const useSignatureApp = () => {
     [aiPresetPrompts]
   )
 
+  const resetFormToDefaults = useCallback(() => {
+    if (!window.confirm(t(lang, 'resetFormConfirm'))) return
+    clearStoredFormState()
+    const defaults = createDefaultFormState()
+    setSaveStatus('idle')
+    setForm(defaults)
+    generate(defaults).catch(() => undefined)
+  }, [generate, lang])
+
   return {
     form,
     updateForm,
@@ -406,6 +462,8 @@ export const useSignatureApp = () => {
     addLinkImage,
     updateLinkImage,
     removeLinkImage,
+    saveStatus,
+    resetFormToDefaults,
     lang,
     wrapHtmlDocument: (body: string) => wrapHtmlDocument(body, lang)
   }

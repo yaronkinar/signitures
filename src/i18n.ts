@@ -16,6 +16,11 @@ const translations = {
     pageHeading: 'Outlook Signature Generator',
     pageLead:
       'Fill in your details and generate copy-ready HTML for Outlook. Expand each section as needed.',
+    formSaving: 'Saving…',
+    formSaved: 'Saved locally',
+    formSaveFailed: 'Could not save. Browser storage may be full.',
+    resetForm: 'Reset to defaults',
+    resetFormConfirm: 'Reset all fields to the default template? Your saved draft will be cleared.',
     aiDesignAssistant: 'AI design assistant',
     aiDesignLead:
       'Describe the look you want — style, colors, language, tone — and the agent will tune layout and colors. Your contact details are kept unless you ask to change them.',
@@ -202,6 +207,11 @@ const translations = {
     pageTitle: 'מחולל חתימות Outlook',
     pageHeading: 'מחולל חתימות Outlook',
     pageLead: 'מלאו את הפרטים ויצרו HTML מוכן להעתקה ל-Outlook. הרחיבו כל מקטע לפי הצורך.',
+    formSaving: 'שומר…',
+    formSaved: 'נשמר מקומית',
+    formSaveFailed: 'לא ניתן לשמור. ייתכן שאחסון הדפדפן מלא.',
+    resetForm: 'איפוס לברירת מחדל',
+    resetFormConfirm: 'לאפס את כל השדות לתבנית ברירת המחדל? הטיוטה השמורה תימחק.',
     aiDesignAssistant: 'עוזר עיצוב AI',
     aiDesignLead:
       'תארו את המראה הרצוי — סגנון, צבעים, שפה, טון — והסוכן יכוון פריסה וצבעים. פרטי הקשר נשמרים אלא אם ביקשתם לשנות אותם.',

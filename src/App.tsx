@@ -121,8 +121,28 @@ export default function App() {
     <main className="page">
       <section className="card">
         <div className="card-header">
-          <h1>{t(lang, 'pageHeading')}</h1>
-          <p className="lead">{t(lang, 'pageLead')}</p>
+          <div className="card-header-row">
+            <div>
+              <h1>{t(lang, 'pageHeading')}</h1>
+              <p className="lead">{t(lang, 'pageLead')}</p>
+            </div>
+            <div className="form-storage-bar">
+              {app.saveStatus !== 'idle' && (
+                <span
+                  className={`save-status save-status--${app.saveStatus}`}
+                  role="status"
+                  aria-live="polite"
+                >
+                  {app.saveStatus === 'saving' && t(lang, 'formSaving')}
+                  {app.saveStatus === 'saved' && t(lang, 'formSaved')}
+                  {app.saveStatus === 'error' && t(lang, 'formSaveFailed')}
+                </span>
+              )}
+              <button type="button" className="secondary" onClick={app.resetFormToDefaults}>
+                {t(lang, 'resetForm')}
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="panels">
