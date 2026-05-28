@@ -163,14 +163,14 @@ export default function App() {
               <p className="lead">{t(lang, 'pageLead')}</p>
             </div>
             <div className="form-storage-bar">
-              <button type="button" className="secondary" onClick={app.handleExportParams}>
+              <button type="button" className="btn-export" onClick={app.handleExportParams}>
                 {t(lang, 'exportParams')}
               </button>
-              <button type="button" className="secondary" onClick={app.handleExportStyle}>
+              <button type="button" className="btn-export-style" onClick={app.handleExportStyle}>
                 {t(lang, 'exportStyle')}
               </button>
               <label className="params-import-label">
-                <span className="secondary params-import-button">{t(lang, 'importParams')}</span>
+                <span className="btn-import params-import-button">{t(lang, 'importParams')}</span>
                 <input
                   type="file"
                   accept=".json,application/json"
@@ -182,7 +182,7 @@ export default function App() {
                   }}
                 />
               </label>
-              <button type="button" className="secondary" onClick={app.resetFormToDefaults}>
+              <button type="button" className="btn-reset" onClick={app.resetFormToDefaults}>
                 {t(lang, 'resetForm')}
               </button>
             </div>

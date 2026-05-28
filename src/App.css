@@ -93,6 +93,55 @@ flex-shrink: 0;
 flex-wrap: wrap;
 }
 
+.form-storage-bar button,
+.form-storage-bar .params-import-button {
+border: 0;
+border-radius: 8px;
+padding: 9px 14px;
+font-size: 13px;
+font-weight: 600;
+cursor: pointer;
+transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-export {
+background: var(--brand-cyan);
+color: #fff;
+}
+
+.btn-export:hover {
+background: #2599c9;
+}
+
+.btn-export-style {
+background: var(--brand-magenta);
+color: #fff;
+}
+
+.btn-export-style:hover {
+background: #6f1c5b;
+}
+
+.btn-import {
+background: #2ea87a;
+color: #fff;
+}
+
+.btn-import:hover {
+background: #248a64;
+}
+
+.btn-reset {
+background: #fff;
+color: #b42318;
+border: 1px solid #fecdca;
+}
+
+.btn-reset:hover {
+background: #fef3f2;
+border-color: #fda29b;
+}
+
 .params-import-label {
 cursor: pointer;
 }
