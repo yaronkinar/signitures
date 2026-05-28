@@ -4,6 +4,7 @@ import { BulkSignaturesPanel } from './components/BulkSignaturesPanel'
 import { Field, SelectInput, TextInput } from './components/Field'
 import { Panel } from './components/Panel'
 import { Toaster } from './components/Toaster'
+import { StyleSummary } from './components/StyleSummary'
 import { UpdatePrompt } from './components/UpdatePrompt'
 import { useSignatureApp } from './hooks/useSignatureApp'
 import { outlookHelpStatusHtml, t } from './i18n'
@@ -850,12 +851,15 @@ export default function App() {
           <h2>{t(lang, 'preview')}</h2>
           <p className="hint">{t(lang, 'livePreviewHint')}</p>
         </div>
-        <div className="preview-frame">
-          <PreviewBox
-            html={app.outputHtml}
-            width={app.layout.signatureWidth}
-            minHeight={app.layout.signatureHeight}
-          />
+        <div className="sidebar-preview-body">
+          <div className="preview-frame">
+            <PreviewBox
+              html={app.outputHtml}
+              width={app.layout.signatureWidth}
+              minHeight={app.layout.signatureHeight}
+            />
+          </div>
+          <StyleSummary layout={app.layout} lang={lang} />
         </div>
       </aside>
       </div>
