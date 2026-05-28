@@ -166,6 +166,9 @@ export default function App() {
               <button type="button" className="secondary" onClick={app.handleExportParams}>
                 {t(lang, 'exportParams')}
               </button>
+              <button type="button" className="secondary" onClick={app.handleExportStyle}>
+                {t(lang, 'exportStyle')}
+              </button>
               <label className="params-import-label">
                 <span className="secondary params-import-button">{t(lang, 'importParams')}</span>
                 <input

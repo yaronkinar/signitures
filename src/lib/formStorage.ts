@@ -5,6 +5,57 @@ import type { AppLanguage } from '../i18n'
 import type { LinkImage, SignatureFormState } from '../types/signatureForm'
 
 const STORAGE_KEY = 'signitures-form-state'
+const STYLE_EXPORT_TYPE = 'style'
+
+const STYLE_FIELD_KEYS = [
+  'signatureLanguage',
+  'logoUrl',
+  'bannerUrl',
+  'bannerLink',
+  'facebookIconUrl',
+  'instagramIconUrl',
+  'linkedinIconUrl',
+  'xIconUrl',
+  'youtubeIconUrl',
+  'fontFamily',
+  'nameFontWeight',
+  'titleFontWeight',
+  'bodyFontWeight',
+  'nameFontSize',
+  'titleFontSize',
+  'bodyFontSize',
+  'lineSpacing',
+  'signatureWidth',
+  'signatureHeight',
+  'textColumnWidth',
+  'logoMaxWidth',
+  'textAlign',
+  'nameTitleAlign',
+  'emailAlign',
+  'logoAlign',
+  'logoSide',
+  'verticalAlign',
+  'textOffsetX',
+  'textOffsetY',
+  'logoOffsetX',
+  'logoOffsetY',
+  'dividerThickness',
+  'socialIconGap',
+  'accentColor',
+  'textColor',
+  'secondaryTextColor',
+  'dividerColor',
+  'linkColor',
+  'backgroundColor'
+] as const satisfies readonly (keyof SignatureFormState)[]
+
+export type SignatureStyleExport = {
+  exportType: typeof STYLE_EXPORT_TYPE
+} & Pick<SignatureFormState, (typeof STYLE_FIELD_KEYS)[number]>
+
+export type ParsedFormImport =
+  | { kind: 'full'; form: SignatureFormState }
+  | { kind: 'style'; style: Partial<SignatureStyleExport> }
 
 const parseLinkImages = (value: unknown, fallback: LinkImage[]): LinkImage[] => {
   if (!Array.isArray(value) || value.length === 0) return fallback
@@ -79,6 +130,47 @@ export const parseFormStateJson = (raw: string): SignatureFormState | null => {
   }
 }
 
+const pickStyleFields = (value: Record<string, unknown>): Partial<SignatureStyleExport> => {
+  const style: Partial<SignatureStyleExport> = {}
+  for (const key of STYLE_FIELD_KEYS) {
+    if (key in value) {
+      style[key] = value[key] as SignatureStyleExport[typeof key]
+    }
+  }
+  return style
+}
+
+export const extractStyleExport = (form: SignatureFormState): SignatureStyleExport => ({
+  exportType: STYLE_EXPORT_TYPE,
+  ...pickStyleFields(form as unknown as Record<string, unknown>)
+})
+
+export const applyStyleImport = (
+  current: SignatureFormState,
+  style: Partial<SignatureStyleExport>
+): SignatureFormState => {
+  const stylePatch = pickStyleFields(style as unknown as Record<string, unknown>)
+  const merged: SignatureFormState = { ...current, ...stylePatch }
+  return { ...merged, ...getLayoutSettings(merged) }
+}
+
+export const parseFormImportJson = (raw: string): ParsedFormImport | null => {
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>
+    if (!parsed || typeof parsed !== 'object') return null
+
+    if (parsed.exportType === STYLE_EXPORT_TYPE) {
+      const style = pickStyleFields(parsed)
+      return Object.keys(style).length > 0 ? { kind: 'style', style } : null
+    }
+
+    const form = parseStoredFormState(parsed)
+    return form ? { kind: 'full', form } : null
+  } catch {
+    return null
+  }
+}
+
 const downloadTextFile = (content: string, filename: string, mimeType: string): void => {
   const url = URL.createObjectURL(new Blob([content], { type: mimeType }))
   const link = document.createElement('a')
@@ -90,7 +182,21 @@ const downloadTextFile = (content: string, filename: string, mimeType: string): 
   URL.revokeObjectURL(url)
 }
 
+const buildExportBaseName = (form: SignatureFormState): string =>
+  sanitizeFileName(form.fullName.trim() || form.company.trim() || 'signature')
+
 export const downloadFormStateExport = (form: SignatureFormState): void => {
-  const base = sanitizeFileName(form.fullName.trim() || form.company.trim() || 'signature-params')
-  downloadTextFile(JSON.stringify(form, null, 2), `${base}-params.json`, 'application/json')
+  downloadTextFile(
+    JSON.stringify(form, null, 2),
+    `${buildExportBaseName(form)}-params.json`,
+    'application/json'
+  )
+}
+
+export const downloadFormStyleExport = (form: SignatureFormState): void => {
+  downloadTextFile(
+    JSON.stringify(extractStyleExport(form), null, 2),
+    `${buildExportBaseName(form)}-style.json`,
+    'application/json'
+  )
 }

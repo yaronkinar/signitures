@@ -16,10 +16,12 @@ import {
 import type { AiDesignMode } from '../aiSignatureDesign'
 import { applyAiSignatureDesignToState } from '../lib/applyAiDesignState'
 import {
+  applyStyleImport,
   clearStoredFormState,
   createInitialFormState,
   downloadFormStateExport,
-  parseFormStateJson,
+  downloadFormStyleExport,
+  parseFormImportJson,
   storeFormState
 } from '../lib/formStorage'
 import { createDefaultFormState } from '../lib/defaultFormState'
@@ -412,24 +414,35 @@ export const useSignatureApp = () => {
     addToast(t(lang, 'paramsExportSuccess'), 'success')
   }, [addToast, form, lang])
 
+  const handleExportStyle = useCallback(() => {
+    downloadFormStyleExport(form)
+    addToast(t(lang, 'paramsStyleExportSuccess'), 'success')
+  }, [addToast, form, lang])
+
   const handleImportParams = useCallback(
     async (file: File | undefined) => {
       if (!file) return
       try {
-        const imported = parseFormStateJson(await file.text())
+        const imported = parseFormImportJson(await file.text())
         if (!imported) {
           addToast(t(lang, 'paramsImportFailed'), 'error')
           return
         }
+
         skipNextSaveToastRef.current = true
-        setForm(imported)
-        await generate(imported)
-        addToast(t(lang, 'paramsImportSuccess'), 'success')
+        const nextForm =
+          imported.kind === 'style' ? applyStyleImport(form, imported.style) : imported.form
+        setForm(nextForm)
+        await generate(nextForm)
+        addToast(
+          t(lang, imported.kind === 'style' ? 'paramsStyleImportSuccess' : 'paramsImportSuccess'),
+          'success'
+        )
       } catch {
         addToast(t(lang, 'paramsImportFailed'), 'error')
       }
     },
-    [addToast, generate, lang]
+    [addToast, form, generate, lang]
   )
 
   return {
@@ -476,6 +489,7 @@ export const useSignatureApp = () => {
     dismissToast,
     resetFormToDefaults,
     handleExportParams,
+    handleExportStyle,
     handleImportParams,
     lang,
     wrapHtmlDocument: (body: string) => wrapHtmlDocument(body, lang)
