@@ -147,10 +147,15 @@ export const getSocialIconVariantPreviewUrl = (
   variant: SocialIconVariantId
 ): string => socialIconVariantDataUrls[platform][variant] ?? ''
 
+export const isSocialIconVariantReady = (
+  platform: SocialPlatform,
+  variant: SocialIconVariantId
+): boolean => Boolean(socialIconVariantDataUrls[platform][variant])
+
 export const areSocialIconVariantsReady = (): boolean => {
   for (const platform of Object.keys(SOCIAL_ICON_VARIANTS_BY_PLATFORM) as SocialPlatform[]) {
     for (const variant of SOCIAL_ICON_VARIANTS_BY_PLATFORM[platform]) {
-      if (!socialIconVariantDataUrls[platform][variant]) {
+      if (!isSocialIconVariantReady(platform, variant)) {
         return false
       }
     }

@@ -91,6 +91,10 @@ export const useSignatureApp = () => {
     document.title = t(lang, 'pageTitle')
   }, [lang])
 
+  useEffect(() => {
+    initializeSocialIconDataUrls().catch(() => undefined)
+  }, [])
+
   const generate = useCallback(async (state = form) => {
     await initializeSocialIconDataUrls()
     const nextLayout = getLayoutSettings(state)

@@ -583,10 +583,15 @@ export default function App() {
             </div>
           </Panel>
 
-          <Panel summary={t(lang, 'socialMedia')}>
+          <Panel defaultOpen summary={t(lang, 'socialMedia')}>
             <p className="hint">{t(lang, 'socialMediaHint')}</p>
+            <p className="hint">{t(lang, 'socialIconVariantExpandHint')}</p>
             {SOCIAL_NETWORKS.map((network) => (
-              <details key={network.name} className="sub-panel">
+              <details
+                key={network.name}
+                className="sub-panel"
+                open={network.platform === 'Instagram'}
+              >
                 <summary>{network.name}</summary>
                 <div className="sub-panel-body grid-compact">
                   <Field label={t(lang, 'profileUrl')}>

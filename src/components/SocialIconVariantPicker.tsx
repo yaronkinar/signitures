@@ -7,7 +7,11 @@ import {
   type SocialIconVariantId,
   type SocialPlatform
 } from '../lib/socialIconCatalog'
-import { areSocialIconVariantsReady, getSocialIconVariantPreviewUrl } from '../lib/socialIcons'
+import {
+  getSocialIconVariantPreviewUrl,
+  initializeSocialIconDataUrls,
+  isSocialIconVariantReady
+} from '../lib/socialIcons'
 
 type SocialIconVariantPickerProps = {
   platform: SocialPlatform
@@ -26,25 +30,66 @@ export const SocialIconVariantPicker = ({
   disabled = false,
   onSelectVariant
 }: SocialIconVariantPickerProps) => {
-  const [ready, setReady] = useState(areSocialIconVariantsReady())
   const variants = SOCIAL_ICON_VARIANTS_BY_PLATFORM[platform]
   const hasCustomIcon = customIconUrl.trim().length > 0
+  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>(() => {
+    if (variants.every((variant) => isSocialIconVariantReady(platform, variant))) {
+      return 'ready'
+    }
+    return 'loading'
+  })
 
   useEffect(() => {
-    if (ready) return
+    let cancelled = false
+
+    const allVariantsReady = (): boolean =>
+      variants.every((variant) => isSocialIconVariantReady(platform, variant))
+
+    const markReadyIfLoaded = (): boolean => {
+      if (cancelled || !allVariantsReady()) {
+        return false
+      }
+      setLoadState('ready')
+      return true
+    }
+
+    if (markReadyIfLoaded()) {
+      return
+    }
+
+    setLoadState('loading')
+    initializeSocialIconDataUrls()
+      .then(() => {
+        if (!cancelled) {
+          setLoadState(allVariantsReady() ? 'ready' : 'error')
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setLoadState('error')
+        }
+      })
+
     const intervalId = window.setInterval(() => {
-      if (areSocialIconVariantsReady()) {
-        setReady(true)
+      if (markReadyIfLoaded()) {
         window.clearInterval(intervalId)
       }
     }, 120)
-    return () => window.clearInterval(intervalId)
-  }, [ready])
+
+    return () => {
+      cancelled = true
+      window.clearInterval(intervalId)
+    }
+  }, [platform, variants])
 
   return (
     <div className="social-icon-variant-picker">
       <p className="hint social-icon-variant-hint">
-        {hasCustomIcon ? t(lang, 'socialIconVariantCustomActive') : t(lang, 'socialIconVariantHint')}
+        {loadState === 'error'
+          ? t(lang, 'socialIconVariantLoadFailed')
+          : hasCustomIcon
+            ? t(lang, 'socialIconVariantCustomActive')
+            : t(lang, 'socialIconVariantHint')}
       </p>
       <div
         className="social-icon-variant-grid"
@@ -53,6 +98,7 @@ export const SocialIconVariantPicker = ({
       >
         {variants.map((variant) => {
           const previewUrl = getSocialIconVariantPreviewUrl(platform, variant)
+          const variantReady = isSocialIconVariantReady(platform, variant)
           const isSelected = !hasCustomIcon && selectedVariant === variant
           const labelKey = SOCIAL_ICON_VARIANT_LABEL_KEYS[variant]
 
@@ -65,7 +111,7 @@ export const SocialIconVariantPicker = ({
               aria-checked={isSelected}
               aria-label={t(lang, labelKey)}
               title={t(lang, labelKey)}
-              disabled={disabled || !ready || !previewUrl}
+              disabled={disabled || !variantReady}
               onClick={() => onSelectVariant(variant)}
             >
               {previewUrl ? (
@@ -78,6 +124,9 @@ export const SocialIconVariantPicker = ({
           )
         })}
       </div>
+      {loadState === 'loading' ? (
+        <p className="hint social-icon-variant-loading">{t(lang, 'socialIconVariantLoading')}</p>
+      ) : null}
     </div>
   )
 }
