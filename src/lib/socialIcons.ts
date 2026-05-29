@@ -1,11 +1,12 @@
-import { siFacebook, siInstagram, siX, siYoutube } from 'simple-icons'
+import { DEFAULT_INSTAGRAM_ICON_DATA_URL } from '../defaultInstagramIconDataUrl'
+import { siFacebook, siX, siYoutube } from 'simple-icons'
 import { normalizeUrl } from './signatureUtils'
 
 type SocialPlatform = 'Facebook' | 'Instagram' | 'LinkedIn' | 'X' | 'YouTube'
 
 const socialIconDataUrls: Record<SocialPlatform, string> = {
   Facebook: '',
-  Instagram: '',
+  Instagram: DEFAULT_INSTAGRAM_ICON_DATA_URL,
   LinkedIn: '',
   X: '',
   YouTube: ''
@@ -58,9 +59,6 @@ export const initializeSocialIconDataUrls = async (): Promise<void> => {
   socialIconsInitializationPromise = Promise.all([
     svgToPngDataUrl(buildSocialIconSvg(siFacebook, '#1877F2')).then((dataUrl) => {
       socialIconDataUrls.Facebook = dataUrl
-    }),
-    svgToPngDataUrl(buildSocialIconSvg(siInstagram, '#E4405F')).then((dataUrl) => {
-      socialIconDataUrls.Instagram = dataUrl
     }),
     svgToPngDataUrl(linkedInSocialIconSvg).then((dataUrl) => {
       socialIconDataUrls.LinkedIn = dataUrl
