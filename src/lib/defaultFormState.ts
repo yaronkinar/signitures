@@ -1,6 +1,6 @@
-import { DEFAULT_INSTAGRAM_ICON_DATA_URL } from '../defaultInstagramIconDataUrl'
 import { DEFAULT_LOGO_DATA_URL } from '../defaultLogoDataUrl'
 import { SBA_BRAND_PRESETS } from '../brandPresets'
+import { DEFAULT_SOCIAL_ICON_VARIANT } from './socialIconCatalog'
 import type { SignatureFormState } from '../types/signatureForm'
 
 const DEFAULT_BRAND_PRESET = SBA_BRAND_PRESETS[0].values
@@ -15,14 +15,19 @@ export const createDefaultFormState = (): SignatureFormState => ({
   website: '',
   facebookUrl: 'https://www.facebook.com/SBAIsrael',
   facebookIconUrl: '',
+  facebookIconVariant: DEFAULT_SOCIAL_ICON_VARIANT.Facebook,
   instagramUrl: 'https://www.instagram.com/sba.israel?igsh=MXUyYjI5a3UxMmZidg==',
-  instagramIconUrl: DEFAULT_INSTAGRAM_ICON_DATA_URL,
+  instagramIconUrl: '',
+  instagramIconVariant: DEFAULT_SOCIAL_ICON_VARIANT.Instagram,
   linkedinUrl: 'https://www.linkedin.com/in/misradacalcala/',
   linkedinIconUrl: '',
+  linkedinIconVariant: DEFAULT_SOCIAL_ICON_VARIANT.LinkedIn,
   xUrl: 'https://x.com/misrad_calcala',
   xIconUrl: '',
+  xIconVariant: DEFAULT_SOCIAL_ICON_VARIANT.X,
   youtubeUrl: 'https://www.youtube.com/user/SBAIsrael',
   youtubeIconUrl: '',
+  youtubeIconVariant: DEFAULT_SOCIAL_ICON_VARIANT.YouTube,
   logoUrl: DEFAULT_LOGO_DATA_URL,
   bannerUrl: '',
   bannerLink: '',

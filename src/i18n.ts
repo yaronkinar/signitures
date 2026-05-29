@@ -100,7 +100,21 @@ const translations = {
     urlPlaceholder: 'https://...',
     socialMedia: 'Social media',
     socialMediaHint:
-      'Add profile URLs for networks you use. Leave icon fields empty for built-in brand icons.',
+      'Add profile URLs for networks you use. Pick a built-in icon style or supply your own icon URL or file.',
+    socialIconVariantLabel: 'Icon style',
+    socialIconVariantHint: 'Choose a built-in icon style for this network.',
+    socialIconVariantExpandHint:
+      'Expand each network below. The icon style picker is inside every network section.',
+    socialIconVariantLoading: 'Loading icon previews…',
+    socialIconVariantLoadFailed:
+      'Icon previews could not load. Refresh the page or try another browser.',
+    socialIconVariantCustomActive:
+      'A custom icon URL or file is in use. Clear it to choose a built-in style again.',
+    socialIconVariantBrand: 'Brand color',
+    socialIconVariantMono: 'Monochrome',
+    socialIconVariantWhite: 'White',
+    socialIconVariantGradient: 'Gradient',
+    socialIconVariantBadge: 'Badge',
     profileUrl: 'Profile URL',
     iconUrl: 'Icon URL',
     iconFile: 'Icon file',
@@ -338,7 +352,22 @@ const translations = {
     bannerLink: 'קישור באנר',
     urlPlaceholder: 'https://...',
     socialMedia: 'רשתות חברתיות',
-    socialMediaHint: 'הוסיפו כתובות פרופיל לרשתות שבהן אתם משתמשים. השאירו אייקון ריק לשימוש באייקון מובנה.',
+    socialMediaHint:
+      'הוסיפו כתובות פרופיל לרשתות שבהן אתם משתמשים. בחרו סגנון אייקון מובנה או העלו כתובת/קובץ משלכם.',
+    socialIconVariantLabel: 'סגנון אייקון',
+    socialIconVariantHint: 'בחרו סגנון אייקון מובנה לרשת זו.',
+    socialIconVariantExpandHint:
+      'פתחו כל רשת למטה. בוחר סגנון האייקון נמצא בתוך כל מקטע רשת.',
+    socialIconVariantLoading: 'טוען תצוגות מקדימות של אייקונים…',
+    socialIconVariantLoadFailed:
+      'לא ניתן לטעון תצוגות מקדימות. רעננו את הדף או נסו דפדפן אחר.',
+    socialIconVariantCustomActive:
+      'בשימוש אייקון מותאם אישית. נקו את השדה כדי לבחור שוב סגנון מובנה.',
+    socialIconVariantBrand: 'צבע מותג',
+    socialIconVariantMono: 'מונוכרום',
+    socialIconVariantWhite: 'לבן',
+    socialIconVariantGradient: 'גרדיאנט',
+    socialIconVariantBadge: 'תג',
     profileUrl: 'כתובת פרופיל',
     iconUrl: 'כתובת אייקון',
     iconFile: 'קובץ אייקון',
