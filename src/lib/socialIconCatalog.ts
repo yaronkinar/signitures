@@ -15,7 +15,7 @@ export const SOCIAL_ICON_VARIANTS_BY_PLATFORM: Record<
 
 export const DEFAULT_SOCIAL_ICON_VARIANT: Record<SocialPlatform, SocialIconVariantId> = {
   Facebook: 'brand',
-  Instagram: 'brand',
+  Instagram: 'gradient',
   LinkedIn: 'badge',
   X: 'brand',
   YouTube: 'brand'
