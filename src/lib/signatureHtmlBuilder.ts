@@ -98,23 +98,27 @@ export const buildSignatureHtml = (
     {
       label: 'Facebook',
       url: facebookUrl,
-      iconUrl: resolveSocialIconUrl('Facebook', form.facebookIconUrl)
+      iconUrl: resolveSocialIconUrl('Facebook', form.facebookIconUrl, form.facebookIconVariant)
     },
     {
       label: 'Instagram',
       url: instagramUrl,
-      iconUrl: resolveSocialIconUrl('Instagram', form.instagramIconUrl)
+      iconUrl: resolveSocialIconUrl('Instagram', form.instagramIconUrl, form.instagramIconVariant)
     },
     {
       label: 'LinkedIn',
       url: linkedinUrl,
-      iconUrl: resolveSocialIconUrl('LinkedIn', form.linkedinIconUrl)
+      iconUrl: resolveSocialIconUrl('LinkedIn', form.linkedinIconUrl, form.linkedinIconVariant)
     },
-    { label: 'X', url: xUrl, iconUrl: resolveSocialIconUrl('X', form.xIconUrl) },
+    {
+      label: 'X',
+      url: xUrl,
+      iconUrl: resolveSocialIconUrl('X', form.xIconUrl, form.xIconVariant)
+    },
     {
       label: 'YouTube',
       url: youtubeUrl,
-      iconUrl: resolveSocialIconUrl('YouTube', form.youtubeIconUrl)
+      iconUrl: resolveSocialIconUrl('YouTube', form.youtubeIconUrl, form.youtubeIconVariant)
     }
   ].filter((item) => item.url && item.iconUrl)
 

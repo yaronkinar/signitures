@@ -54,14 +54,19 @@ export type SignatureFormState = {
   website: string
   facebookUrl: string
   facebookIconUrl: string
+  facebookIconVariant: string
   instagramUrl: string
   instagramIconUrl: string
+  instagramIconVariant: string
   linkedinUrl: string
   linkedinIconUrl: string
+  linkedinIconVariant: string
   xUrl: string
   xIconUrl: string
+  xIconVariant: string
   youtubeUrl: string
   youtubeIconUrl: string
+  youtubeIconVariant: string
   logoUrl: string
   bannerUrl: string
   bannerLink: string

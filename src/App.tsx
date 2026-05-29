@@ -13,7 +13,9 @@ import {
   googleFontDownloadUrl,
   isBundledWebFont
 } from './lib/signatureFonts'
+import { normalizeSocialIconVariant, type SocialPlatform } from './lib/socialIconCatalog'
 import { fileToDataUrl } from './lib/signatureUtils'
+import { SocialIconVariantPicker } from './components/SocialIconVariantPicker'
 import type { SignatureFormState } from './types/signatureForm'
 
 const FONT_OPTIONS = [
@@ -43,15 +45,52 @@ const FONT_WEIGHT_OPTIONS = [
 ] as const
 
 const SOCIAL_NETWORKS = [
-  { name: 'Facebook', urlKey: 'facebookUrl', iconUrlKey: 'facebookIconUrl', iconFileKey: 'facebookIconFile' },
-  { name: 'Instagram', urlKey: 'instagramUrl', iconUrlKey: 'instagramIconUrl', iconFileKey: 'instagramIconFile' },
-  { name: 'LinkedIn', urlKey: 'linkedinUrl', iconUrlKey: 'linkedinIconUrl', iconFileKey: 'linkedinIconFile' },
-  { name: 'X / Twitter', urlKey: 'xUrl', iconUrlKey: 'xIconUrl', iconFileKey: 'xIconFile' },
-  { name: 'YouTube', urlKey: 'youtubeUrl', iconUrlKey: 'youtubeIconUrl', iconFileKey: 'youtubeIconFile' }
+  {
+    name: 'Facebook',
+    platform: 'Facebook',
+    urlKey: 'facebookUrl',
+    iconUrlKey: 'facebookIconUrl',
+    iconVariantKey: 'facebookIconVariant',
+    iconFileKey: 'facebookIconFile'
+  },
+  {
+    name: 'Instagram',
+    platform: 'Instagram',
+    urlKey: 'instagramUrl',
+    iconUrlKey: 'instagramIconUrl',
+    iconVariantKey: 'instagramIconVariant',
+    iconFileKey: 'instagramIconFile'
+  },
+  {
+    name: 'LinkedIn',
+    platform: 'LinkedIn',
+    urlKey: 'linkedinUrl',
+    iconUrlKey: 'linkedinIconUrl',
+    iconVariantKey: 'linkedinIconVariant',
+    iconFileKey: 'linkedinIconFile'
+  },
+  {
+    name: 'X / Twitter',
+    platform: 'X',
+    urlKey: 'xUrl',
+    iconUrlKey: 'xIconUrl',
+    iconVariantKey: 'xIconVariant',
+    iconFileKey: 'xIconFile'
+  },
+  {
+    name: 'YouTube',
+    platform: 'YouTube',
+    urlKey: 'youtubeUrl',
+    iconUrlKey: 'youtubeIconUrl',
+    iconVariantKey: 'youtubeIconVariant',
+    iconFileKey: 'youtubeIconFile'
+  }
 ] as const satisfies ReadonlyArray<{
   name: string
+  platform: SocialPlatform
   urlKey: keyof SignatureFormState
   iconUrlKey: keyof SignatureFormState
+  iconVariantKey: keyof SignatureFormState
   iconFileKey: keyof SignatureFormState
 }>
 
@@ -554,6 +593,23 @@ export default function App() {
                     <TextInput
                       value={String(form[network.urlKey])}
                       onChange={(e) => updateForm({ [network.urlKey]: e.target.value })}
+                    />
+                  </Field>
+                  <Field label={t(lang, 'socialIconVariantLabel')}>
+                    <SocialIconVariantPicker
+                      platform={network.platform}
+                      lang={lang}
+                      selectedVariant={normalizeSocialIconVariant(
+                        network.platform,
+                        String(form[network.iconVariantKey])
+                      )}
+                      customIconUrl={String(form[network.iconUrlKey])}
+                      onSelectVariant={(variant) =>
+                        updateForm({
+                          [network.iconVariantKey]: variant,
+                          [network.iconUrlKey]: ''
+                        })
+                      }
                     />
                   </Field>
                   <Field label={t(lang, 'iconUrl')}>
