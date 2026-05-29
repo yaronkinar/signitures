@@ -1,3 +1,4 @@
+import { DEFAULT_INSTAGRAM_ICON_DATA_URL } from '../defaultInstagramIconDataUrl'
 import { DEFAULT_LOGO_DATA_URL } from '../defaultLogoDataUrl'
 import { SBA_BRAND_PRESETS } from '../brandPresets'
 import type { SignatureFormState } from '../types/signatureForm'
@@ -15,7 +16,7 @@ export const createDefaultFormState = (): SignatureFormState => ({
   facebookUrl: 'https://www.facebook.com/SBAIsrael',
   facebookIconUrl: '',
   instagramUrl: 'https://www.instagram.com/sba.israel?igsh=MXUyYjI5a3UxMmZidg==',
-  instagramIconUrl: '',
+  instagramIconUrl: DEFAULT_INSTAGRAM_ICON_DATA_URL,
   linkedinUrl: 'https://www.linkedin.com/in/misradacalcala/',
   linkedinIconUrl: '',
   xUrl: 'https://x.com/misrad_calcala',
