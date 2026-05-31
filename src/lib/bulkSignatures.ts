@@ -2,6 +2,14 @@ import JSZip from 'jszip'
 import * as XLSX from 'xlsx'
 import type { AppLanguage, I18nKey } from '../i18n'
 import type { SignatureFormState } from '../types/signatureForm'
+import {
+  addImageAssetsToZip,
+  buildImageAssets,
+  collectDataImageUrlsFromHtml,
+  collectFormImageSources,
+  rewriteFormImageUrls,
+  rewriteUrlsInHtml
+} from './signatureImageAssets'
 import { buildSignatureHtml } from './signatureHtmlBuilder'
 import { sanitizeFileName, uniqueFileName } from './fileNames'
 import {
@@ -178,12 +186,40 @@ export const generateBulkSignaturesZip = async (
   const zip = new JSZip()
   const usedNames = new Set<string>()
   const templateLayout = getLayoutSettings(template)
+  const assetsFolder = 'images'
+  const templateAssets = buildImageAssets(collectFormImageSources(template), assetsFolder)
+  const exportTemplate = templateAssets.files.length
+    ? rewriteFormImageUrls(template, templateAssets.urlMap)
+    : template
+
+  let sharedImageAssets = [...templateAssets.files]
+  let htmlUrlMap = templateAssets.urlMap
+
+  if (rows.length > 0) {
+    const sampleForm = mergeBulkRowIntoForm(exportTemplate, rows[0])
+    const sampleLayout = getLayoutSettings(sampleForm)
+    const sampleHtml = buildSignatureHtml(sampleForm, sampleLayout)
+    const bundledSample = buildImageAssets(
+      [
+        ...collectFormImageSources(sampleForm),
+        ...collectDataImageUrlsFromHtml(sampleHtml).map((url, index) => ({
+          url,
+          baseName: `embedded-image-${index + 1}`
+        }))
+      ],
+      assetsFolder
+    )
+    sharedImageAssets = bundledSample.files
+    htmlUrlMap = bundledSample.urlMap
+  }
+
   await addBundledFontsToZip(zip, templateLayout.fontFamily)
+  addImageAssetsToZip(zip, assetsFolder, sharedImageAssets)
 
   for (const row of rows) {
-    const form = mergeBulkRowIntoForm(template, row)
+    const form = mergeBulkRowIntoForm(exportTemplate, row)
     const layout = getLayoutSettings(form)
-    const bodyHtml = buildSignatureHtml(form, layout)
+    const bodyHtml = rewriteUrlsInHtml(buildSignatureHtml(form, layout), htmlUrlMap)
     const htmlDocument = wrapHtmlDocument(bodyHtml, form.signatureLanguage, {
       fontFamily: layout.fontFamily,
       bundledFontAssetsBase: 'fonts'

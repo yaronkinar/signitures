@@ -285,7 +285,7 @@ export default function App() {
                 <span className="btn-import params-import-button">{t(lang, 'importParams')}</span>
                 <input
                   type="file"
-                  accept=".json,application/json"
+                  accept=".json,.zip,application/json,application/zip"
                   hidden
                   onChange={(event) => {
                     const file = event.target.files?.[0]

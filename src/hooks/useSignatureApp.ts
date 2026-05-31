@@ -21,7 +21,7 @@ import {
   createInitialFormState,
   downloadFormStateExport,
   downloadFormStyleExport,
-  parseFormImportJson,
+  parseFormImportFile,
   storeFormState
 } from '../lib/formStorage'
 import { createDefaultFormState } from '../lib/defaultFormState'
@@ -410,11 +410,11 @@ export const useSignatureApp = () => {
     await navigator.clipboard.writeText(value)
   }, [outputHtml])
 
-  const handleDownload = useCallback(() => {
+  const handleDownload = useCallback(async () => {
     const value = outputHtml.trim()
     if (!value) return
-    downloadHtmlOutput(value, lang, form.fontFamily)
-  }, [form.fontFamily, lang, outputHtml])
+    await downloadHtmlOutput(value, lang, form.fontFamily, form)
+  }, [form, lang, outputHtml])
 
   const handleInstallOutlook = useCallback(async () => {
     try {
@@ -464,13 +464,13 @@ export const useSignatureApp = () => {
     generate(defaults).catch(() => undefined)
   }, [generate, lang, setForm])
 
-  const handleExportParams = useCallback(() => {
-    downloadFormStateExport(form)
+  const handleExportParams = useCallback(async () => {
+    await downloadFormStateExport(form)
     addToast(t(lang, 'paramsExportSuccess'), 'success')
   }, [addToast, form, lang])
 
-  const handleExportStyle = useCallback(() => {
-    downloadFormStyleExport(form)
+  const handleExportStyle = useCallback(async () => {
+    await downloadFormStyleExport(form)
     addToast(t(lang, 'paramsStyleExportSuccess'), 'success')
   }, [addToast, form, lang])
 
@@ -478,7 +478,7 @@ export const useSignatureApp = () => {
     async (file: File | undefined) => {
       if (!file) return
       try {
-        const imported = parseFormImportJson(await file.text())
+        const imported = await parseFormImportFile(file)
         if (!imported) {
           addToast(t(lang, 'paramsImportFailed'), 'error')
           return

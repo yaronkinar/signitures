@@ -1,8 +1,18 @@
+import JSZip from 'jszip'
 import { createDefaultFormState } from './defaultFormState'
 import { sanitizeFileName } from './fileNames'
+import {
+  addImageAssetsToZip,
+  buildImageAssets,
+  collectFormImageSources,
+  resolveFormImageUrlsFromZip,
+  rewriteRecordImageUrls
+} from './signatureImageAssets'
 import { getLayoutSettings } from './signatureUtils'
 import type { AppLanguage } from '../i18n'
 import type { LinkImage, SignatureFormState } from '../types/signatureForm'
+
+const EXPORT_IMAGES_FOLDER = 'images'
 
 const STORAGE_KEY = 'signitures-form-state'
 const STYLE_EXPORT_TYPE = 'style'
@@ -197,18 +207,87 @@ const downloadTextFile = (content: string, filename: string, mimeType: string): 
 const buildExportBaseName = (form: SignatureFormState): string =>
   sanitizeFileName(form.fullName.trim() || form.company.trim() || 'signature')
 
-export const downloadFormStateExport = (form: SignatureFormState): void => {
-  downloadTextFile(
-    JSON.stringify(form, null, 2),
-    `${buildExportBaseName(form)}-params.json`,
-    'application/json'
+const findJsonEntryName = (zip: JSZip): string | null => {
+  const jsonEntries = Object.keys(zip.files).filter(
+    (name) => !name.endsWith('/') && name.toLowerCase().endsWith('.json')
+  )
+  if (!jsonEntries.length) return null
+  const preferred =
+    jsonEntries.find((name) => /-(params|style)\.json$/i.test(name)) ??
+    jsonEntries.find((name) => !name.includes('/')) ??
+    jsonEntries[0]
+  return preferred ?? null
+}
+
+const exportFormJsonWithImages = async (
+  jsonFilename: string,
+  payload: Record<string, unknown>,
+  form: SignatureFormState
+): Promise<void> => {
+  const { urlMap, files } = buildImageAssets(collectFormImageSources(form), EXPORT_IMAGES_FOLDER)
+  const exportPayload =
+    files.length > 0 ? rewriteRecordImageUrls(payload, urlMap) : payload
+
+  if (!files.length) {
+    downloadTextFile(JSON.stringify(exportPayload, null, 2), jsonFilename, 'application/json')
+    return
+  }
+
+  const zip = new JSZip()
+  zip.file(jsonFilename, JSON.stringify(exportPayload, null, 2))
+  addImageAssetsToZip(zip, EXPORT_IMAGES_FOLDER, files)
+  const zipBlob = await zip.generateAsync({ type: 'blob' })
+  const zipUrl = URL.createObjectURL(zipBlob)
+  const link = document.createElement('a')
+  link.href = zipUrl
+  link.download = jsonFilename.replace(/\.json$/i, '.zip')
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(zipUrl)
+}
+
+export const downloadFormStateExport = async (form: SignatureFormState): Promise<void> => {
+  const baseName = buildExportBaseName(form)
+  await exportFormJsonWithImages(`${baseName}-params.json`, form as unknown as Record<string, unknown>, form)
+}
+
+export const downloadFormStyleExport = async (form: SignatureFormState): Promise<void> => {
+  const baseName = buildExportBaseName(form)
+  const styleExport = extractStyleExport(form)
+  await exportFormJsonWithImages(
+    `${baseName}-style.json`,
+    styleExport as unknown as Record<string, unknown>,
+    form
   )
 }
 
-export const downloadFormStyleExport = (form: SignatureFormState): void => {
-  downloadTextFile(
-    JSON.stringify(extractStyleExport(form), null, 2),
-    `${buildExportBaseName(form)}-style.json`,
-    'application/json'
-  )
+export const parseFormImportFile = async (file: File): Promise<ParsedFormImport | null> => {
+  const lowerName = file.name.toLowerCase()
+
+  if (lowerName.endsWith('.zip')) {
+    const zip = await JSZip.loadAsync(await file.arrayBuffer())
+    const jsonEntryName = findJsonEntryName(zip)
+    if (!jsonEntryName) return null
+
+    const jsonEntry = zip.file(jsonEntryName)
+    if (!jsonEntry) return null
+
+    const parsed = parseFormImportJson(await jsonEntry.async('string'))
+    if (!parsed) return null
+
+    if (parsed.kind === 'style') {
+      const defaults = createDefaultFormState()
+      const merged = { ...defaults, ...parsed.style }
+      const resolved = await resolveFormImageUrlsFromZip(merged, zip)
+      return { kind: 'style', style: pickStyleFields(resolved as unknown as Record<string, unknown>) }
+    }
+
+    return {
+      kind: 'full',
+      form: await resolveFormImageUrlsFromZip(parsed.form, zip)
+    }
+  }
+
+  return parseFormImportJson(await file.text())
 }

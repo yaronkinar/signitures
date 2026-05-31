@@ -2,6 +2,10 @@ import type { AppLanguage } from '../i18n'
 import { t } from '../i18n'
 import { signatureStrings } from '../i18n'
 import type { SignatureFormState } from '../types/signatureForm'
+import {
+  bundleSignatureHtmlImages,
+  imageAssetsToWritePayloads
+} from './signatureImageAssets'
 import { normalizeUrl, wrapHtmlDocument } from './signatureUtils'
 import {
   buildWriteFontFilesPs,
@@ -9,6 +13,7 @@ import {
   fetchSignatureFontPayloads,
   getOutlookSignatureFontFileNames
 } from './fontInstallScripts'
+import JSZip from 'jszip'
 import {
   OUTLOOK_INSTALL_SCRIPT_MARKER,
   POWERSHELL_EXE,
@@ -147,7 +152,13 @@ export const downloadOutlookInstaller = async (
   const filesFolderName = `${signatureName}_files`
   const fontFileNames = getOutlookSignatureFontFileNames(form)
   const fontPayloads = fontFileNames.length ? await fetchSignatureFontPayloads(fontFileNames) : []
-  const htmlDocument = wrapHtmlDocument(htmlBody, lang, {
+  const { html: bundledHtmlBody, files: imageFiles } = bundleSignatureHtmlImages(
+    htmlBody,
+    form,
+    filesFolderName
+  )
+  const imagePayloads = imageAssetsToWritePayloads(imageFiles)
+  const htmlDocument = wrapHtmlDocument(bundledHtmlBody, lang, {
     fontFamily: form.fontFamily,
     bundledFontAssetsBase: filesFolderName,
     bundledFontFileNames: fontFileNames
@@ -158,6 +169,8 @@ export const downloadOutlookInstaller = async (
   const txtBase64 = toBase64Utf8(txtDocument)
   const rtfBase64 = toBase64Utf8(rtfDocument)
   const writeFontFilesPs = buildWriteFontFilesPs('$filesDir', fontPayloads)
+  const writeImageFilesPs = buildWriteFontFilesPs('$filesDir', imagePayloads)
+  const writeAssetFilesPs = [writeFontFilesPs, writeImageFilesPs].filter(Boolean).join('\n')
   const windowsFontInstallPs = await buildWindowsFontInstallPsForForm(lang, form)
   const installSuccessLine = psHostStatement(lang, psConsoleMessage(lang, 'batPsInstallSuccess'), {
     foregroundColor: 'Green'
@@ -193,7 +206,7 @@ $rtfContent = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase6
 [System.IO.File]::WriteAllText($htmlFile, $htmlContent, [System.Text.Encoding]::UTF8)
 [System.IO.File]::WriteAllText($txtFile, $txtContent, [System.Text.Encoding]::UTF8)
 [System.IO.File]::WriteAllText($rtfFile, $rtfContent, [System.Text.Encoding]::UTF8)
-${writeFontFilesPs ? `\n${writeFontFilesPs}\n` : ''}
+${writeAssetFilesPs ? `\n${writeAssetFilesPs}\n` : ''}
 $mailSettingsPaths = @(
   "HKCU:\\Software\\Microsoft\\Office\\16.0\\Common\\MailSettings",
   "HKCU:\\Software\\Microsoft\\Office\\15.0\\Common\\MailSettings"
@@ -278,19 +291,44 @@ export const installForNewOutlook = async (htmlBody: string, lang: AppLanguage):
   window.alert(t(lang, 'alertNewOutlookManual'))
 }
 
-export const downloadHtmlOutput = (
+export const downloadHtmlOutput = async (
   htmlBody: string,
   lang: AppLanguage,
-  fontFamily?: string
-): void => {
-  const htmlDocument = wrapHtmlDocument(htmlBody, lang, fontFamily)
-  const blob = new Blob([htmlDocument], { type: 'text/html;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
+  fontFamily?: string,
+  form?: SignatureFormState
+): Promise<void> => {
+  const assetsFolder = 'images'
+  const { html: bundledHtmlBody, files: imageFiles } = form
+    ? bundleSignatureHtmlImages(htmlBody, form, assetsFolder)
+    : { html: htmlBody, files: [] }
+  const htmlDocument = wrapHtmlDocument(bundledHtmlBody, lang, fontFamily)
+
+  if (!imageFiles.length) {
+    const blob = new Blob([htmlDocument], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'outlook-signature.html'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+    return
+  }
+
+  const zip = new JSZip()
+  zip.file('outlook-signature.html', htmlDocument)
+  for (const file of imageFiles) {
+    zip.folder(assetsFolder)?.file(file.fileName, file.bytes)
+  }
+
+  const zipBlob = await zip.generateAsync({ type: 'blob' })
+  const zipUrl = URL.createObjectURL(zipBlob)
   const link = document.createElement('a')
-  link.href = url
-  link.download = 'outlook-signature.html'
+  link.href = zipUrl
+  link.download = 'outlook-signature.zip'
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
-  URL.revokeObjectURL(url)
+  URL.revokeObjectURL(zipUrl)
 }
