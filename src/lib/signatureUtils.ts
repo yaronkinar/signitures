@@ -42,7 +42,71 @@ export const normalizeHexColor = (value: string): string | null => {
   const trimmed = value.trim()
   if (!trimmed) return null
   const withHash = trimmed.startsWith('#') ? trimmed : `#${trimmed}`
-  return /^#[0-9a-fA-F]{6}$/.test(withHash) ? withHash.toLowerCase() : null
+  if (/^#[0-9a-fA-F]{6}$/.test(withHash)) return withHash.toLowerCase()
+  if (/^#[0-9a-fA-F]{3}$/.test(withHash)) {
+    const h = withHash.slice(1)
+    return `#${h[0]}${h[0]}${h[1]}${h[1]}${h[2]}${h[2]}`.toLowerCase()
+  }
+  return null
+}
+
+const parseInlineStyleColor = (style: string): string | null => {
+  const match = style.match(/(?:^|;)\s*color\s*:\s*([^;]+)/i)
+  if (!match) return null
+  return normalizeHexColor(match[1].trim())
+}
+
+/** Allows plain text, line breaks, and span color tags for signature text fields. */
+export const sanitizeSignatureInlineHtml = (raw: string): string => {
+  const trimmed = raw.trim()
+  if (!trimmed) return ''
+  if (!/[<>]/.test(trimmed)) return escapeHtml(trimmed)
+
+  const out: string[] = []
+  const openSpanCount = { value: 0 }
+  const tagRegex = /<\/?([a-zA-Z]+)(?:\s+style\s*=\s*['"]([^'"]*)['"])?\s*\/?>/gi
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+
+  while ((match = tagRegex.exec(trimmed)) !== null) {
+    if (match.index > lastIndex) {
+      out.push(escapeHtml(trimmed.slice(lastIndex, match.index)))
+    }
+
+    const [full, tagName, styleAttr = ''] = match
+    const tag = tagName.toLowerCase()
+    const isClose = full.startsWith('</')
+
+    if (tag === 'br' && !isClose) {
+      out.push('<br />')
+    } else if (tag === 'span') {
+      if (isClose) {
+        if (openSpanCount.value > 0) {
+          openSpanCount.value -= 1
+          out.push('</span>')
+        }
+      } else if (!/\/>\s*$/.test(full)) {
+        const color = parseInlineStyleColor(styleAttr)
+        if (color) {
+          openSpanCount.value += 1
+          out.push(`<span style="color:${color};">`)
+        }
+      }
+    }
+
+    lastIndex = tagRegex.lastIndex
+  }
+
+  if (lastIndex < trimmed.length) {
+    out.push(escapeHtml(trimmed.slice(lastIndex)))
+  }
+
+  while (openSpanCount.value > 0) {
+    openSpanCount.value -= 1
+    out.push('</span>')
+  }
+
+  return out.join('')
 }
 
 export const parseColorInput = (value: string, fallback: string): string =>

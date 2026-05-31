@@ -1,6 +1,6 @@
 import { signatureStrings, type AppLanguage } from '../i18n'
 import type { SignatureFormState, SignatureLayoutSettings } from '../types/signatureForm'
-import { escapeHtml, hasHebrew, normalizeUrl } from './signatureUtils'
+import { escapeHtml, hasHebrew, normalizeUrl, sanitizeSignatureInlineHtml } from './signatureUtils'
 import { resolveSocialIconUrl } from './socialIcons'
 
 export const buildSignatureHtml = (
@@ -10,9 +10,9 @@ export const buildSignatureHtml = (
   const lang: AppLanguage = form.signatureLanguage
   const strings = signatureStrings[lang]
   const contactDirection = lang === 'he' ? 'rtl' : 'ltr'
-  const fullName = escapeHtml(form.fullName.trim())
-  const jobTitle = escapeHtml(form.jobTitle.trim())
-  const company = escapeHtml(form.company.trim())
+  const fullName = sanitizeSignatureInlineHtml(form.fullName.trim())
+  const jobTitle = sanitizeSignatureInlineHtml(form.jobTitle.trim())
+  const company = sanitizeSignatureInlineHtml(form.company.trim())
   const phone = escapeHtml(form.phone.trim())
   const email = form.email.trim()
   const website = normalizeUrl(form.website)
