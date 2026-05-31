@@ -277,6 +277,9 @@ export default function App() {
               </div>
             </div>
             <div className="form-storage-group form-storage-group-save">
+              {app.cloudStorageAvailable && (
+                <span className="cloud-storage-hint">{t(lang, 'cloudStorageHint')}</span>
+              )}
               <input
                 type="text"
                 className="saved-signatures-name"

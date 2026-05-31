@@ -42,6 +42,13 @@ import {
   saveSignatureAs,
   type SavedSignatureEntry
 } from '../lib/savedSignatures'
+import {
+  deleteCloudSignature,
+  fetchCloudSignatures,
+  findCloudSignatureByName,
+  loadCloudSignatureForm,
+  saveCloudSignature
+} from '../lib/cloudSignatures'
 import { initializeSocialIconDataUrls } from '../lib/socialIcons'
 import {
   alignForHebrew,
@@ -92,6 +99,7 @@ export const useSignatureApp = () => {
   )
   const [activeSavedId, setActiveSavedId] = useState('')
   const [saveAsName, setSaveAsName] = useState('')
+  const [cloudStorageAvailable, setCloudStorageAvailable] = useState(false)
   const previewCardRef = useRef<HTMLElement>(null)
   const debounceRef = useRef<number | null>(null)
   const saveDebounceRef = useRef<number | null>(null)
@@ -478,12 +486,51 @@ export const useSignatureApp = () => {
     generate(defaults).catch(() => undefined)
   }, [generate, lang, setForm])
 
-  const refreshSavedSignatures = useCallback(() => {
+  const refreshSavedSignatures = useCallback(async () => {
+    try {
+      const cloud = await fetchCloudSignatures()
+      setCloudStorageAvailable(cloud.available)
+      if (cloud.available) {
+        setSavedSignatures(cloud.entries)
+        return
+      }
+    } catch {
+      setCloudStorageAvailable(false)
+    }
     setSavedSignatures(listSavedSignatures())
   }, [])
 
-  const handleSaveAs = useCallback(() => {
+  useEffect(() => {
+    refreshSavedSignatures().catch(() => undefined)
+  }, [refreshSavedSignatures])
+
+  const handleSaveAs = useCallback(async () => {
     const name = saveAsName.trim() || defaultSaveAsName(form)
+
+    if (cloudStorageAvailable) {
+      const existing = findCloudSignatureByName(savedSignatures, name)
+      if (existing && !window.confirm(t(lang, 'saveAsOverwriteConfirm'))) {
+        return
+      }
+
+      const result = await saveCloudSignature(name, form, existing?.id)
+      if (!result.ok) {
+        const messageKey =
+          result.reason === 'too_many'
+            ? 'saveAsFailedTooMany'
+            : result.reason === 'too_large'
+              ? 'saveAsCloudTooLarge'
+              : 'saveAsFailedStorage'
+        addToast(t(lang, messageKey), 'error')
+        return
+      }
+
+      await refreshSavedSignatures()
+      setActiveSavedId(result.entry.id)
+      setSaveAsName(result.entry.name)
+      addToast(t(lang, 'saveAsCloudSuccess').replace('{name}', result.entry.name), 'success')
+      return
+    }
 
     const existing = findSavedSignatureByName(name)
     if (existing && !window.confirm(t(lang, 'saveAsOverwriteConfirm'))) {
@@ -501,11 +548,19 @@ export const useSignatureApp = () => {
       return
     }
 
-    refreshSavedSignatures()
+    await refreshSavedSignatures()
     setActiveSavedId(result.entry.id)
     setSaveAsName(result.entry.name)
     addToast(t(lang, 'saveAsSuccess').replace('{name}', result.entry.name), 'success')
-  }, [addToast, form, lang, refreshSavedSignatures, saveAsName])
+  }, [
+    addToast,
+    cloudStorageAvailable,
+    form,
+    lang,
+    refreshSavedSignatures,
+    saveAsName,
+    savedSignatures
+  ])
 
   const handleLoadSaved = useCallback(
     async (id: string) => {
@@ -514,7 +569,9 @@ export const useSignatureApp = () => {
         return
       }
 
-      const loaded = loadSavedSignatureForm(id)
+      const loaded = cloudStorageAvailable
+        ? await loadCloudSignatureForm(id)
+        : loadSavedSignatureForm(id)
       if (!loaded) {
         addToast(t(lang, 'savedLoadFailed'), 'error')
         refreshSavedSignatures()
@@ -524,28 +581,32 @@ export const useSignatureApp = () => {
 
       skipNextSaveToastRef.current = true
       setActiveSavedId(id)
-      const entry = listSavedSignatures().find((item) => item.id === id)
+      const entry = savedSignatures.find((item) => item.id === id)
       if (entry) setSaveAsName(entry.name)
       setForm(loaded, { immediate: true })
       await generate(loaded)
       addToast(t(lang, 'savedLoadSuccess'), 'success')
     },
-    [addToast, generate, lang, refreshSavedSignatures, setForm]
+    [addToast, cloudStorageAvailable, generate, lang, refreshSavedSignatures, savedSignatures, setForm]
   )
 
-  const handleDeleteSaved = useCallback(() => {
+  const handleDeleteSaved = useCallback(async () => {
     if (!activeSavedId) return
     if (!window.confirm(t(lang, 'savedDeleteConfirm'))) return
 
-    if (!deleteSavedSignature(activeSavedId)) {
+    const deleted = cloudStorageAvailable
+      ? await deleteCloudSignature(activeSavedId)
+      : deleteSavedSignature(activeSavedId)
+
+    if (!deleted) {
       addToast(t(lang, 'savedLoadFailed'), 'error')
       return
     }
 
     setActiveSavedId('')
-    refreshSavedSignatures()
+    await refreshSavedSignatures()
     addToast(t(lang, 'savedDeleteSuccess'), 'success')
-  }, [activeSavedId, addToast, lang, refreshSavedSignatures])
+  }, [activeSavedId, addToast, cloudStorageAvailable, lang, refreshSavedSignatures])
 
   const handleExportParams = useCallback(async () => {
     await downloadFormStateExport(form)
@@ -660,6 +721,7 @@ export const useSignatureApp = () => {
     resetFormToDefaults,
     savedSignatures,
     activeSavedId,
+    cloudStorageAvailable,
     saveAsName,
     setSaveAsName,
     saveAsNamePlaceholder: defaultSaveAsName(form),

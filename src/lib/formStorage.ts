@@ -1,18 +1,12 @@
 import JSZip from 'jszip'
 import { createDefaultFormState } from './defaultFormState'
-import { sanitizeFileName } from './fileNames'
+import { buildExportBaseName, buildFormParamsExportZip, buildNamedExportZip } from './buildFormExportZip'
 import {
-  addImageAssetsToZip,
-  buildImageAssets,
-  collectFormImageSources,
-  resolveFormImageUrlsFromZip,
-  rewriteRecordImageUrls
+  resolveFormImageUrlsFromZip
 } from './signatureImageAssets'
 import { getLayoutSettings } from './signatureUtils'
 import type { AppLanguage } from '../i18n'
 import type { LinkImage, SignatureFormState } from '../types/signatureForm'
-
-const EXPORT_IMAGES_FOLDER = 'images'
 
 const STORAGE_KEY = 'signitures-form-state'
 const STYLE_EXPORT_TYPE = 'style'
@@ -204,9 +198,6 @@ const downloadTextFile = (content: string, filename: string, mimeType: string): 
   URL.revokeObjectURL(url)
 }
 
-const buildExportBaseName = (form: SignatureFormState): string =>
-  sanitizeFileName(form.fullName.trim() || form.company.trim() || 'signature')
-
 const findJsonEntryName = (zip: JSZip): string | null => {
   const jsonEntries = Object.keys(zip.files).filter(
     (name) => !name.endsWith('/') && name.toLowerCase().endsWith('.json')
@@ -219,47 +210,51 @@ const findJsonEntryName = (zip: JSZip): string | null => {
   return preferred ?? null
 }
 
-const exportFormJsonWithImages = async (
-  jsonFilename: string,
-  payload: Record<string, unknown>,
-  form: SignatureFormState
-): Promise<void> => {
-  const { urlMap, files } = buildImageAssets(collectFormImageSources(form), EXPORT_IMAGES_FOLDER)
-  const exportPayload =
-    files.length > 0 ? rewriteRecordImageUrls(payload, urlMap) : payload
-
-  if (!files.length) {
-    downloadTextFile(JSON.stringify(exportPayload, null, 2), jsonFilename, 'application/json')
-    return
-  }
-
-  const zip = new JSZip()
-  zip.file(jsonFilename, JSON.stringify(exportPayload, null, 2))
-  addImageAssetsToZip(zip, EXPORT_IMAGES_FOLDER, files)
-  const zipBlob = await zip.generateAsync({ type: 'blob' })
-  const zipUrl = URL.createObjectURL(zipBlob)
+const downloadBlobFile = (blob: Blob, filename: string): void => {
+  const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
-  link.href = zipUrl
-  link.download = jsonFilename.replace(/\.json$/i, '.zip')
+  link.href = url
+  link.download = filename
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
-  URL.revokeObjectURL(zipUrl)
+  URL.revokeObjectURL(url)
+}
+
+export const parseFormFromExportZip = async (zipData: ArrayBuffer): Promise<ParsedFormImport | null> => {
+  const zip = await JSZip.loadAsync(zipData)
+  const jsonEntryName = findJsonEntryName(zip)
+  if (!jsonEntryName) return null
+
+  const jsonEntry = zip.file(jsonEntryName)
+  if (!jsonEntry) return null
+
+  const parsed = parseFormImportJson(await jsonEntry.async('string'))
+  if (!parsed || parsed.kind !== 'full') return null
+
+  return {
+    kind: 'full',
+    form: await resolveFormImageUrlsFromZip(parsed.form, zip)
+  }
 }
 
 export const downloadFormStateExport = async (form: SignatureFormState): Promise<void> => {
   const baseName = buildExportBaseName(form)
-  await exportFormJsonWithImages(`${baseName}-params.json`, form as unknown as Record<string, unknown>, form)
+  const blob = await buildFormParamsExportZip(form)
+  const hasZipImages = blob.type !== 'application/json'
+  downloadBlobFile(blob, hasZipImages ? `${baseName}-params.zip` : `${baseName}-params.json`)
 }
 
 export const downloadFormStyleExport = async (form: SignatureFormState): Promise<void> => {
   const baseName = buildExportBaseName(form)
   const styleExport = extractStyleExport(form)
-  await exportFormJsonWithImages(
+  const blob = await buildNamedExportZip(
     `${baseName}-style.json`,
     styleExport as unknown as Record<string, unknown>,
     form
   )
+  const hasZipImages = blob.type !== 'application/json'
+  downloadBlobFile(blob, hasZipImages ? `${baseName}-style.zip` : `${baseName}-style.json`)
 }
 
 export const parseFormImportFile = async (file: File): Promise<ParsedFormImport | null> => {
