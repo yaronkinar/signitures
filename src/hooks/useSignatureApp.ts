@@ -33,6 +33,15 @@ import {
 } from '../lib/outlookInstall'
 import { downloadWindowsFontInstaller } from '../lib/fontInstallScripts'
 import { buildSignatureHtml } from '../lib/signatureHtmlBuilder'
+import {
+  defaultSaveAsName,
+  deleteSavedSignature,
+  findSavedSignatureByName,
+  listSavedSignatures,
+  loadSavedSignatureForm,
+  saveSignatureAs,
+  type SavedSignatureEntry
+} from '../lib/savedSignatures'
 import { initializeSocialIconDataUrls } from '../lib/socialIcons'
 import {
   alignForHebrew,
@@ -78,6 +87,11 @@ export const useSignatureApp = () => {
   const [imageImportStatus, setImageImportStatus] = useState('')
   const [imageImportStatusTone, setImageImportStatusTone] = useState<AiStatusTone>('idle')
   const [imageImportWorking, setImageImportWorking] = useState(false)
+  const [savedSignatures, setSavedSignatures] = useState<SavedSignatureEntry[]>(() =>
+    listSavedSignatures()
+  )
+  const [activeSavedId, setActiveSavedId] = useState('')
+  const [saveAsName, setSaveAsName] = useState('')
   const previewCardRef = useRef<HTMLElement>(null)
   const debounceRef = useRef<number | null>(null)
   const saveDebounceRef = useRef<number | null>(null)
@@ -464,6 +478,75 @@ export const useSignatureApp = () => {
     generate(defaults).catch(() => undefined)
   }, [generate, lang, setForm])
 
+  const refreshSavedSignatures = useCallback(() => {
+    setSavedSignatures(listSavedSignatures())
+  }, [])
+
+  const handleSaveAs = useCallback(() => {
+    const name = saveAsName.trim() || defaultSaveAsName(form)
+
+    const existing = findSavedSignatureByName(name)
+    if (existing && !window.confirm(t(lang, 'saveAsOverwriteConfirm'))) {
+      return
+    }
+
+    const result = saveSignatureAs(name, form, {
+      overwriteId: existing?.id
+    })
+
+    if (!result.ok) {
+      const messageKey =
+        result.reason === 'too_many' ? 'saveAsFailedTooMany' : 'saveAsFailedStorage'
+      addToast(t(lang, messageKey), 'error')
+      return
+    }
+
+    refreshSavedSignatures()
+    setActiveSavedId(result.entry.id)
+    setSaveAsName(result.entry.name)
+    addToast(t(lang, 'saveAsSuccess').replace('{name}', result.entry.name), 'success')
+  }, [addToast, form, lang, refreshSavedSignatures, saveAsName])
+
+  const handleLoadSaved = useCallback(
+    async (id: string) => {
+      if (!id) {
+        setActiveSavedId('')
+        return
+      }
+
+      const loaded = loadSavedSignatureForm(id)
+      if (!loaded) {
+        addToast(t(lang, 'savedLoadFailed'), 'error')
+        refreshSavedSignatures()
+        setActiveSavedId('')
+        return
+      }
+
+      skipNextSaveToastRef.current = true
+      setActiveSavedId(id)
+      const entry = listSavedSignatures().find((item) => item.id === id)
+      if (entry) setSaveAsName(entry.name)
+      setForm(loaded, { immediate: true })
+      await generate(loaded)
+      addToast(t(lang, 'savedLoadSuccess'), 'success')
+    },
+    [addToast, generate, lang, refreshSavedSignatures, setForm]
+  )
+
+  const handleDeleteSaved = useCallback(() => {
+    if (!activeSavedId) return
+    if (!window.confirm(t(lang, 'savedDeleteConfirm'))) return
+
+    if (!deleteSavedSignature(activeSavedId)) {
+      addToast(t(lang, 'savedLoadFailed'), 'error')
+      return
+    }
+
+    setActiveSavedId('')
+    refreshSavedSignatures()
+    addToast(t(lang, 'savedDeleteSuccess'), 'success')
+  }, [activeSavedId, addToast, lang, refreshSavedSignatures])
+
   const handleExportParams = useCallback(async () => {
     await downloadFormStateExport(form)
     addToast(t(lang, 'paramsExportSuccess'), 'success')
@@ -575,6 +658,14 @@ export const useSignatureApp = () => {
     toasts,
     dismissToast,
     resetFormToDefaults,
+    savedSignatures,
+    activeSavedId,
+    saveAsName,
+    setSaveAsName,
+    saveAsNamePlaceholder: defaultSaveAsName(form),
+    handleSaveAs,
+    handleLoadSaved,
+    handleDeleteSaved,
     handleExportParams,
     handleExportStyle,
     handleImportParams,

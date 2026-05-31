@@ -249,12 +249,12 @@ export default function App() {
       <div className="workspace">
       <section className="card card-editor">
         <div className="card-header">
-          <div className="card-header-row">
-            <div>
-              <h1>{t(lang, 'pageHeading')}</h1>
-              <p className="lead">{t(lang, 'pageLead')}</p>
-            </div>
-            <div className="form-storage-bar">
+          <div className="card-header-title">
+            <h1>{t(lang, 'pageHeading')}</h1>
+            <p className="lead">{t(lang, 'pageLead')}</p>
+          </div>
+          <div className="form-storage-bar">
+            <div className="form-storage-group">
               <div className="history-controls" role="group" aria-label={t(lang, 'undo')}>
                 <button
                   type="button"
@@ -275,6 +275,44 @@ export default function App() {
                   {t(lang, 'redo')}
                 </button>
               </div>
+            </div>
+            <div className="form-storage-group form-storage-group-save">
+              <input
+                type="text"
+                className="saved-signatures-name"
+                value={app.saveAsName}
+                placeholder={app.saveAsNamePlaceholder}
+                aria-label={t(lang, 'saveAsPrompt')}
+                onChange={(event) => app.setSaveAsName(event.target.value)}
+              />
+              <button type="button" className="btn-save-as" onClick={app.handleSaveAs}>
+                {t(lang, 'saveAs')}
+              </button>
+              <select
+                className="saved-signatures-select"
+                value={app.activeSavedId}
+                aria-label={t(lang, 'savedLoadPlaceholder')}
+                onChange={(event) => {
+                  app.handleLoadSaved(event.target.value).catch(() => undefined)
+                }}
+              >
+                <option value="">{t(lang, 'savedLoadPlaceholder')}</option>
+                {app.savedSignatures.map((entry) => (
+                  <option key={entry.id} value={entry.id}>
+                    {entry.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="btn-delete-saved"
+                disabled={!app.activeSavedId}
+                onClick={app.handleDeleteSaved}
+              >
+                {t(lang, 'savedDelete')}
+              </button>
+            </div>
+            <div className="form-storage-group">
               <button type="button" className="btn-export" onClick={app.handleExportParams}>
                 {t(lang, 'exportParams')}
               </button>
