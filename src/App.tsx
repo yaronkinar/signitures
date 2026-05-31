@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import { SBA_BRAND_COLORS, SBA_BRAND_PRESETS } from './brandPresets'
 import { BulkSignaturesPanel } from './components/BulkSignaturesPanel'
 import { Field, SelectInput, TextInput } from './components/Field'
@@ -1072,6 +1073,7 @@ export default function App() {
       </section>
       <Toaster toasts={app.toasts} onDismiss={app.dismissToast} />
       <UpdatePrompt lang={lang} />
+      <Analytics />
     </main>
   )
 }

@@ -26,6 +26,7 @@
   "dependencies": {
     "@fontsource/cairo": "^5.2.7",
     "@fontsource/rubik": "^5.2.8",
+    "@vercel/analytics": "^2.0.1",
     "@vercel/node": "^5.8.3",
     "esbuild": "^0.25.0",
     "jszip": "^3.10.1",
