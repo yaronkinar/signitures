@@ -99,11 +99,24 @@ const applyColors = (
   if (!colors) return state
 
   let next = { ...state }
-  if (colors.accentColor) next.accentColor = colors.accentColor
+  if (colors.accentColor) {
+    next.accentColor = colors.accentColor
+    next.nameColor = colors.accentColor
+    next.phoneColor = colors.accentColor
+    next.emailColor = colors.accentColor
+  }
   if (colors.textColor) next.textColor = colors.textColor
-  if (colors.secondaryTextColor) next.secondaryTextColor = colors.secondaryTextColor
+  if (colors.secondaryTextColor) {
+    next.secondaryTextColor = colors.secondaryTextColor
+    next.jobTitleColor = colors.secondaryTextColor
+    next.companyColor = colors.secondaryTextColor
+    next.contactLabelColor = colors.secondaryTextColor
+  }
   if (colors.dividerColor) next.dividerColor = colors.dividerColor
-  if (colors.linkColor) next.linkColor = colors.linkColor
+  if (colors.linkColor) {
+    next.linkColor = colors.linkColor
+    next.websiteColor = colors.linkColor
+  }
   if (colors.backgroundColor) next.backgroundColor = colors.backgroundColor
   return next
 }

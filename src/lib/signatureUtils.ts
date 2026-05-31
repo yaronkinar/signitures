@@ -38,8 +38,15 @@ export const parseEnumInput = <T extends string>(
   fallback: T
 ): T => (allowed.includes(value as T) ? (value as T) : fallback)
 
+export const normalizeHexColor = (value: string): string | null => {
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  const withHash = trimmed.startsWith('#') ? trimmed : `#${trimmed}`
+  return /^#[0-9a-fA-F]{6}$/.test(withHash) ? withHash.toLowerCase() : null
+}
+
 export const parseColorInput = (value: string, fallback: string): string =>
-  /^#[0-9a-fA-F]{6}$/.test(value.trim()) ? value.trim() : fallback
+  normalizeHexColor(value) ?? fallback
 
 export const parseFontWeightInput = (value: string | number, fallback: number): number =>
   Number(parseEnumInput(String(value), ['300', '400', '500', '600', '700', '800'] as const, String(fallback)))
@@ -174,7 +181,23 @@ export const getLayoutSettings = (form: SignatureFormState): SignatureLayoutSett
   secondaryTextColor: parseColorInput(form.secondaryTextColor, '#4d4c4f'),
   dividerColor: parseColorInput(form.dividerColor, '#30bbed'),
   linkColor: parseColorInput(form.linkColor, '#33ccff'),
-  backgroundColor: parseColorInput(form.backgroundColor, '#ffffff')
+  backgroundColor: parseColorInput(form.backgroundColor, '#ffffff'),
+  nameColor: parseColorInput(form.nameColor, parseColorInput(form.accentColor, '#88236f')),
+  jobTitleColor: parseColorInput(
+    form.jobTitleColor,
+    parseColorInput(form.secondaryTextColor, '#4d4c4f')
+  ),
+  companyColor: parseColorInput(
+    form.companyColor,
+    parseColorInput(form.secondaryTextColor, '#4d4c4f')
+  ),
+  contactLabelColor: parseColorInput(
+    form.contactLabelColor,
+    parseColorInput(form.secondaryTextColor, '#4d4c4f')
+  ),
+  phoneColor: parseColorInput(form.phoneColor, parseColorInput(form.accentColor, '#88236f')),
+  emailColor: parseColorInput(form.emailColor, parseColorInput(form.accentColor, '#88236f')),
+  websiteColor: parseColorInput(form.websiteColor, parseColorInput(form.linkColor, '#33ccff'))
 })
 
 export const formToSnapshot = (form: SignatureFormState): SignatureFormSnapshot => {

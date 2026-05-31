@@ -2,12 +2,13 @@ import { useCallback, useState } from 'react'
 import { SBA_BRAND_COLORS, SBA_BRAND_PRESETS } from './brandPresets'
 import { BulkSignaturesPanel } from './components/BulkSignaturesPanel'
 import { Field, SelectInput, TextInput } from './components/Field'
+import { ColorInput } from './components/ColorInput'
 import { Panel } from './components/Panel'
 import { Toaster } from './components/Toaster'
 import { StyleSummary } from './components/StyleSummary'
 import { UpdatePrompt } from './components/UpdatePrompt'
 import { useSignatureApp } from './hooks/useSignatureApp'
-import { outlookHelpStatusHtml, t } from './i18n'
+import { outlookHelpStatusHtml, t, type AppLanguage } from './i18n'
 import {
   getBundledFontCssFamily,
   googleFontDownloadUrl,
@@ -16,7 +17,7 @@ import {
 import { normalizeSocialIconVariant, type SocialPlatform } from './lib/socialIconCatalog'
 import { fileToDataUrl } from './lib/signatureUtils'
 import { SocialIconVariantPicker } from './components/SocialIconVariantPicker'
-import type { SignatureFormState } from './types/signatureForm'
+import type { SignatureFormState, TextAlign } from './types/signatureForm'
 
 const FONT_OPTIONS = [
   { value: "'Rubik', Arial, Helvetica, sans-serif", label: 'Rubik' },
@@ -137,6 +138,47 @@ const PreviewBox = ({
     style={{ width: `${width}px`, minHeight: `${minHeight}px`, height: 'auto' }}
     dangerouslySetInnerHTML={{ __html: html }}
   />
+)
+
+const OutlookPreviewPane = ({
+  html,
+  width,
+  minHeight,
+  emailAlign,
+  lang
+}: {
+  html: string
+  width: number
+  minHeight: number
+  emailAlign: TextAlign
+  lang: AppLanguage
+}) => (
+  <div className="outlook-preview" aria-label={t(lang, 'preview')}>
+    <div className="outlook-preview-window">
+      <div className="outlook-preview-titlebar">{t(lang, 'outlookPreviewTitle')}</div>
+      <div className="outlook-preview-compose">
+        <div className="outlook-preview-field">
+          <span className="outlook-preview-field-label">{t(lang, 'outlookPreviewTo')}</span>
+        </div>
+        <div
+          className="outlook-preview-body"
+          style={{ textAlign: emailAlign }}
+          dir="ltr"
+        >
+          <p className="outlook-preview-placeholder">{t(lang, 'outlookPreviewPlaceholder')}</p>
+          <div
+            className="preview outlook-preview-signature"
+            style={{
+              width: `${width}px`,
+              minHeight: `${minHeight}px`,
+              height: 'auto'
+            }}
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
 )
 
 export default function App() {
@@ -830,22 +872,26 @@ export default function App() {
           </Panel>
 
           <Panel summary={t(lang, 'colors')}>
+            <p className="hint">{t(lang, 'elementColorsHint')}</p>
             <div className="grid">
               {(
                 [
-                  ['accentColor', 'accent'],
-                  ['textColor', 'primaryText'],
-                  ['secondaryTextColor', 'secondaryText'],
+                  ['backgroundColor', 'background'],
                   ['dividerColor', 'divider'],
-                  ['linkColor', 'links'],
-                  ['backgroundColor', 'background']
+                  ['textColor', 'primaryText'],
+                  ['nameColor', 'fullName'],
+                  ['jobTitleColor', 'jobTitle'],
+                  ['companyColor', 'company'],
+                  ['contactLabelColor', 'contactLabels'],
+                  ['phoneColor', 'phone'],
+                  ['emailColor', 'email'],
+                  ['websiteColor', 'website']
                 ] as const
               ).map(([key, labelKey]) => (
                 <Field key={key} label={t(lang, labelKey)}>
-                  <input
-                    type="color"
+                  <ColorInput
                     value={form[key]}
-                    onChange={(e) => updateForm({ [key]: e.target.value })}
+                    onChange={(next) => updateForm({ [key]: next })}
                   />
                 </Field>
               ))}
@@ -966,13 +1012,13 @@ export default function App() {
           <p className="hint">{t(lang, 'livePreviewHint')}</p>
         </div>
         <div className="sidebar-preview-body">
-          <div className="preview-frame">
-            <PreviewBox
-              html={app.outputHtml}
-              width={app.layout.signatureWidth}
-              minHeight={app.layout.signatureHeight}
-            />
-          </div>
+          <OutlookPreviewPane
+            html={app.outputHtml}
+            width={app.layout.signatureWidth}
+            minHeight={app.layout.signatureHeight}
+            emailAlign={app.layout.emailAlign}
+            lang={lang}
+          />
           <StyleSummary layout={app.layout} lang={lang} />
         </div>
       </aside>

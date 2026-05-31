@@ -24,10 +24,15 @@ export const buildSignatureHtml = (
   const logoUrl = normalizeUrl(form.logoUrl)
   const accentColor = layout.accentColor
   const textColor = layout.textColor
-  const secondaryTextColor = layout.secondaryTextColor
   const dividerColor = layout.dividerColor
-  const linkColor = layout.linkColor
   const backgroundColor = layout.backgroundColor
+  const nameColor = layout.nameColor
+  const jobTitleColor = layout.jobTitleColor
+  const companyColor = layout.companyColor
+  const contactLabelColor = layout.contactLabelColor
+  const phoneColor = layout.phoneColor
+  const emailColor = layout.emailColor
+  const websiteColor = layout.websiteColor
   const signatureWidth = layout.signatureWidth
   const nameFontWeight = layout.nameFontWeight
   const titleFontWeight = layout.titleFontWeight
@@ -62,7 +67,7 @@ export const buildSignatureHtml = (
   ): string =>
     `<tr>
       <td dir="${contactDirection}" align="${contentAlignAttr}" style="padding:3px ${edgeInset}px 6px;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};text-align:${contentAlign};border-bottom:1px solid ${contactRowBorder};">
-        <span style="font-weight:${titleFontWeight};color:${secondaryTextColor};">${labelHtml}</span>&nbsp;<span style="${valueStyle}font-weight:${bodyFontWeight};">${valueHtml}</span>
+        <span style="font-weight:${titleFontWeight};color:${contactLabelColor};">${labelHtml}</span>&nbsp;<span style="${valueStyle}font-weight:${bodyFontWeight};">${valueHtml}</span>
       </td>
     </tr>`
 
@@ -71,7 +76,7 @@ export const buildSignatureHtml = (
     contactRows.push(
       buildContactRow(
         strings.phoneLabel,
-        `<a href="${escapeHtml(normalizeUrl(`tel:${form.phone.trim()}`))}" style="text-decoration:none;color:${accentColor};">${phone}</a>`
+        `<a href="${escapeHtml(normalizeUrl(`tel:${form.phone.trim()}`))}" style="text-decoration:none;color:${phoneColor};">${phone}</a>`
       )
     )
   }
@@ -79,7 +84,7 @@ export const buildSignatureHtml = (
     contactRows.push(
       buildContactRow(
         strings.emailLabel,
-        `<a href="${escapeHtml(normalizeUrl(`mailto:${email}`))}" style="text-decoration:underline;color:${accentColor};font-size:${compactLinkFontSizePx};white-space:nowrap;">${escapeHtml(email)}</a>`,
+        `<a href="${escapeHtml(normalizeUrl(`mailto:${email}`))}" style="text-decoration:underline;color:${emailColor};font-size:${compactLinkFontSizePx};white-space:nowrap;">${escapeHtml(email)}</a>`,
         'unicode-bidi:plaintext;white-space:nowrap;'
       )
     )
@@ -89,7 +94,7 @@ export const buildSignatureHtml = (
     contactRows.push(
       buildContactRow(
         strings.websiteLabel,
-        `<a href="${escapeHtml(website)}" style="text-decoration:underline;color:${linkColor};overflow-wrap:anywhere;word-break:break-word;">${formatBreakableText(websiteDisplayText)}</a>`
+        `<a href="${escapeHtml(website)}" style="text-decoration:underline;color:${websiteColor};overflow-wrap:anywhere;word-break:break-word;">${formatBreakableText(websiteDisplayText)}</a>`
       )
     )
   }
@@ -160,8 +165,8 @@ export const buildSignatureHtml = (
     layout.textOffsetY
   ) + edgeInset}px;padding-bottom:${Math.max(0, -layout.textOffsetY) + edgeInset}px;width:${textColumnWidth}px;max-width:${textColumnWidth}px;text-align:${contentAlign};unicode-bidi:plaintext;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contentAlignAttr}" dir="${nameTitleDirection}" style="${fontFamilyStyle}text-align:${contentAlign};">
-        <tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="${fontFamilyStyle}font-size:${layout.nameFontSize}px;line-height:${nameLineHeight};font-weight:${nameFontWeight};color:${accentColor};padding:0 0 1px;text-align:${contentAlign};unicode-bidi:plaintext;">${fullName || strings.fullNamePlaceholder}</td></tr>
-        <tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="${fontFamilyStyle}font-size:${layout.titleFontSize}px;line-height:${titleLineHeight};font-weight:${titleFontWeight};color:${secondaryTextColor};padding:0 0 3px;text-align:${contentAlign};unicode-bidi:plaintext;">${jobTitle || strings.jobTitlePlaceholder}${company ? `<br style="line-height:${titleLineHeight};" /><span style="${fontFamilyStyle}font-weight:${titleFontWeight};line-height:${titleLineHeight};">${company}</span>` : ''}</td></tr>
+        <tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="${fontFamilyStyle}font-size:${layout.nameFontSize}px;line-height:${nameLineHeight};font-weight:${nameFontWeight};color:${nameColor};padding:0 0 1px;text-align:${contentAlign};unicode-bidi:plaintext;">${fullName || strings.fullNamePlaceholder}</td></tr>
+        <tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="${fontFamilyStyle}font-size:${layout.titleFontSize}px;line-height:${titleLineHeight};font-weight:${titleFontWeight};color:${jobTitleColor};padding:0 0 3px;text-align:${contentAlign};unicode-bidi:plaintext;">${jobTitle || strings.jobTitlePlaceholder}${company ? `<br style="line-height:${titleLineHeight};" /><span style="${fontFamilyStyle}font-weight:${titleFontWeight};line-height:${titleLineHeight};color:${companyColor};">${company}</span>` : ''}</td></tr>
         ${contactRows.length ? `<tr><td dir="${contactDirection}" align="${contentAlignAttr}" style="padding-top:2px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contentAlignAttr}" dir="${contactDirection}" style="text-align:${contentAlign};border-collapse:collapse;">${contactRows.join('')}</table></td></tr>` : ''}
         ${socialTextRow}
       </table>

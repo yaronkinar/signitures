@@ -26,18 +26,41 @@ const alignLabel = (lang: AppLanguage, align: TextAlign): string => {
 }
 
 const COLOR_KEYS = [
-  { key: 'accentColor', labelKey: 'accent' },
-  { key: 'textColor', labelKey: 'primaryText' },
-  { key: 'secondaryTextColor', labelKey: 'secondaryText' },
+  { key: 'backgroundColor', labelKey: 'background' },
   { key: 'dividerColor', labelKey: 'divider' },
-  { key: 'linkColor', labelKey: 'links' },
-  { key: 'backgroundColor', labelKey: 'background' }
+  { key: 'textColor', labelKey: 'primaryText' },
+  { key: 'nameColor', labelKey: 'fullName' },
+  { key: 'jobTitleColor', labelKey: 'jobTitle' },
+  { key: 'companyColor', labelKey: 'company' },
+  { key: 'contactLabelColor', labelKey: 'contactLabels' },
+  { key: 'phoneColor', labelKey: 'phone' },
+  { key: 'emailColor', labelKey: 'email' },
+  { key: 'websiteColor', labelKey: 'website' }
 ] as const satisfies ReadonlyArray<{
   key: keyof Pick<
     SignatureLayoutSettings,
-    'accentColor' | 'textColor' | 'secondaryTextColor' | 'dividerColor' | 'linkColor' | 'backgroundColor'
+    | 'backgroundColor'
+    | 'dividerColor'
+    | 'textColor'
+    | 'nameColor'
+    | 'jobTitleColor'
+    | 'companyColor'
+    | 'contactLabelColor'
+    | 'phoneColor'
+    | 'emailColor'
+    | 'websiteColor'
   >
-  labelKey: 'accent' | 'primaryText' | 'secondaryText' | 'divider' | 'links' | 'background'
+  labelKey:
+    | 'background'
+    | 'divider'
+    | 'primaryText'
+    | 'fullName'
+    | 'jobTitle'
+    | 'company'
+    | 'contactLabels'
+    | 'phone'
+    | 'email'
+    | 'website'
 }>
 
 type StyleSummaryProps = {

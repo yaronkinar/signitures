@@ -51,7 +51,14 @@ const STYLE_FIELD_KEYS = [
   'secondaryTextColor',
   'dividerColor',
   'linkColor',
-  'backgroundColor'
+  'backgroundColor',
+  'nameColor',
+  'jobTitleColor',
+  'companyColor',
+  'contactLabelColor',
+  'phoneColor',
+  'emailColor',
+  'websiteColor'
 ] as const satisfies readonly (keyof SignatureFormState)[]
 
 export type SignatureStyleExport = {

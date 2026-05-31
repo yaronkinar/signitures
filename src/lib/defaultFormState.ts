@@ -61,5 +61,12 @@ export const createDefaultFormState = (): SignatureFormState => ({
   secondaryTextColor: DEFAULT_BRAND_PRESET.secondaryTextColor,
   dividerColor: DEFAULT_BRAND_PRESET.dividerColor,
   linkColor: DEFAULT_BRAND_PRESET.linkColor,
-  backgroundColor: DEFAULT_BRAND_PRESET.backgroundColor
+  backgroundColor: DEFAULT_BRAND_PRESET.backgroundColor,
+  nameColor: DEFAULT_BRAND_PRESET.nameColor,
+  jobTitleColor: DEFAULT_BRAND_PRESET.jobTitleColor,
+  companyColor: DEFAULT_BRAND_PRESET.companyColor,
+  contactLabelColor: DEFAULT_BRAND_PRESET.contactLabelColor,
+  phoneColor: DEFAULT_BRAND_PRESET.phoneColor,
+  emailColor: DEFAULT_BRAND_PRESET.emailColor,
+  websiteColor: DEFAULT_BRAND_PRESET.websiteColor
 })

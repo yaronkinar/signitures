@@ -42,6 +42,13 @@ export type SignatureLayoutSettings = {
   dividerColor: string
   linkColor: string
   backgroundColor: string
+  nameColor: string
+  jobTitleColor: string
+  companyColor: string
+  contactLabelColor: string
+  phoneColor: string
+  emailColor: string
+  websiteColor: string
 }
 
 export type SignatureFormState = {

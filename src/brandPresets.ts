@@ -26,6 +26,13 @@ type SignatureBrandPreset = {
     | 'dividerColor'
     | 'linkColor'
     | 'backgroundColor'
+    | 'nameColor'
+    | 'jobTitleColor'
+    | 'companyColor'
+    | 'contactLabelColor'
+    | 'phoneColor'
+    | 'emailColor'
+    | 'websiteColor'
   >
 }
 
@@ -35,7 +42,14 @@ const SBA_SIGNATURE_COLORS = {
   secondaryTextColor: '#4d4c4f',
   dividerColor: '#30bbed',
   linkColor: '#33ccff',
-  backgroundColor: '#ffffff'
+  backgroundColor: '#ffffff',
+  nameColor: '#88236f',
+  jobTitleColor: '#4d4c4f',
+  companyColor: '#4d4c4f',
+  contactLabelColor: '#4d4c4f',
+  phoneColor: '#88236f',
+  emailColor: '#88236f',
+  websiteColor: '#33ccff'
 } as const
 
 export const SBA_BRAND_PRESETS: SignatureBrandPreset[] = [
