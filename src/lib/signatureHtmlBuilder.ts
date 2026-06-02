@@ -189,14 +189,14 @@ export const buildSignatureHtml = (
 
   const rowCells = logoOnLeft ? [logoCell, dividerCell, textCell] : [textCell, dividerCell, logoCell]
 
-  const signatureTable = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${layout.emailAlign}" style="font-family:${fontFamilyCss};color:${textColor};background:${backgroundColor};width:${signatureWidth}px;max-width:${signatureWidth}px;mso-line-height-rule:exactly;">
+  const signatureTable = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${layout.emailAlign}" style="font-family:${fontFamilyCss};color:${textColor};background:${backgroundColor};width:${signatureWidth}px;max-width:${signatureWidth}px;border-collapse:collapse;mso-line-height-rule:exactly;mso-table-lspace:0pt;mso-table-rspace:0pt;">
   <tr>
     ${rowCells.join('\n    ')}
   </tr>
 </table>`
 
   return `<!-- Outlook email signature -->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" dir="ltr">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" dir="ltr" style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
   <tr>
     <td align="${layout.emailAlign}" style="text-align:${layout.emailAlign};">
       ${signatureTable}

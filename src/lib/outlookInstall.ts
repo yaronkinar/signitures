@@ -146,6 +146,8 @@ export const downloadOutlookInstaller = async (
     foregroundColor: 'Green'
   })
   const installZipFailedPrefix = psConsoleMessage(lang, 'batPsInstallZipFailed')
+  const installMissingAssetRefsPrefix = psConsoleMessage(lang, 'batPsInstallMissingAssetRefs')
+  const installCorruptPrefix = psConsoleMessage(lang, 'batInstallerCorrupt')
 
   const scriptContent = prefixPowerShellScript(
     lang,
@@ -157,6 +159,14 @@ $htmlFile = Join-Path $signatureDir "$signatureName.htm"
 $txtFile = Join-Path $signatureDir "$signatureName.txt"
 $rtfFile = Join-Path $signatureDir "$signatureName.rtf"
 $filesDir = Join-Path $signatureDir "$($signatureName)_files"
+$scriptSourcePath = $MyInvocation.MyCommand.Path
+if ($scriptSourcePath -and (Test-Path -LiteralPath $scriptSourcePath)) {
+  $scriptSourceContent = [System.IO.File]::ReadAllText($scriptSourcePath)
+  if ($scriptSourceContent -match '(?i)\\bundefined\\b') {
+    ${psWriteErrorStatement(lang, installCorruptPrefix)}
+    exit 1
+  }
+}
 
 if (-not (Test-Path $signatureDir)) {
   New-Item -Path $signatureDir -ItemType Directory | Out-Null
@@ -178,6 +188,33 @@ ${writeAssetFilesPs ? `\n${writeAssetFilesPs}\n` : ''}
 $imageFileCount = (Get-ChildItem -LiteralPath $filesDir -File -Include *.png,*.jpg,*.jpeg,*.gif,*.webp,*.svg -ErrorAction SilentlyContinue | Measure-Object).Count
 if ($imageFileCount -lt 1) {
   ${psWarningStatement(lang, 'batPsInstallNoImages', '$imageFileCount')}
+}
+$missingAssetRefs = New-Object 'System.Collections.Generic.List[string]'
+$assetRefPattern = '(?i)<img\\b[^>]*\\bsrc\\s*=\\s*["'']([^"'']+)["'']'
+$assetRefMatches = [System.Text.RegularExpressions.Regex]::Matches($htmlContent, $assetRefPattern)
+foreach ($match in $assetRefMatches) {
+  $srcValue = $match.Groups[1].Value
+  if (-not $srcValue) { continue }
+  if ($srcValue.StartsWith('data:', [System.StringComparison]::OrdinalIgnoreCase)) { continue }
+  if ($srcValue -match '^[a-zA-Z][a-zA-Z0-9+.-]*:') { continue }
+  if ($srcValue -match '^[\\/]{2}') { continue }
+  if ($srcValue -notmatch '(?i)(^|[\\/])[^\\/]+_files[\\/]') { continue }
+  $normalizedPath = $srcValue -replace '/', '\\'
+  $fileName = [System.IO.Path]::GetFileName($normalizedPath)
+  if (-not $fileName) { continue }
+  $expectedPath = Join-Path $filesDir $fileName
+  if (-not (Test-Path -LiteralPath $expectedPath)) {
+    [void]$missingAssetRefs.Add($srcValue)
+  }
+}
+if ($missingAssetRefs.Count -gt 0) {
+  ${psWarningStatement(lang, installMissingAssetRefsPrefix, "''")}
+  Write-Host ""
+  Write-Host "Missing image asset references detected in HTML:"
+  foreach ($missingRef in $missingAssetRefs) {
+    Write-Host (" - " + $missingRef)
+  }
+  Write-Host ""
 }
 [System.IO.File]::WriteAllText($htmlFile, $htmlContent, [System.Text.Encoding]::UTF8)
 $mailSettingsPaths = @(

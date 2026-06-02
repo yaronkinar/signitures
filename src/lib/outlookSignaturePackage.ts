@@ -2,13 +2,14 @@ import JSZip from 'jszip'
 import { signatureStrings } from '../i18n'
 import { initializeSocialIconDataUrls } from './socialIcons'
 import type { SignatureFormState } from '../types/signatureForm'
+import { buildSignatureHtml } from './signatureHtmlBuilder'
 import {
   bundleSignatureHtmlImages,
   stripOutlookStoredAssetPathsFromForm,
   type ImageAssetFile
 } from './signatureImageAssets'
 import { fetchSignatureFontPayloads, getOutlookSignatureFontFileNames } from './fontInstallScripts'
-import { normalizeUrl, wrapHtmlDocument } from './signatureUtils'
+import { getLayoutSettings, normalizeUrl, wrapHtmlDocument } from './signatureUtils'
 
 export type OutlookSignaturePackage = {
   fileBase: string
@@ -123,6 +124,7 @@ export const buildOutlookSignaturePackage = async (
 ): Promise<OutlookSignaturePackage> => {
   await initializeSocialIconDataUrls()
   const installForm = stripOutlookStoredAssetPathsFromForm(form)
+  const packageHtmlBody = buildSignatureHtml(installForm, getLayoutSettings(installForm))
 
   const fileBase =
     fileBaseOverride ??
@@ -131,7 +133,7 @@ export const buildOutlookSignaturePackage = async (
   const fontFileNames = getOutlookSignatureFontFileNames(installForm)
   const fontPayloads = fontFileNames.length ? await fetchSignatureFontPayloads(fontFileNames) : []
   const { html: bundledHtmlBody, files: imageFiles } = await bundleSignatureHtmlImages(
-    htmlBody,
+    packageHtmlBody,
     installForm,
     filesFolderName,
     { embedImages: false }

@@ -251,6 +251,8 @@ const translations = {
     batPsInstallZipFailed: 'ZIP for IT was not created:',
     batPsInstallNoImages:
       'Warning: no image files were written to the signature _files folder. Re-upload the logo in the app, generate again, and reinstall.',
+    batPsInstallMissingAssetRefs:
+      'Warning: HTML references image files that are missing from the signature _files folder. Re-upload the logo/images in the app, generate again, and reinstall.',
     batPsSetDefault: 'Set as default for New/Reply where supported.',
     batPsRestartOutlook: 'If Outlook was open, restart Outlook to refresh signatures.',
     batPsClassicNote:
@@ -540,6 +542,8 @@ const translations = {
     batPsInstallZipFailed: 'קובץ ZIP ל-IT לא נוצר:',
     batPsInstallNoImages:
       'אזהרה: לא נשמרו קבצי תמונה בתיקיית _files. העלו שוב את הלוגו באפליקציה, צרו חתימה מחדש והתקינו שוב.',
+    batPsInstallMissingAssetRefs:
+      'אזהרה: ה-HTML מפנה לקובצי תמונה שחסרים בתיקיית _files. העלו מחדש לוגו/תמונות באפליקציה, צרו חתימה מחדש והתקינו שוב.',
     batPsSetDefault: 'הוגדרה כברירת מחדל למייל חדש/תשובה (במקומות שנתמכים).',
     batPsRestartOutlook: 'אם Outlook היה פתוח, הפעילו אותו מחדש כדי לרענן חתימות.',
     batPsClassicNote:
