@@ -27,6 +27,7 @@ const STYLE_FIELD_KEYS = [
   'youtubeIconUrl',
   'youtubeIconVariant',
   'fontFamily',
+  'rasterizeNameTitle',
   'nameFontWeight',
   'titleFontWeight',
   'bodyFontWeight',

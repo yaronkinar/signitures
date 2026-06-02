@@ -53,6 +53,8 @@ export type SignatureLayoutSettings = {
 
 export type SignatureFormState = {
   signatureLanguage: AppLanguage
+  /** When true, name and title/company render as PNG images so recipients see the same typography. */
+  rasterizeNameTitle: boolean
   fullName: string
   /** ASCII name for classic Outlook signature files (list + .htm base name). */
   outlookSignatureName: string

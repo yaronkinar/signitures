@@ -775,6 +775,16 @@ export default function App() {
                   ))}
                 </SelectInput>
               </Field>
+              <Field label={t(lang, 'rasterizeNameTitle')}>
+                <label className="ai-keep-contact">
+                  <input
+                    type="checkbox"
+                    checked={form.rasterizeNameTitle}
+                    onChange={(e) => updateForm({ rasterizeNameTitle: e.target.checked })}
+                  />
+                  <span className="hint">{t(lang, 'rasterizeNameTitleHint')}</span>
+                </label>
+              </Field>
               {showOutlookFontNotice && bundledFontName && (
                 <div className="outlook-font-notice">
                   <p className="hint">{t(lang, 'outlookFontHint')}</p>

@@ -18,6 +18,29 @@ export const sanitizeFontFamily = (value: string): string => {
   return cleaned || "'Rubik', Arial, Helvetica, sans-serif"
 }
 
+/** First web-safe face in the stack — used for Outlook `mso-font-alt` when the primary font is missing. */
+export const getOutlookFontAlt = (fontFamily: string): string => {
+  const parts = fontFamily
+    .split(',')
+    .map((part) => part.trim().replace(/^['"]|['"]$/g, ''))
+    .filter(Boolean)
+
+  const webSafe =
+    parts.find((part) =>
+      /^(Arial|Helvetica|Tahoma|Verdana|Times New Roman|Georgia|Calibri|Segoe UI|Trebuchet MS)$/i.test(
+        part
+      )
+    ) ?? parts[parts.length - 1]
+
+  return webSafe || 'Arial'
+}
+
+export const outlookFontFamilyStyle = (fontFamily: string): string => {
+  const css = escapeHtml(sanitizeFontFamily(fontFamily))
+  const alt = escapeHtml(getOutlookFontAlt(fontFamily))
+  return `font-family:${css};mso-font-alt:${alt};`
+}
+
 export const parseNumberInput = (
   value: string | number,
   fallback: number,

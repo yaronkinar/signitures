@@ -11,6 +11,7 @@ import {
   rewriteUrlsInHtml
 } from './signatureImageAssets'
 import { buildSignatureHtml } from './signatureHtmlBuilder'
+import { generateSignatureTextImages } from './signatureTextImages'
 import { sanitizeFileName, uniqueFileName } from './fileNames'
 import {
   addOutlookSignaturePackageToZip,
@@ -203,7 +204,8 @@ export const generateBulkSignaturesZip = async (
   if (rows.length > 0) {
     const sampleForm = mergeBulkRowIntoForm(exportTemplate, rows[0])
     const sampleLayout = getLayoutSettings(sampleForm)
-    const sampleHtml = buildSignatureHtml(sampleForm, sampleLayout)
+    const sampleTextImages = await generateSignatureTextImages(sampleForm, sampleLayout)
+    const sampleHtml = buildSignatureHtml(sampleForm, sampleLayout, { textImages: sampleTextImages })
     const bundledSample = await buildImageAssets(
       [
         ...collectFormImageSources(sampleForm),
@@ -224,7 +226,8 @@ export const generateBulkSignaturesZip = async (
   for (const row of rows) {
     const form = mergeBulkRowIntoForm(exportTemplate, row)
     const layout = getLayoutSettings(form)
-    const bodyHtml = rewriteUrlsInHtml(buildSignatureHtml(form, layout), htmlUrlMap)
+    const textImages = await generateSignatureTextImages(form, layout)
+    const bodyHtml = rewriteUrlsInHtml(buildSignatureHtml(form, layout, { textImages }), htmlUrlMap)
     const htmlDocument = wrapHtmlDocument(bodyHtml, form.signatureLanguage, {
       fontFamily: layout.fontFamily,
       bundledFontAssetsBase: 'fonts'
@@ -252,7 +255,8 @@ export const generateBulkOutlookSignaturesZip = async (
   for (const row of rows) {
     const form = mergeBulkRowIntoForm(template, row)
     const layout = getLayoutSettings(form)
-    const bodyHtml = buildSignatureHtml(form, layout)
+    const textImages = await generateSignatureTextImages(form, layout)
+    const bodyHtml = buildSignatureHtml(form, layout, { textImages })
     const fileBase = uniqueFileName(
       toOutlookSignatureFileBase(form.fullName, form.email, ''),
       usedNames

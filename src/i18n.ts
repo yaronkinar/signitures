@@ -146,7 +146,10 @@ const translations = {
     brandColors: 'Extracted brand colors',
     fontFamily: 'Font family',
     outlookFontHint:
-      'Install to Outlook automatically downloads and installs Rubik or Cairo on Windows, then sets up your signature. Restart Outlook after running the installer. Recipients may still see a fallback font unless they have it installed too.',
+      'Install to Outlook automatically downloads and installs Rubik or Cairo on Windows, then sets up your signature. Restart Outlook after running the installer. Recipients without that font see Arial from the fallback stack unless you turn on “Render name & title as images”.',
+    rasterizeNameTitle: 'Render name & title as images',
+    rasterizeNameTitleHint:
+      'Draws your name and job title/company as PNG images so recipients see the same font and colors even when Rubik or Cairo is not installed. Contact lines stay editable text with Arial fallback.',
     installWindowsFont: 'Install {font} only',
     downloadFontFromGoogle: 'Download from Google Fonts',
     alertWindowsFontInstallSuccess:
@@ -438,7 +441,10 @@ const translations = {
     brandColors: 'צבעי המותג שחולצו',
     fontFamily: 'גופן',
     outlookFontHint:
-      'התקנה ב-Outlook מורידה ומתקינה אוטומטית את Rubik או Cairo ב-Windows, ואז מגדירה את החתימה. הפעילו מחדש את Outlook אחרי הרצת המתקין. נמענים עדיין עלולים לראות גופן חלופי אם הגופן לא מותקן אצלם.',
+      'התקנה ב-Outlook מורידה ומתקינה אוטומטית את Rubik או Cairo ב-Windows, ואז מגדירה את החתימה. הפעילו מחדש את Outlook אחרי הרצת המתקין. לנמענים בלי הגופן יוצג Arial מהרשימה החלופית, אלא אם מסמנים «הצגת שם ותפקיד כתמונה».',
+    rasterizeNameTitle: 'הצגת שם ותפקיד כתמונה',
+    rasterizeNameTitleHint:
+      'מצייר את השם ואת שורת התפקיד/חברה כתמונות PNG כדי שנמענים יראו את אותו גופן וצבע גם בלי Rubik או Cairo. שורות הקשר נשארות טקסט עם Arial חלופי.',
     installWindowsFont: 'התקנת {font} בלבד',
     downloadFontFromGoogle: 'הורדה מ-Google Fonts',
     alertWindowsFontInstallSuccess:

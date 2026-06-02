@@ -3,6 +3,7 @@ import { signatureStrings } from '../i18n'
 import { initializeSocialIconDataUrls } from './socialIcons'
 import type { SignatureFormState } from '../types/signatureForm'
 import { buildSignatureHtml } from './signatureHtmlBuilder'
+import { generateSignatureTextImages } from './signatureTextImages'
 import {
   bundleSignatureHtmlImages,
   stripOutlookStoredAssetPathsFromForm,
@@ -173,7 +174,9 @@ export const buildOutlookSignaturePackage = async (
 ): Promise<OutlookSignaturePackage> => {
   await initializeSocialIconDataUrls()
   const installForm = stripOutlookStoredAssetPathsFromForm(form)
-  const packageHtmlBody = buildSignatureHtml(installForm, getLayoutSettings(installForm))
+  const layout = getLayoutSettings(installForm)
+  const textImages = await generateSignatureTextImages(installForm, layout)
+  const packageHtmlBody = buildSignatureHtml(installForm, layout, { textImages })
 
   const fileBase =
     fileBaseOverride ??
