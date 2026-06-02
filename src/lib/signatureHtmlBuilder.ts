@@ -83,44 +83,6 @@ export const buildSignatureHtml = (
   const contactRowBorder = dividerColor
   const formatBreakableText = (value: string): string =>
     escapeHtml(value).replace(/([@._-])/g, '$1<wbr>')
-  const buildContactRow = (
-    labelHtml: string,
-    valueHtml: string,
-    valueStyle = 'unicode-bidi:plaintext;overflow-wrap:anywhere;word-break:break-word;'
-  ): string =>
-    `<tr>
-      <td dir="${contactDirection}" align="${contentAlignAttr}" style="padding:3px ${edgeInset}px 6px;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};text-align:${contentAlign};border-bottom:1px solid ${contactRowBorder};">
-        <span style="font-weight:${titleFontWeight};color:${contactLabelColor};">${labelHtml}</span>&nbsp;<span style="${valueStyle}font-weight:${bodyFontWeight};">${valueHtml}</span>
-      </td>
-    </tr>`
-
-  const contactRows: string[] = []
-  if (phone.trim()) {
-    contactRows.push(
-      buildContactRow(
-        strings.phoneLabel,
-        `<a href="${escapeHtml(normalizeUrl(`tel:${form.phone.trim()}`))}" style="text-decoration:none;color:${phoneColor};">${phone}</a>`
-      )
-    )
-  }
-  if (email) {
-    contactRows.push(
-      buildContactRow(
-        strings.emailLabel,
-        `<a href="${escapeHtml(normalizeUrl(`mailto:${email}`))}" style="text-decoration:underline;color:${emailColor};font-size:${compactLinkFontSizePx};white-space:nowrap;">${escapeHtml(email)}</a>`,
-        'unicode-bidi:plaintext;white-space:nowrap;'
-      )
-    )
-  }
-  if (website) {
-    const websiteDisplayText = website.replace(/^https?:\/\//i, '')
-    contactRows.push(
-      buildContactRow(
-        strings.websiteLabel,
-        `<a href="${escapeHtml(website)}" style="text-decoration:underline;color:${websiteColor};overflow-wrap:anywhere;word-break:break-word;">${formatBreakableText(websiteDisplayText)}</a>`
-      )
-    )
-  }
 
   const socialLinks = [
     {
@@ -150,34 +112,113 @@ export const buildSignatureHtml = (
     }
   ].filter((item) => item.url && item.iconUrl)
 
+  const buildContactRow = (
+    labelHtml: string,
+    valueHtml: string,
+    valueStyle = 'unicode-bidi:plaintext;overflow-wrap:anywhere;word-break:break-word;'
+  ): string => {
+    const contactBorderStyle = socialLinks.length
+      ? ''
+      : `border-bottom:1px solid ${contactRowBorder};`
+    return `<tr>
+      <td dir="${contactDirection}" align="${contentAlignAttr}" style="padding:3px ${edgeInset}px 6px;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};text-align:${contentAlign};${contactBorderStyle}">
+        <span style="font-weight:${titleFontWeight};color:${contactLabelColor};">${labelHtml}</span>&nbsp;<span style="${valueStyle}font-weight:${bodyFontWeight};">${valueHtml}</span>
+      </td>
+    </tr>`
+  }
+
+  const contactRows: string[] = []
+  if (phone.trim()) {
+    contactRows.push(
+      buildContactRow(
+        strings.phoneLabel,
+        `<a href="${escapeHtml(normalizeUrl(`tel:${form.phone.trim()}`))}" style="text-decoration:none;color:${phoneColor};">${phone}</a>`
+      )
+    )
+  }
+  if (email) {
+    contactRows.push(
+      buildContactRow(
+        strings.emailLabel,
+        `<a href="${escapeHtml(normalizeUrl(`mailto:${email}`))}" style="text-decoration:underline;color:${emailColor};font-size:${compactLinkFontSizePx};white-space:nowrap;">${escapeHtml(email)}</a>`,
+        'unicode-bidi:plaintext;white-space:nowrap;'
+      )
+    )
+  }
+  if (website) {
+    const websiteDisplayText = website.replace(/^https?:\/\//i, '')
+    contactRows.push(
+      buildContactRow(
+        strings.websiteLabel,
+        `<a href="${escapeHtml(website)}" style="text-decoration:underline;color:${websiteColor};overflow-wrap:anywhere;word-break:break-word;">${formatBreakableText(websiteDisplayText)}</a>`
+      )
+    )
+  }
+
   const socialIconSize = layout.bodyFontSize + 4
   const socialAlign = contentAlign
   const socialIconGapPx = Math.max(0, layout.socialIconGap)
-  const socialRowTopPaddingPx = socialIconGapPx
-  const socialTextRow = socialLinks.length
-    ? `<tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="padding:${socialRowTopPaddingPx}px ${edgeInset}px 0;text-align:${socialAlign};font-size:0;line-height:0;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="${nameTitleDirection}" align="${contentAlignAttr}" style="border-collapse:collapse;text-align:${socialAlign};">
+  const socialIconSpacerPx = Math.max(16, socialIconGapPx + 12)
+  const socialIconCellPadPx = 2
+  const orderedSocialLinks = rtlContent ? [...socialLinks].reverse() : socialLinks
+  const socialIconsRowWidth =
+    orderedSocialLinks.length * socialIconSize +
+    Math.max(0, orderedSocialLinks.length - 1) * socialIconGapPx
+  const socialIconsTableAlign = contentAlignAttr
+  const socialFooterPadHorizontal = '0'
+  const socialFooterPadIcons = '0 0 10px'
+
+  const buildSocialIconGapCell = (): string =>
+    socialIconGapPx <= 0
+      ? ''
+      : `<td width="${socialIconGapPx}" style="width:${socialIconGapPx}px;min-width:${socialIconGapPx}px;max-width:${socialIconGapPx}px;font-size:1px;line-height:1px;mso-line-height-rule:exactly;padding:0;border:0;">&nbsp;</td>`
+
+  const buildSocialIconCell = (item: (typeof socialLinks)[number]): string =>
+    `<td width="${socialIconSize}" valign="middle" align="center" style="width:${socialIconSize}px;height:${socialIconSize + socialIconCellPadPx * 2}px;padding:${socialIconCellPadPx}px 0;vertical-align:middle;text-align:center;line-height:${socialIconSize}px;mso-line-height-rule:exactly;">
+      <a href="${escapeHtml(item.url)}" title="${escapeHtml(item.label)}" style="text-decoration:none;line-height:${socialIconSize}px;">
+        <img
+          src="${escapeHtml(item.iconUrl)}"
+          alt="${escapeHtml(item.label)}"
+          width="${socialIconSize}"
+          height="${socialIconSize}"
+          border="0"
+          style="display:block;width:${socialIconSize}px;height:${socialIconSize}px;border:0;margin:0 auto;padding:0;"
+        />
+      </a>
+    </td>`
+
+  const socialIconRowCells = orderedSocialLinks
+    .map((item, index) => `${index > 0 ? buildSocialIconGapCell() : ''}${buildSocialIconCell(item)}`)
+    .join('')
+
+  const socialFooterBlock = socialLinks.length
+    ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contentAlignAttr}" dir="${nameTitleDirection}" style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;text-align:${socialAlign};">
+      ${
+        contactRows.length
+          ? `<tr>
+      <td align="${contentAlignAttr}" style="padding:10px 0 0;font-size:1px;line-height:1px;mso-line-height-rule:exactly;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
+          <tr>
+            <td height="1" style="height:1px;line-height:1px;font-size:1px;border-top:1px solid ${contactRowBorder};mso-line-height-rule:exactly;padding:0;">&nbsp;</td>
+          </tr>
+        </table>
+      </td>
+    </tr>`
+          : ''
+      }
       <tr>
-      ${socialLinks
-        .map(
-          (item) => `<td style="${
-            nameTitleDirection === 'rtl' ? `padding-left:${socialIconGapPx}px;` : `padding-right:${socialIconGapPx}px;`
-          }font-size:0;line-height:0;vertical-align:middle;">
-            <a href="${escapeHtml(item.url)}" title="${escapeHtml(item.label)}" style="text-decoration:none;display:inline-block;line-height:0;">
-              <img
-                src="${escapeHtml(item.iconUrl)}"
-                alt="${escapeHtml(item.label)}"
-                width="${socialIconSize}"
-                height="${socialIconSize}"
-                style="display:block;width:${socialIconSize}px;height:${socialIconSize}px;border:0;"
-              />
-            </a>
-          </td>`
-        )
-        .join('')}
+        <td height="${socialIconSpacerPx}" align="${contentAlignAttr}" style="height:${socialIconSpacerPx}px;line-height:${socialIconSpacerPx}px;font-size:${socialIconSpacerPx}px;mso-line-height-rule:exactly;padding:${socialFooterPadHorizontal};">&nbsp;</td>
       </tr>
-      </table>
-    </td></tr>`
+      <tr>
+        <td align="${contentAlignAttr}" valign="top" style="padding:${socialFooterPadIcons};vertical-align:top;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${socialIconsTableAlign}" width="${socialIconsRowWidth}" style="width:${socialIconsRowWidth}px;max-width:100%;table-layout:fixed;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+            <tr>
+              ${socialIconRowCells}
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>`
     : ''
 
   const logoOnLeft = layout.logoSide === 'left'
@@ -194,11 +235,12 @@ export const buildSignatureHtml = (
         : `border-right:${layout.dividerThickness}px solid ${dividerColor};`
       : ''
 
-  const textCell = `<td style="${dividerOnTextSide}vertical-align:${layout.verticalAlign};padding-left:${textPaddingLeft}px;padding-right:${textPaddingRight}px;padding-top:${Math.max(
+  const textColumnVerticalAlign = socialLinks.length ? 'top' : layout.verticalAlign
+  const textCell = `<td valign="${textColumnVerticalAlign}" style="${dividerOnTextSide}vertical-align:${textColumnVerticalAlign};padding-left:${textPaddingLeft}px;padding-right:${textPaddingRight}px;padding-top:${Math.max(
     0,
     layout.textOffsetY
-  ) + edgeInset}px;padding-bottom:${Math.max(0, -layout.textOffsetY) + edgeInset}px;width:${textColumnWidth}px;max-width:${textColumnWidth}px;text-align:${contentAlign};unicode-bidi:plaintext;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contentAlignAttr}" dir="${nameTitleDirection}" style="${fontFamilyStyle}text-align:${contentAlign};">
+  ) + edgeInset}px;padding-bottom:${Math.max(0, -layout.textOffsetY) + edgeInset}px;width:${textColumnWidth}px;max-width:${textColumnWidth}px;text-align:${contentAlign};unicode-bidi:plaintext;overflow:visible;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contentAlignAttr}" dir="${nameTitleDirection}" style="${fontFamilyStyle}text-align:${contentAlign};border-collapse:collapse;">
         ${
           options.textImages?.name
             ? buildTextImageRow(
@@ -221,9 +263,9 @@ export const buildSignatureHtml = (
               )
             : `<tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="${fontFamilyStyle}font-size:${layout.titleFontSize}px;line-height:${titleLineHeight};font-weight:${titleFontWeight};color:${jobTitleColor};padding:0 0 3px;text-align:${contentAlign};unicode-bidi:plaintext;">${jobTitle || strings.jobTitlePlaceholder}${company ? `<br style="line-height:${titleLineHeight};" /><span style="${fontFamilyStyle}font-weight:${titleFontWeight};line-height:${titleLineHeight};color:${companyColor};">${company}</span>` : ''}</td></tr>`
         }
-        ${contactRows.length ? `<tr><td dir="${contactDirection}" align="${contentAlignAttr}" style="padding-top:2px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contentAlignAttr}" dir="${contactDirection}" style="text-align:${contentAlign};border-collapse:collapse;">${contactRows.join('')}</table></td></tr>` : ''}
-        ${socialTextRow}
+        ${contactRows.length ? `<tr><td dir="${contactDirection}" align="${contentAlignAttr}" style="padding-top:2px;padding-bottom:0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contentAlignAttr}" dir="${contactDirection}" style="text-align:${contentAlign};border-collapse:collapse;">${contactRows.join('')}</table></td></tr>` : ''}
       </table>
+      ${socialFooterBlock}
     </td>`
 
   const logoGraphic = logoUrl

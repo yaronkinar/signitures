@@ -1,4 +1,3 @@
-import { DEFAULT_INSTAGRAM_ICON_DATA_URL } from '../defaultInstagramIconDataUrl'
 import { siFacebook, siInstagram, siX, siYoutube } from 'simple-icons'
 import {
   DEFAULT_SOCIAL_ICON_VARIANT,
@@ -20,7 +19,7 @@ const BRAND_COLORS = {
 const socialIconVariantDataUrls: Record<SocialPlatform, Partial<Record<SocialIconVariantId, string>>> =
   {
     Facebook: {},
-    Instagram: { gradient: DEFAULT_INSTAGRAM_ICON_DATA_URL },
+    Instagram: {},
     LinkedIn: {},
     X: {},
     YouTube: {}
@@ -31,6 +30,21 @@ let socialIconsInitializationPromise: Promise<void> | null = null
 const buildSocialIconSvg = (icon: { path: string }, fillColor: string): string =>
   `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
     <path d="${icon.path}" fill="${fillColor}" />
+  </svg>`
+
+const buildInstagramGradientIconSvg = (): string =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+    <defs>
+      <linearGradient id="ig" x1="0" y1="24" x2="24" y2="0" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#FEDA75"/>
+        <stop offset="0.25" stop-color="#FA7E1E"/>
+        <stop offset="0.5" stop-color="#D62976"/>
+        <stop offset="0.75" stop-color="#962FBF"/>
+        <stop offset="1" stop-color="#4F5BD5"/>
+      </linearGradient>
+    </defs>
+    <rect width="24" height="24" rx="5.5" fill="url(#ig)"/>
+    <path fill="#ffffff" d="${siInstagram.path}"/>
   </svg>`
 
 const linkedInBadgeIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -66,7 +80,16 @@ const svgToPngDataUrl = (svg: string, size = 44): Promise<string> =>
         reject(new Error('Canvas not available'))
         return
       }
-      context.drawImage(image, 0, 0, size, size)
+      const insetX = Math.max(3, Math.round(size * 0.12))
+      const insetTop = Math.max(5, Math.round(size * 0.22))
+      const insetBottom = Math.max(4, Math.round(size * 0.14))
+      context.drawImage(
+        image,
+        insetX,
+        insetTop,
+        size - insetX * 2,
+        size - insetTop - insetBottom
+      )
       URL.revokeObjectURL(svgUrl)
       resolve(canvas.toDataURL('image/png'))
     }
@@ -126,6 +149,9 @@ export const initializeSocialIconDataUrls = async (): Promise<void> => {
   socialIconsInitializationPromise = Promise.all([
     renderSimpleIconVariants('Facebook', siFacebook, BRAND_COLORS.Facebook),
     renderSimpleIconVariants('Instagram', siInstagram, BRAND_COLORS.Instagram),
+    svgToPngDataUrl(buildInstagramGradientIconSvg()).then((dataUrl) => {
+      setVariantUrl('Instagram', 'gradient', dataUrl)
+    }),
     renderSimpleIconVariants('X', siX, BRAND_COLORS.X),
     renderSimpleIconVariants('YouTube', siYoutube, BRAND_COLORS.YouTube),
     svgToPngDataUrl(linkedInBadgeIconSvg).then((dataUrl) => {
