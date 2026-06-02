@@ -51,6 +51,7 @@ import {
   saveCloudSignature
 } from '../lib/cloudSignatures'
 import { initializeSocialIconDataUrls } from '../lib/socialIcons'
+import { stripOutlookStoredAssetPathsFromForm } from '../lib/signatureImageAssets'
 import {
   alignForHebrew,
   fileToDataUrl,
@@ -120,8 +121,9 @@ export const useSignatureApp = () => {
 
   const generate = useCallback(async (state = form) => {
     await initializeSocialIconDataUrls()
-    const nextLayout = getLayoutSettings(state)
-    const html = buildSignatureHtml(state, nextLayout)
+    const readyForm = stripOutlookStoredAssetPathsFromForm(state)
+    const nextLayout = getLayoutSettings(readyForm)
+    const html = buildSignatureHtml(readyForm, nextLayout)
     setLayout(nextLayout)
     setOutputHtml(html)
     return html

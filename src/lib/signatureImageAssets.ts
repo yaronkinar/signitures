@@ -111,8 +111,14 @@ export const collectDataImageUrlsFromHtml = (html: string): string[] => {
   return [...urls]
 }
 
-const encodeOutlookAssetPath = (relativePath: string): string =>
-  relativePath.replace(/\\/g, '/').replace(/ /g, '%20')
+/** Forward slashes only — Outlook resolves paths relative to the .htm file (no URL encoding). */
+const toSignatureAssetRelativePath = (relativePath: string): string =>
+  relativePath.replace(/\\/g, '/')
+
+const OUTLOOK_STORED_ASSET_PATH_RE = /(^|[\\/])[^\\/]+_files[\\/]/i
+
+export const isOutlookStoredAssetPath = (value: string): boolean =>
+  OUTLOOK_STORED_ASSET_PATH_RE.test(value.trim()) || /^file:/i.test(value.trim())
 
 const isRemoteImageUrl = (value: string): boolean => /^https?:\/\//i.test(value.trim())
 
@@ -168,7 +174,7 @@ export const buildImageAssets = async (
 
     const extension = extensionForImageMime(mimeType)
     const fileName = uniqueFileName(`${source.baseName}.${extension}`, usedNames)
-    const relativePath = encodeOutlookAssetPath(`${assetsFolder}/${fileName}`)
+    const relativePath = toSignatureAssetRelativePath(`${assetsFolder}/${fileName}`)
 
     urlMap.set(source.url, relativePath)
     files.push({ relativePath, fileName, bytes })
@@ -195,6 +201,30 @@ const rewriteLinkImages = (rows: LinkImage[], urlMap: Map<string, string>): Link
     ...row,
     imageUrl: rewriteStringField(row.imageUrl, urlMap)
   }))
+
+export const stripOutlookStoredAssetPathsFromForm = (
+  form: SignatureFormState
+): SignatureFormState => {
+  const strip = (url: string): string => {
+    const trimmed = url.trim()
+    return trimmed && isOutlookStoredAssetPath(trimmed) ? '' : url
+  }
+
+  return {
+    ...form,
+    logoUrl: strip(form.logoUrl),
+    bannerUrl: strip(form.bannerUrl),
+    facebookIconUrl: strip(form.facebookIconUrl),
+    instagramIconUrl: strip(form.instagramIconUrl),
+    linkedinIconUrl: strip(form.linkedinIconUrl),
+    xIconUrl: strip(form.xIconUrl),
+    youtubeIconUrl: strip(form.youtubeIconUrl),
+    linkImages: form.linkImages.map((row) => ({
+      ...row,
+      imageUrl: strip(row.imageUrl)
+    }))
+  }
+}
 
 export const rewriteFormImageUrls = (
   form: SignatureFormState,

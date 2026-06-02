@@ -4,6 +4,7 @@ import { initializeSocialIconDataUrls } from './socialIcons'
 import type { SignatureFormState } from '../types/signatureForm'
 import {
   bundleSignatureHtmlImages,
+  stripOutlookStoredAssetPathsFromForm,
   type ImageAssetFile
 } from './signatureImageAssets'
 import { fetchSignatureFontPayloads, getOutlookSignatureFontFileNames } from './fontInstallScripts'
@@ -121,26 +122,27 @@ export const buildOutlookSignaturePackage = async (
   fileBaseOverride?: string
 ): Promise<OutlookSignaturePackage> => {
   await initializeSocialIconDataUrls()
+  const installForm = stripOutlookStoredAssetPathsFromForm(form)
 
   const fileBase =
     fileBaseOverride ??
-    toOutlookSignatureFileBase(form.fullName, form.email, form.outlookSignatureName)
+    toOutlookSignatureFileBase(installForm.fullName, installForm.email, installForm.outlookSignatureName)
   const filesFolderName = `${fileBase}_files`
-  const fontFileNames = getOutlookSignatureFontFileNames(form)
+  const fontFileNames = getOutlookSignatureFontFileNames(installForm)
   const fontPayloads = fontFileNames.length ? await fetchSignatureFontPayloads(fontFileNames) : []
   const { html: bundledHtmlBody, files: imageFiles } = await bundleSignatureHtmlImages(
     htmlBody,
-    form,
+    installForm,
     filesFolderName,
     { embedImages: false }
   )
-  const htmlDocument = wrapHtmlDocument(bundledHtmlBody, form.signatureLanguage, {
-    fontFamily: form.fontFamily,
+  const htmlDocument = wrapHtmlDocument(bundledHtmlBody, installForm.signatureLanguage, {
+    fontFamily: installForm.fontFamily,
     bundledFontAssetsBase: filesFolderName,
     bundledFontFileNames: fontFileNames
   })
 
-  const txt = toPlainTextSignature(form)
+  const txt = toPlainTextSignature(installForm)
 
   return {
     fileBase,

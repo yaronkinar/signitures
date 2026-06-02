@@ -175,6 +175,10 @@ $rtfContent = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase6
 [System.IO.File]::WriteAllText($txtFile, $txtContent, [System.Text.Encoding]::UTF8)
 [System.IO.File]::WriteAllText($rtfFile, $rtfContent, [System.Text.Encoding]::UTF8)
 ${writeAssetFilesPs ? `\n${writeAssetFilesPs}\n` : ''}
+$imageFileCount = (Get-ChildItem -LiteralPath $filesDir -File -Include *.png,*.jpg,*.jpeg,*.gif,*.webp,*.svg -ErrorAction SilentlyContinue | Measure-Object).Count
+if ($imageFileCount -lt 1) {
+  ${psWarningStatement(lang, 'batPsInstallNoImages', '$imageFileCount')}
+}
 [System.IO.File]::WriteAllText($htmlFile, $htmlContent, [System.Text.Encoding]::UTF8)
 $mailSettingsPaths = @(
   "HKCU:\\Software\\Microsoft\\Office\\16.0\\Common\\MailSettings",

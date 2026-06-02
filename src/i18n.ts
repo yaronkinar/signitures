@@ -249,6 +249,8 @@ const translations = {
     batPsInstallSuccess: 'Signature installed successfully:',
     batPsInstallZipCreated: 'ZIP for IT created on your Desktop:',
     batPsInstallZipFailed: 'ZIP for IT was not created:',
+    batPsInstallNoImages:
+      'Warning: no image files were written to the signature _files folder. Re-upload the logo in the app, generate again, and reinstall.',
     batPsSetDefault: 'Set as default for New/Reply where supported.',
     batPsRestartOutlook: 'If Outlook was open, restart Outlook to refresh signatures.',
     batPsClassicNote:
@@ -536,6 +538,8 @@ const translations = {
     batPsInstallSuccess: 'החתימה הותקנה בהצלחה:',
     batPsInstallZipCreated: 'קובץ ZIP ל-IT נוצר על שולחן העבודה:',
     batPsInstallZipFailed: 'קובץ ZIP ל-IT לא נוצר:',
+    batPsInstallNoImages:
+      'אזהרה: לא נשמרו קבצי תמונה בתיקיית _files. העלו שוב את הלוגו באפליקציה, צרו חתימה מחדש והתקינו שוב.',
     batPsSetDefault: 'הוגדרה כברירת מחדל למייל חדש/תשובה (במקומות שנתמכים).',
     batPsRestartOutlook: 'אם Outlook היה פתוח, הפעילו אותו מחדש כדי לרענן חתימות.',
     batPsClassicNote:
