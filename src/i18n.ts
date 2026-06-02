@@ -277,8 +277,13 @@ const translations = {
     bulkSignaturesColumns:
       'Columns: fullName (or name), jobTitle, company, phone, email, website — optional language (en/he). First row must be headers.',
     bulkDownloadTemplate: 'Download Excel template',
-    bulkUploadExcel: 'Upload Excel & download ZIP',
+    bulkUploadExcel: 'Upload Excel (HTML ZIP)',
+    bulkUploadExcelIt: 'Upload Excel → ZIP for IT',
+    bulkItHint:
+      'ZIP for IT uses Outlook Signatures layout (.htm, .txt, .rtf, and *_files per person). Send outlook-signatures-for-it.zip to IT. The “ZIP for IT” link under Install only exports signatures already on this PC.',
     bulkWorking: 'Generating signatures…',
+    bulkItSuccessOne: 'Downloaded outlook-signatures-for-it.zip with 1 signature for IT.',
+    bulkItSuccessMany: 'Downloaded outlook-signatures-for-it.zip with {count} signatures for IT.',
     bulkSuccessOne: 'Downloaded signatures.zip with 1 signature.',
     bulkSuccessMany: 'Downloaded signatures.zip with {count} signatures.',
     bulkFailed: 'Bulk export failed.',
@@ -557,8 +562,13 @@ const translations = {
     bulkSignaturesColumns:
       'עמודות: fullName (או שם), jobTitle, company, phone, email, website — שפה אופציונלית (en/he). שורה ראשונה = כותרות.',
     bulkDownloadTemplate: 'הורדת תבנית Excel',
-    bulkUploadExcel: 'העלאת Excel והורדת ZIP',
+    bulkUploadExcel: 'העלאת Excel (ZIP של HTML)',
+    bulkUploadExcelIt: 'העלאת Excel → ZIP ל-IT',
+    bulkItHint:
+      'ZIP ל-IT בפריסת תיקיית Signatures של Outlook (.htm, .txt, .rtf ו-*_files לכל אדם). שלחו את outlook-signatures-for-it.zip ל-IT. הקישור "ZIP ל-IT" ליד ההתקנה מייצא רק חתימות שכבר מותקנות במחשב זה.',
     bulkWorking: 'יוצר חתימות…',
+    bulkItSuccessOne: 'הורד outlook-signatures-for-it.zip עם חתימה אחת ל-IT.',
+    bulkItSuccessMany: 'הורד outlook-signatures-for-it.zip עם {count} חתימות ל-IT.',
     bulkSuccessOne: 'הורד signatures.zip עם חתימה אחת.',
     bulkSuccessMany: 'הורד signatures.zip עם {count} חתימות.',
     bulkFailed: 'ייצוא מרובה נכשל.',

@@ -13,6 +13,11 @@ import {
 import { buildSignatureHtml } from './signatureHtmlBuilder'
 import { sanitizeFileName, uniqueFileName } from './fileNames'
 import {
+  addOutlookSignaturePackageToZip,
+  buildOutlookSignaturePackage,
+  toOutlookSignatureFileBase
+} from './outlookSignaturePackage'
+import {
   allBundledSignatureFontFileNames,
   signatureFontPublicUrl
 } from './signatureFonts'
@@ -229,6 +234,55 @@ export const generateBulkSignaturesZip = async (
     const base = sanitizeFileName(label)
     const fileBase = uniqueFileName(base, usedNames)
     zip.file(`${fileBase}.html`, htmlDocument)
+  }
+
+  return zip.generateAsync({ type: 'blob' })
+}
+
+/** Outlook Signatures folder layout (.htm / .txt / .rtf + *_files) for IT server deploy. */
+export const generateBulkOutlookSignaturesZip = async (
+  template: SignatureFormState,
+  rows: BulkPersonRow[]
+): Promise<Blob> => {
+  await initializeSocialIconDataUrls()
+
+  const zip = new JSZip()
+  const usedNames = new Set<string>()
+  const assetsFolder = 'images'
+  const templateAssets = buildImageAssets(collectFormImageSources(template), assetsFolder)
+  const exportTemplate = templateAssets.files.length
+    ? rewriteFormImageUrls(template, templateAssets.urlMap)
+    : template
+
+  let htmlUrlMap = templateAssets.urlMap
+
+  if (rows.length > 0) {
+    const sampleForm = mergeBulkRowIntoForm(exportTemplate, rows[0])
+    const sampleLayout = getLayoutSettings(sampleForm)
+    const sampleHtml = buildSignatureHtml(sampleForm, sampleLayout)
+    const bundledSample = buildImageAssets(
+      [
+        ...collectFormImageSources(sampleForm),
+        ...collectDataImageUrlsFromHtml(sampleHtml).map((url, index) => ({
+          url,
+          baseName: `embedded-image-${index + 1}`
+        }))
+      ],
+      assetsFolder
+    )
+    htmlUrlMap = bundledSample.urlMap
+  }
+
+  for (const row of rows) {
+    const form = mergeBulkRowIntoForm(exportTemplate, row)
+    const layout = getLayoutSettings(form)
+    const bodyHtml = rewriteUrlsInHtml(buildSignatureHtml(form, layout), htmlUrlMap)
+    const fileBase = uniqueFileName(
+      toOutlookSignatureFileBase(form.fullName, form.email, ''),
+      usedNames
+    )
+    const pkg = await buildOutlookSignaturePackage(bodyHtml, form, fileBase)
+    addOutlookSignaturePackageToZip(zip, pkg)
   }
 
   return zip.generateAsync({ type: 'blob' })

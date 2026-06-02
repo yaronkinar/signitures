@@ -1,18 +1,13 @@
 import type { AppLanguage } from '../i18n'
 import { t } from '../i18n'
-import { signatureStrings } from '../i18n'
 import type { SignatureFormState } from '../types/signatureForm'
+import { bundleSignatureHtmlImages, imageAssetsToWritePayloads } from './signatureImageAssets'
+import { wrapHtmlDocument } from './signatureUtils'
 import {
-  bundleSignatureHtmlImages,
-  imageAssetsToWritePayloads
-} from './signatureImageAssets'
-import { normalizeUrl, wrapHtmlDocument } from './signatureUtils'
-import {
-  buildWriteFontFilesPs,
-  buildWindowsFontInstallPsForForm,
-  fetchSignatureFontPayloads,
-  getOutlookSignatureFontFileNames
-} from './fontInstallScripts'
+  buildOutlookSignaturePackage,
+  toOutlookSignatureFileBase
+} from './outlookSignaturePackage'
+import { buildWriteFontFilesPs, buildWindowsFontInstallPsForForm } from './fontInstallScripts'
 import JSZip from 'jszip'
 import {
   OUTLOOK_INSTALL_SCRIPT_MARKER,
@@ -82,60 +77,7 @@ const downloadBatFile = (filename: string, content: string): void => {
   URL.revokeObjectURL(url)
 }
 
-const sanitizeSignatureName = (value: string): string => {
-  const cleaned = value
-    .trim()
-    .replace(/[<>:"/\\|?*\x00-\x1f]/g, '')
-    .replace(/\s+/g, ' ')
-  return cleaned || 'Outlook-Signature'
-}
-
-const isAsciiOnlySignatureName = (value: string): boolean => /^[\x20-\x7E]+$/.test(value)
-
-const hashSignatureFileBase = (value: string): string => {
-  let hash = 2166136261
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index)
-    hash = Math.imul(hash, 16777619)
-  }
-  return `Signature-${(hash >>> 0).toString(36)}`
-}
-
-const signatureFileBaseFromEmail = (email: string): string | null => {
-  const localPart = email.trim().split('@')[0]?.trim()
-  if (!localPart) return null
-
-  const safe = localPart
-    .replace(/[^A-Za-z0-9._-]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-  if (safe.length < 2) return null
-
-  return safe
-    .replace(/[._-]+/g, ' ')
-    .trim()
-    .replace(/\s+/g, ' ')
-}
-
-/** Outlook often fails to register non-ASCII signature file names (Hebrew, etc.). */
-export const toOutlookSignatureFileBase = (
-  fullName: string,
-  email = '',
-  outlookSignatureName = ''
-): string => {
-  const englishName = sanitizeSignatureName(outlookSignatureName)
-  if (englishName !== 'Outlook-Signature' && isAsciiOnlySignatureName(englishName)) {
-    return englishName
-  }
-
-  const cleaned = sanitizeSignatureName(fullName)
-  if (isAsciiOnlySignatureName(cleaned)) return cleaned
-
-  const fromEmail = signatureFileBaseFromEmail(email)
-  if (fromEmail && isAsciiOnlySignatureName(fromEmail)) return fromEmail
-
-  return hashSignatureFileBase(cleaned)
-}
+export { toOutlookSignatureFileBase } from './outlookSignaturePackage'
 
 const toBase64Utf8 = (value: string): string => {
   const utf8Bytes = new TextEncoder().encode(value)
@@ -144,33 +86,6 @@ const toBase64Utf8 = (value: string): string => {
     binary += String.fromCharCode(byte)
   }
   return btoa(binary)
-}
-
-const toPlainTextSignature = (form: SignatureFormState): string => {
-  const strings = signatureStrings[form.signatureLanguage]
-  const lines: string[] = []
-  const fullName = form.fullName.trim()
-  const roleBits = [form.jobTitle.trim(), form.company.trim()].filter(Boolean)
-  const phone = form.phone.trim()
-  const email = form.email.trim()
-  const website = normalizeUrl(form.website)
-
-  if (fullName) lines.push(fullName)
-  if (roleBits.length) lines.push(roleBits.join('\r\n'))
-  if (phone) lines.push(`${strings.phoneLabel} ${phone}`)
-  if (email) lines.push(`${strings.emailLabel} ${email}`)
-  if (website) lines.push(`${strings.websiteLabel} ${website}`)
-
-  return lines.join('\r\n')
-}
-
-const plainTextToRtf = (plainText: string): string => {
-  const escaped = plainText
-    .replace(/\\/g, '\\\\')
-    .replace(/\{/g, '\\{')
-    .replace(/\}/g, '\\}')
-    .replace(/\r\n|\n|\r/g, '\\par ')
-  return `{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0 Arial;}}\\f0\\fs20 ${escaped}}`
 }
 
 export const downloadExportSignaturesFolderBat = (lang: AppLanguage): void => {
@@ -217,33 +132,12 @@ export const downloadOutlookInstaller = async (
   form: SignatureFormState
 ): Promise<void> => {
   const lang = form.signatureLanguage
-  const signatureName = toOutlookSignatureFileBase(
-    form.fullName,
-    form.email,
-    form.outlookSignatureName
-  )
-  const filesFolderName = `${signatureName}_files`
-  const fontFileNames = getOutlookSignatureFontFileNames(form)
-  const fontPayloads = fontFileNames.length ? await fetchSignatureFontPayloads(fontFileNames) : []
-  const { html: bundledHtmlBody, files: imageFiles } = bundleSignatureHtmlImages(
-    htmlBody,
-    form,
-    filesFolderName
-  )
-  const imagePayloads = imageAssetsToWritePayloads(imageFiles)
-  const htmlDocument = wrapHtmlDocument(bundledHtmlBody, lang, {
-    fontFamily: form.fontFamily,
-    bundledFontAssetsBase: filesFolderName,
-    bundledFontFileNames: fontFileNames
-  })
-  const txtDocument = toPlainTextSignature(form)
-  const rtfDocument = plainTextToRtf(txtDocument)
-  const htmlBase64 = toBase64Utf8(htmlDocument)
-  const txtBase64 = toBase64Utf8(txtDocument)
-  const rtfBase64 = toBase64Utf8(rtfDocument)
-  const writeFontFilesPs = buildWriteFontFilesPs('$filesDir', fontPayloads)
-  const writeImageFilesPs = buildWriteFontFilesPs('$filesDir', imagePayloads)
-  const writeAssetFilesPs = [writeFontFilesPs, writeImageFilesPs].filter(Boolean).join('\n')
+  const pkg = await buildOutlookSignaturePackage(htmlBody, form)
+  const signatureName = pkg.fileBase
+  const htmlBase64 = toBase64Utf8(pkg.htm)
+  const txtBase64 = toBase64Utf8(pkg.txt)
+  const rtfBase64 = toBase64Utf8(pkg.rtf)
+  const writeAssetFilesPs = buildWriteFontFilesPs('$filesDir', imageAssetsToWritePayloads(pkg.assetFiles))
   const windowsFontInstallPs = await buildWindowsFontInstallPsForForm(lang, form)
   const installSuccessLine = psHostStatement(lang, psConsoleMessage(lang, 'batPsInstallSuccess'), {
     foregroundColor: 'Green'

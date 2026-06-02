@@ -5,6 +5,7 @@ import {
   bulkErrorMessageKey,
   downloadBlob,
   downloadBulkTemplate,
+  generateBulkOutlookSignaturesZip,
   generateBulkSignaturesZip,
   parseBulkErrorCode,
   parseBulkSpreadsheet
@@ -18,6 +19,7 @@ type BulkSignaturesPanelProps = {
 
 export const BulkSignaturesPanel = ({ template, lang }: BulkSignaturesPanelProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const itFileInputRef = useRef<HTMLInputElement>(null)
   const [working, setWorking] = useState(false)
   const [status, setStatus] = useState('')
   const [statusTone, setStatusTone] = useState<'idle' | 'success' | 'error'>('idle')
@@ -26,7 +28,7 @@ export const BulkSignaturesPanel = ({ template, lang }: BulkSignaturesPanelProps
   const statusClass =
     statusTone === 'success' ? 'ai-status is-success' : statusTone === 'error' ? 'ai-status is-error' : 'ai-status'
 
-  const runBulk = async (file: File) => {
+  const runBulk = async (file: File, forItOutlook: boolean) => {
     setWorking(true)
     setStatus(t(lang, 'bulkWorking'))
     setStatusTone('idle')
@@ -34,13 +36,20 @@ export const BulkSignaturesPanel = ({ template, lang }: BulkSignaturesPanelProps
     try {
       const buffer = await file.arrayBuffer()
       const rows = parseBulkSpreadsheet(buffer, lang)
-      const zip = await generateBulkSignaturesZip(template, rows)
-      downloadBlob(zip, 'signatures.zip')
+      const zip = forItOutlook
+        ? await generateBulkOutlookSignaturesZip(template, rows)
+        : await generateBulkSignaturesZip(template, rows)
+      downloadBlob(zip, forItOutlook ? 'outlook-signatures-for-it.zip' : 'signatures.zip')
       setLastCount(rows.length)
       setStatus(
         rows.length === 1
-          ? t(lang, 'bulkSuccessOne')
-          : t(lang, 'bulkSuccessMany').replace('{count}', String(rows.length))
+          ? forItOutlook
+            ? t(lang, 'bulkItSuccessOne')
+            : t(lang, 'bulkSuccessOne')
+          : (forItOutlook ? t(lang, 'bulkItSuccessMany') : t(lang, 'bulkSuccessMany')).replace(
+              '{count}',
+              String(rows.length)
+            )
       )
       setStatusTone('success')
     } catch (error) {
@@ -52,6 +61,7 @@ export const BulkSignaturesPanel = ({ template, lang }: BulkSignaturesPanelProps
     } finally {
       setWorking(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
+      if (itFileInputRef.current) itFileInputRef.current.value = ''
     }
   }
 
@@ -64,7 +74,7 @@ export const BulkSignaturesPanel = ({ template, lang }: BulkSignaturesPanelProps
           {t(lang, 'bulkDownloadTemplate')}
         </button>
         <label className="bulk-upload-label">
-          <span className="primary bulk-upload-button">{t(lang, 'bulkUploadExcel')}</span>
+          <span className="secondary bulk-upload-button">{t(lang, 'bulkUploadExcel')}</span>
           <input
             ref={fileInputRef}
             type="file"
@@ -73,11 +83,26 @@ export const BulkSignaturesPanel = ({ template, lang }: BulkSignaturesPanelProps
             disabled={working}
             onChange={(e) => {
               const file = e.target.files?.[0]
-              if (file) runBulk(file)
+              if (file) runBulk(file, false)
+            }}
+          />
+        </label>
+        <label className="bulk-upload-label">
+          <span className="primary bulk-upload-button">{t(lang, 'bulkUploadExcelIt')}</span>
+          <input
+            ref={itFileInputRef}
+            type="file"
+            accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+            hidden
+            disabled={working}
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) runBulk(file, true)
             }}
           />
         </label>
       </div>
+      <p className="hint">{t(lang, 'bulkItHint')}</p>
       {lastCount !== null && !working && statusTone !== 'error' && (
         <p className="hint">{t(lang, 'bulkUsesCurrentDesign')}</p>
       )}
