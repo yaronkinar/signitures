@@ -1,11 +1,34 @@
 import { signatureStrings, type AppLanguage } from '../i18n'
 import type { SignatureFormState, SignatureLayoutSettings } from '../types/signatureForm'
-import { escapeHtml, hasHebrew, normalizeUrl, sanitizeSignatureInlineHtml } from './signatureUtils'
+import type { SignatureTextImageSlot } from './signatureTextImages'
+import { escapeHtml, hasHebrew, normalizeUrl, outlookFontFamilyStyle, sanitizeFontFamily, sanitizeSignatureInlineHtml } from './signatureUtils'
 import { resolveSocialIconUrl } from './socialIcons'
+
+export type BuildSignatureHtmlOptions = {
+  textImages?: {
+    name?: SignatureTextImageSlot
+    titleBlock?: SignatureTextImageSlot
+  }
+}
+
+const buildTextImageRow = (
+  slot: SignatureTextImageSlot,
+  nameTitleDirection: string,
+  contentAlignAttr: string,
+  contentAlign: string,
+  padding: string
+): string => {
+  const src = escapeHtml(slot.dataUrl)
+  const alt = escapeHtml(slot.alt)
+  return `<tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="padding:${padding};font-size:0;line-height:0;text-align:${contentAlign};">
+        <img src="${src}" alt="${alt}" width="${slot.width}" height="${slot.height}" style="display:block;width:${slot.width}px;height:${slot.height}px;border:0;max-width:100%;" />
+      </td></tr>`
+}
 
 export const buildSignatureHtml = (
   form: SignatureFormState,
-  layout: SignatureLayoutSettings
+  layout: SignatureLayoutSettings,
+  options: BuildSignatureHtmlOptions = {}
 ): string => {
   const lang: AppLanguage = form.signatureLanguage
   const strings = signatureStrings[lang]
@@ -39,8 +62,8 @@ export const buildSignatureHtml = (
   const bodyFontWeight = layout.bodyFontWeight
   const textColumnWidth = Math.min(layout.textColumnWidth, signatureWidth - 80)
   const logoColumnWidth = Math.max(60, signatureWidth - textColumnWidth - layout.dividerThickness)
-  const fontFamilyCss = escapeHtml(layout.fontFamily)
-  const fontFamilyStyle = `font-family:${fontFamilyCss};`
+  const fontFamilyCss = escapeHtml(sanitizeFontFamily(layout.fontFamily))
+  const fontFamilyStyle = outlookFontFamilyStyle(layout.fontFamily)
   const bodyFontSizePx = `${layout.bodyFontSize}px`
   const compactLinkFontSizePx = `${Math.max(9, layout.bodyFontSize - 2)}px`
   const detailsLineHeight = Math.max(1, layout.lineSpacing - 0.15)
@@ -176,8 +199,28 @@ export const buildSignatureHtml = (
     layout.textOffsetY
   ) + edgeInset}px;padding-bottom:${Math.max(0, -layout.textOffsetY) + edgeInset}px;width:${textColumnWidth}px;max-width:${textColumnWidth}px;text-align:${contentAlign};unicode-bidi:plaintext;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contentAlignAttr}" dir="${nameTitleDirection}" style="${fontFamilyStyle}text-align:${contentAlign};">
-        <tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="${fontFamilyStyle}font-size:${layout.nameFontSize}px;line-height:${nameLineHeight};font-weight:${nameFontWeight};color:${nameColor};padding:0 0 1px;text-align:${contentAlign};unicode-bidi:plaintext;">${fullName || strings.fullNamePlaceholder}</td></tr>
-        <tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="${fontFamilyStyle}font-size:${layout.titleFontSize}px;line-height:${titleLineHeight};font-weight:${titleFontWeight};color:${jobTitleColor};padding:0 0 3px;text-align:${contentAlign};unicode-bidi:plaintext;">${jobTitle || strings.jobTitlePlaceholder}${company ? `<br style="line-height:${titleLineHeight};" /><span style="${fontFamilyStyle}font-weight:${titleFontWeight};line-height:${titleLineHeight};color:${companyColor};">${company}</span>` : ''}</td></tr>
+        ${
+          options.textImages?.name
+            ? buildTextImageRow(
+                options.textImages.name,
+                nameTitleDirection,
+                contentAlignAttr,
+                contentAlign,
+                '0 0 1px'
+              )
+            : `<tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="${fontFamilyStyle}font-size:${layout.nameFontSize}px;line-height:${nameLineHeight};font-weight:${nameFontWeight};color:${nameColor};padding:0 0 1px;text-align:${contentAlign};unicode-bidi:plaintext;">${fullName || strings.fullNamePlaceholder}</td></tr>`
+        }
+        ${
+          options.textImages?.titleBlock
+            ? buildTextImageRow(
+                options.textImages.titleBlock,
+                nameTitleDirection,
+                contentAlignAttr,
+                contentAlign,
+                '0 0 3px'
+              )
+            : `<tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="${fontFamilyStyle}font-size:${layout.titleFontSize}px;line-height:${titleLineHeight};font-weight:${titleFontWeight};color:${jobTitleColor};padding:0 0 3px;text-align:${contentAlign};unicode-bidi:plaintext;">${jobTitle || strings.jobTitlePlaceholder}${company ? `<br style="line-height:${titleLineHeight};" /><span style="${fontFamilyStyle}font-weight:${titleFontWeight};line-height:${titleLineHeight};color:${companyColor};">${company}</span>` : ''}</td></tr>`
+        }
         ${contactRows.length ? `<tr><td dir="${contactDirection}" align="${contentAlignAttr}" style="padding-top:2px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contentAlignAttr}" dir="${contactDirection}" style="text-align:${contentAlign};border-collapse:collapse;">${contactRows.join('')}</table></td></tr>` : ''}
         ${socialTextRow}
       </table>

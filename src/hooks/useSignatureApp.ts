@@ -34,6 +34,7 @@ import {
 } from '../lib/outlookInstall'
 import { downloadWindowsFontInstaller } from '../lib/fontInstallScripts'
 import { buildSignatureHtml } from '../lib/signatureHtmlBuilder'
+import { generateSignatureTextImages } from '../lib/signatureTextImages'
 import {
   defaultSaveAsName,
   deleteSavedSignature,
@@ -123,7 +124,8 @@ export const useSignatureApp = () => {
     await initializeSocialIconDataUrls()
     const readyForm = stripOutlookStoredAssetPathsFromForm(state)
     const nextLayout = getLayoutSettings(readyForm)
-    const html = buildSignatureHtml(readyForm, nextLayout)
+    const textImages = await generateSignatureTextImages(readyForm, nextLayout)
+    const html = buildSignatureHtml(readyForm, nextLayout, { textImages })
     setLayout(nextLayout)
     setOutputHtml(html)
     return html
