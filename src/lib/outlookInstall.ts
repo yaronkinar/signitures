@@ -161,9 +161,10 @@ $filesDir = Join-Path $signatureDir "$($signatureName)_files"
 if (-not (Test-Path $signatureDir)) {
   New-Item -Path $signatureDir -ItemType Directory | Out-Null
 }
-if (-not (Test-Path $filesDir)) {
-  New-Item -Path $filesDir -ItemType Directory | Out-Null
+if (Test-Path $filesDir) {
+  Remove-Item -LiteralPath $filesDir -Recurse -Force
 }
+New-Item -Path $filesDir -ItemType Directory | Out-Null
 
 $htmlBase64 = "${htmlBase64}"
 $txtBase64 = "${txtBase64}"
@@ -174,14 +175,6 @@ $rtfContent = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase6
 [System.IO.File]::WriteAllText($txtFile, $txtContent, [System.Text.Encoding]::UTF8)
 [System.IO.File]::WriteAllText($rtfFile, $rtfContent, [System.Text.Encoding]::UTF8)
 ${writeAssetFilesPs ? `\n${writeAssetFilesPs}\n` : ''}
-$relativeFilesPrefix = "$signatureName" + "_files/"
-if ($htmlContent.Contains($relativeFilesPrefix)) {
-  $filesDirUri = "file:///" + ($filesDir.Replace('\\', '/').Replace(' ', '%20'))
-  $htmlContent = $htmlContent.Replace('src="' + $relativeFilesPrefix, 'src="' + $filesDirUri + '/')
-  $htmlContent = $htmlContent.Replace("src='" + $relativeFilesPrefix, "src='" + $filesDirUri + '/')
-  $htmlContent = $htmlContent.Replace("url('" + $relativeFilesPrefix, "url('" + $filesDirUri + '/')
-  $htmlContent = $htmlContent.Replace('url("' + $relativeFilesPrefix, 'url("' + $filesDirUri + '/')
-}
 [System.IO.File]::WriteAllText($htmlFile, $htmlContent, [System.Text.Encoding]::UTF8)
 $mailSettingsPaths = @(
   "HKCU:\\Software\\Microsoft\\Office\\16.0\\Common\\MailSettings",
