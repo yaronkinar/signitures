@@ -14,6 +14,7 @@ import {
   googleFontDownloadUrl,
   isBundledWebFont
 } from './lib/signatureFonts'
+import { buildStampTitle, formatBuildStamp } from './lib/buildInfo'
 import { normalizeSocialIconVariant, type SocialPlatform } from './lib/socialIconCatalog'
 import { fileToDataUrl } from './lib/signatureUtils'
 import { SocialIconVariantPicker } from './components/SocialIconVariantPicker'
@@ -1091,6 +1092,9 @@ export default function App() {
       </section>
       <Toaster toasts={app.toasts} onDismiss={app.dismissToast} />
       <UpdatePrompt lang={lang} />
+      <div className="build-stamp" title={buildStampTitle()} aria-label={buildStampTitle()}>
+        {formatBuildStamp(lang)}
+      </div>
     </main>
   )
 }
