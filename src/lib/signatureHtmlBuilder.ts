@@ -129,15 +129,17 @@ export const buildSignatureHtml = (
 
   const socialIconSize = layout.bodyFontSize + 4
   const socialAlign = contentAlign
-  const socialIconMargin =
-    nameTitleDirection === 'rtl'
-      ? `0 0 ${layout.socialIconGap}px ${layout.socialIconGap}px`
-      : `0 ${layout.socialIconGap}px ${layout.socialIconGap}px 0`
+  const socialIconGapPx = Math.max(0, layout.socialIconGap)
+  const socialRowTopPaddingPx = socialIconGapPx
   const socialTextRow = socialLinks.length
-    ? `<tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="padding:${edgeInset}px ${edgeInset}px 0;text-align:${socialAlign};font-size:0;line-height:0;">
+    ? `<tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="padding:${socialRowTopPaddingPx}px ${edgeInset}px 0;text-align:${socialAlign};font-size:0;line-height:0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="${nameTitleDirection}" align="${contentAlignAttr}" style="border-collapse:collapse;text-align:${socialAlign};">
+      <tr>
       ${socialLinks
         .map(
-          (item) => `<span style="display:inline-block;vertical-align:middle;margin:${socialIconMargin};font-size:0;line-height:0;">
+          (item) => `<td style="${
+            nameTitleDirection === 'rtl' ? `padding-left:${socialIconGapPx}px;` : `padding-right:${socialIconGapPx}px;`
+          }font-size:0;line-height:0;vertical-align:middle;">
             <a href="${escapeHtml(item.url)}" title="${escapeHtml(item.label)}" style="text-decoration:none;display:inline-block;line-height:0;">
               <img
                 src="${escapeHtml(item.iconUrl)}"
@@ -147,9 +149,11 @@ export const buildSignatureHtml = (
                 style="display:block;width:${socialIconSize}px;height:${socialIconSize}px;border:0;"
               />
             </a>
-          </span>`
+          </td>`
         )
         .join('')}
+      </tr>
+      </table>
     </td></tr>`
     : ''
 
@@ -160,7 +164,14 @@ export const buildSignatureHtml = (
   const logoPaddingRight = logoOnLeft ? dividerInset : edgeInset
   const logoHorizontalShift = layout.logoOffsetX
 
-  const textCell = `<td style="vertical-align:${layout.verticalAlign};padding-left:${textPaddingLeft}px;padding-right:${textPaddingRight}px;padding-top:${Math.max(
+  const dividerOnTextSide =
+    layout.dividerThickness > 0
+      ? logoOnLeft
+        ? `border-left:${layout.dividerThickness}px solid ${dividerColor};`
+        : `border-right:${layout.dividerThickness}px solid ${dividerColor};`
+      : ''
+
+  const textCell = `<td style="${dividerOnTextSide}vertical-align:${layout.verticalAlign};padding-left:${textPaddingLeft}px;padding-right:${textPaddingRight}px;padding-top:${Math.max(
     0,
     layout.textOffsetY
   ) + edgeInset}px;padding-bottom:${Math.max(0, -layout.textOffsetY) + edgeInset}px;width:${textColumnWidth}px;max-width:${textColumnWidth}px;text-align:${contentAlign};unicode-bidi:plaintext;">
@@ -171,8 +182,6 @@ export const buildSignatureHtml = (
         ${socialTextRow}
       </table>
     </td>`
-
-  const dividerCell = `<td style="width:${layout.dividerThickness}px;min-width:${layout.dividerThickness}px;background:${dividerColor};font-size:0;line-height:0;padding:0;">&nbsp;</td>`
 
   const logoGraphic = logoUrl
     ? `<span style="display:inline-block;line-height:0;font-size:0;margin-left:${logoHorizontalShift}px;vertical-align:top;">
@@ -187,16 +196,16 @@ export const buildSignatureHtml = (
       ${logoGraphic}
     </td>`
 
-  const rowCells = logoOnLeft ? [logoCell, dividerCell, textCell] : [textCell, dividerCell, logoCell]
+  const rowCells = logoOnLeft ? [logoCell, textCell] : [textCell, logoCell]
 
-  const signatureTable = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${layout.emailAlign}" style="font-family:${fontFamilyCss};color:${textColor};background:${backgroundColor};width:${signatureWidth}px;max-width:${signatureWidth}px;border-collapse:collapse;mso-line-height-rule:exactly;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+  const signatureTable = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${layout.emailAlign}" style="direction:ltr;font-family:${fontFamilyCss};color:${textColor};background:${backgroundColor};width:${signatureWidth}px;max-width:${signatureWidth}px;border-collapse:collapse;mso-line-height-rule:exactly;mso-table-lspace:0pt;mso-table-rspace:0pt;">
   <tr>
     ${rowCells.join('\n    ')}
   </tr>
 </table>`
 
   return `<!-- Outlook email signature -->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" dir="ltr" style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" dir="ltr" style="direction:ltr;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
   <tr>
     <td align="${layout.emailAlign}" style="text-align:${layout.emailAlign};">
       ${signatureTable}

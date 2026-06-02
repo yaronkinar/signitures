@@ -129,6 +129,7 @@ export const downloadOutlookInstaller = async (
   form: SignatureFormState
 ): Promise<void> => {
   const lang = form.signatureLanguage
+  const logoSide = form.logoSide === 'left' ? 'left' : 'right'
   const pkg = await buildOutlookSignaturePackage(htmlBody, form)
   const signatureName = pkg.fileBase
   const htmlBase64 = toBase64Utf8(pkg.htm)
@@ -241,6 +242,7 @@ foreach ($path in $outlookSetupPaths) {
 }
 
 ${installSuccessLine}
+Write-Host "Install layout logo side: ${logoSide}"
 Write-Host $htmlFile
 Write-Host ""
 try {

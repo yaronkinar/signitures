@@ -185,7 +185,7 @@ export const buildOutlookSignaturePackage = async (
     packageHtmlBody,
     installForm,
     filesFolderName,
-    { embedImages: false }
+    { embedImages: true }
   )
   const htmlDocument = wrapHtmlDocument(bundledHtmlBody, installForm.signatureLanguage, {
     fontFamily: installForm.fontFamily,
