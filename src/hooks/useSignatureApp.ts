@@ -441,7 +441,7 @@ export const useSignatureApp = () => {
 
   const handleInstallOutlook = useCallback(async () => {
     try {
-      const html = outputHtml.trim() ? outputHtml : await generate()
+      const html = await generate()
       await downloadOutlookInstaller(html, form)
       window.alert(t(lang, 'alertOutlookInstallSuccess'))
     } catch {

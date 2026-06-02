@@ -18,7 +18,7 @@ export const buildNamedExportZip = async (
   payload: Record<string, unknown>,
   form: SignatureFormState
 ): Promise<Blob> => {
-  const { urlMap, files } = buildImageAssets(collectFormImageSources(form), EXPORT_IMAGES_FOLDER)
+  const { urlMap, files } = await buildImageAssets(collectFormImageSources(form), EXPORT_IMAGES_FOLDER)
   const exportPayload = files.length > 0 ? rewriteRecordImageUrls(payload, urlMap) : payload
 
   if (!files.length) {

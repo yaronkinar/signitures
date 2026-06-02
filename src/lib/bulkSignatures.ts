@@ -192,7 +192,7 @@ export const generateBulkSignaturesZip = async (
   const usedNames = new Set<string>()
   const templateLayout = getLayoutSettings(template)
   const assetsFolder = 'images'
-  const templateAssets = buildImageAssets(collectFormImageSources(template), assetsFolder)
+  const templateAssets = await buildImageAssets(collectFormImageSources(template), assetsFolder)
   const exportTemplate = templateAssets.files.length
     ? rewriteFormImageUrls(template, templateAssets.urlMap)
     : template
@@ -204,7 +204,7 @@ export const generateBulkSignaturesZip = async (
     const sampleForm = mergeBulkRowIntoForm(exportTemplate, rows[0])
     const sampleLayout = getLayoutSettings(sampleForm)
     const sampleHtml = buildSignatureHtml(sampleForm, sampleLayout)
-    const bundledSample = buildImageAssets(
+    const bundledSample = await buildImageAssets(
       [
         ...collectFormImageSources(sampleForm),
         ...collectDataImageUrlsFromHtml(sampleHtml).map((url, index) => ({
@@ -249,7 +249,7 @@ export const generateBulkOutlookSignaturesZip = async (
   const zip = new JSZip()
   const usedNames = new Set<string>()
   const assetsFolder = 'images'
-  const templateAssets = buildImageAssets(collectFormImageSources(template), assetsFolder)
+  const templateAssets = await buildImageAssets(collectFormImageSources(template), assetsFolder)
   const exportTemplate = templateAssets.files.length
     ? rewriteFormImageUrls(template, templateAssets.urlMap)
     : template
@@ -260,7 +260,7 @@ export const generateBulkOutlookSignaturesZip = async (
     const sampleForm = mergeBulkRowIntoForm(exportTemplate, rows[0])
     const sampleLayout = getLayoutSettings(sampleForm)
     const sampleHtml = buildSignatureHtml(sampleForm, sampleLayout)
-    const bundledSample = buildImageAssets(
+    const bundledSample = await buildImageAssets(
       [
         ...collectFormImageSources(sampleForm),
         ...collectDataImageUrlsFromHtml(sampleHtml).map((url, index) => ({

@@ -1,5 +1,6 @@
 import JSZip from 'jszip'
 import { signatureStrings } from '../i18n'
+import { initializeSocialIconDataUrls } from './socialIcons'
 import type { SignatureFormState } from '../types/signatureForm'
 import {
   bundleSignatureHtmlImages,
@@ -119,13 +120,15 @@ export const buildOutlookSignaturePackage = async (
   form: SignatureFormState,
   fileBaseOverride?: string
 ): Promise<OutlookSignaturePackage> => {
+  await initializeSocialIconDataUrls()
+
   const fileBase =
     fileBaseOverride ??
     toOutlookSignatureFileBase(form.fullName, form.email, form.outlookSignatureName)
   const filesFolderName = `${fileBase}_files`
   const fontFileNames = getOutlookSignatureFontFileNames(form)
   const fontPayloads = fontFileNames.length ? await fetchSignatureFontPayloads(fontFileNames) : []
-  const { html: bundledHtmlBody, files: imageFiles } = bundleSignatureHtmlImages(
+  const { html: bundledHtmlBody, files: imageFiles } = await bundleSignatureHtmlImages(
     htmlBody,
     form,
     filesFolderName

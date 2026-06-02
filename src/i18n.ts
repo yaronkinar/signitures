@@ -239,7 +239,7 @@ const translations = {
     newOutlookSetupSuffix: ', paste into signature editor, then save.',
     alertGenerateFailed: 'Could not generate social icons. Please try again.',
     alertOutlookInstallSuccess:
-      'Downloaded install-outlook-signature.bat. It installs the font on Windows and your signature in one step. Double-click the bat file, then restart Outlook. In Outlook, look for the English signature name you entered (or your email username if left blank).',
+      'Downloaded install-outlook-signature.bat. Double-click it to install the signature and create a ZIP on your Desktop for IT. Then restart Outlook and pick your English signature name.',
     alertOutlookInstallFailed: 'Could not prepare Outlook installer. Please generate the signature first.',
     batInstallerCorrupt: 'Installer script is corrupted.',
     batInstallComplete: 'Signature installation completed.',
@@ -247,6 +247,8 @@ const translations = {
     batInstallSecurityHint:
       'If Windows shows a security warning, choose More info, then Run anyway.',
     batPsInstallSuccess: 'Signature installed successfully:',
+    batPsInstallZipCreated: 'ZIP for IT created on your Desktop:',
+    batPsInstallZipFailed: 'ZIP for IT was not created:',
     batPsSetDefault: 'Set as default for New/Reply where supported.',
     batPsRestartOutlook: 'If Outlook was open, restart Outlook to refresh signatures.',
     batPsClassicNote:
@@ -525,13 +527,15 @@ const translations = {
     newOutlookSetupSuffix: ' — הדביקו בעורך החתימה ושמרו.',
     alertGenerateFailed: 'לא ניתן ליצור אייקונים חברתיים. נסו שוב.',
     alertOutlookInstallSuccess:
-      'הורד install-outlook-signature.bat. הוא מתקין את הגופן ב-Windows ואת החתימה בצעד אחד. לחצו פעמיים על הקובץ, ואז הפעילו מחדש את Outlook. ב-Outlook חפשו את שם החתימה באנגלית שהזנתם (או את שם המשתמש מהאימייל אם השדה ריק).',
+      'הורד install-outlook-signature.bat. לחצו פעמיים להתקנת החתימה וליצירת ZIP על שולחן העבודה ל-IT. הפעילו מחדש את Outlook ובחרו את שם החתימה באנגלית.',
     alertOutlookInstallFailed: 'לא ניתן להכין את מתקין Outlook. יש ליצור חתימה תחילה.',
     batInstallerCorrupt: 'קובץ ההתקנה פגום.',
     batInstallComplete: 'התקנת החתימה הושלמה.',
     batInstallFailed: 'ההתקנה נכשלה.',
     batInstallSecurityHint: 'אם מוצגת אזהרת אבטחה, בחרו מידע נוסף ואז הפעל בכל זאת.',
     batPsInstallSuccess: 'החתימה הותקנה בהצלחה:',
+    batPsInstallZipCreated: 'קובץ ZIP ל-IT נוצר על שולחן העבודה:',
+    batPsInstallZipFailed: 'קובץ ZIP ל-IT לא נוצר:',
     batPsSetDefault: 'הוגדרה כברירת מחדל למייל חדש/תשובה (במקומות שנתמכים).',
     batPsRestartOutlook: 'אם Outlook היה פתוח, הפעילו אותו מחדש כדי לרענן חתימות.',
     batPsClassicNote:

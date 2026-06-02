@@ -3,10 +3,7 @@ import { t } from '../i18n'
 import type { SignatureFormState } from '../types/signatureForm'
 import { bundleSignatureHtmlImages, imageAssetsToWritePayloads } from './signatureImageAssets'
 import { wrapHtmlDocument } from './signatureUtils'
-import {
-  buildOutlookSignaturePackage,
-  toOutlookSignatureFileBase
-} from './outlookSignaturePackage'
+import { buildOutlookSignaturePackage, toOutlookSignatureFileBase } from './outlookSignaturePackage'
 import { buildWriteFontFilesPs, buildWindowsFontInstallPsForForm } from './fontInstallScripts'
 import JSZip from 'jszip'
 import {
@@ -145,6 +142,10 @@ export const downloadOutlookInstaller = async (
   const setDefaultLine = psHostStatement(lang, psConsoleMessage(lang, 'batPsSetDefault'))
   const restartOutlookLine = psHostStatement(lang, psConsoleMessage(lang, 'batPsRestartOutlook'))
   const classicNoteLine = psHostStatement(lang, psConsoleMessage(lang, 'batPsClassicNote'))
+  const installZipCreatedLine = psHostStatement(lang, psConsoleMessage(lang, 'batPsInstallZipCreated'), {
+    foregroundColor: 'Green'
+  })
+  const installZipFailedPrefix = psConsoleMessage(lang, 'batPsInstallZipFailed')
 
   const scriptContent = prefixPowerShellScript(
     lang,
@@ -170,10 +171,16 @@ $rtfBase64 = "${rtfBase64}"
 $htmlContent = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($htmlBase64))
 $txtContent = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($txtBase64))
 $rtfContent = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($rtfBase64))
-[System.IO.File]::WriteAllText($htmlFile, $htmlContent, [System.Text.Encoding]::UTF8)
 [System.IO.File]::WriteAllText($txtFile, $txtContent, [System.Text.Encoding]::UTF8)
 [System.IO.File]::WriteAllText($rtfFile, $rtfContent, [System.Text.Encoding]::UTF8)
 ${writeAssetFilesPs ? `\n${writeAssetFilesPs}\n` : ''}
+$relativeFilesPrefix = "$signatureName" + "_files/"
+$filesDirUri = "file:///" + ($filesDir.Replace('\\', '/').Replace(' ', '%20'))
+$htmlContent = $htmlContent.Replace('src="' + $relativeFilesPrefix, 'src="' + $filesDirUri + '/')
+$htmlContent = $htmlContent.Replace("src='" + $relativeFilesPrefix, "src='" + $filesDirUri + '/')
+$htmlContent = $htmlContent.Replace("url('" + $relativeFilesPrefix, "url('" + $filesDirUri + '/')
+$htmlContent = $htmlContent.Replace('url("' + $relativeFilesPrefix, 'url("' + $filesDirUri + '/')
+[System.IO.File]::WriteAllText($htmlFile, $htmlContent, [System.Text.Encoding]::UTF8)
 $mailSettingsPaths = @(
   "HKCU:\\Software\\Microsoft\\Office\\16.0\\Common\\MailSettings",
   "HKCU:\\Software\\Microsoft\\Office\\15.0\\Common\\MailSettings"
@@ -200,6 +207,23 @@ foreach ($path in $outlookSetupPaths) {
 ${installSuccessLine}
 Write-Host $htmlFile
 Write-Host ""
+try {
+  $desktop = [Environment]::GetFolderPath('Desktop')
+  $zipPath = Join-Path $desktop ($signatureName + '-outlook-signature.zip')
+  if (Test-Path -LiteralPath $zipPath) {
+    Remove-Item -LiteralPath $zipPath -Force
+  }
+  $zipItems = @($htmlFile, $txtFile, $rtfFile)
+  if (Test-Path -LiteralPath $filesDir) {
+    $zipItems += $filesDir
+  }
+  Compress-Archive -LiteralPath $zipItems -DestinationPath $zipPath -Force
+  ${installZipCreatedLine}
+  Write-Host $zipPath
+  Write-Host ""
+} catch {
+  ${psWarningStatement(lang, installZipFailedPrefix, '$_.Exception.Message')}
+}
 ${setDefaultLine}
 ${restartOutlookLine}
 ${classicNoteLine}
@@ -277,7 +301,7 @@ export const downloadHtmlOutput = async (
 ): Promise<void> => {
   const assetsFolder = 'images'
   const { html: bundledHtmlBody, files: imageFiles } = form
-    ? bundleSignatureHtmlImages(htmlBody, form, assetsFolder)
+    ? await bundleSignatureHtmlImages(htmlBody, form, assetsFolder)
     : { html: htmlBody, files: [] }
   const htmlDocument = wrapHtmlDocument(bundledHtmlBody, lang, fontFamily)
 

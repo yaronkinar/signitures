@@ -111,26 +111,59 @@ export const collectDataImageUrlsFromHtml = (html: string): string[] => {
   return [...urls]
 }
 
-export const buildImageAssets = (
+const encodeOutlookAssetPath = (relativePath: string): string =>
+  relativePath.replace(/\\/g, '/').replace(/ /g, '%20')
+
+const isRemoteImageUrl = (value: string): boolean => /^https?:\/\//i.test(value.trim())
+
+const fetchRemoteImage = async (url: string): Promise<{ mimeType: string; bytes: Uint8Array } | null> => {
+  try {
+    const response = await fetch(url)
+    if (!response.ok) return null
+    const blob = await response.blob()
+    const bytes = new Uint8Array(await blob.arrayBuffer())
+    if (!bytes.length) return null
+    const mimeType = blob.type || mimeTypeForImagePath(url)
+    return { mimeType, bytes }
+  } catch {
+    return null
+  }
+}
+
+export const buildImageAssets = async (
   sources: ImageSource[],
   assetsFolder: string
-): { urlMap: Map<string, string>; files: ImageAssetFile[] } => {
+): Promise<{ urlMap: Map<string, string>; files: ImageAssetFile[] }> => {
   const urlMap = new Map<string, string>()
   const files: ImageAssetFile[] = []
   const usedNames = new Set<string>()
 
   for (const source of sources) {
-    if (!isDataImageUrl(source.url) || urlMap.has(source.url)) continue
+    if (urlMap.has(source.url)) continue
 
-    const decoded = decodeDataImageUrl(source.url)
-    if (!decoded) continue
+    let mimeType: string | null = null
+    let bytes: Uint8Array | null = null
 
-    const extension = extensionForImageMime(decoded.mimeType)
+    if (isDataImageUrl(source.url)) {
+      const decoded = decodeDataImageUrl(source.url)
+      if (!decoded) continue
+      mimeType = decoded.mimeType
+      bytes = decoded.bytes
+    } else if (isRemoteImageUrl(source.url)) {
+      const fetched = await fetchRemoteImage(source.url)
+      if (!fetched) continue
+      mimeType = fetched.mimeType
+      bytes = fetched.bytes
+    } else {
+      continue
+    }
+
+    const extension = extensionForImageMime(mimeType)
     const fileName = uniqueFileName(`${source.baseName}.${extension}`, usedNames)
-    const relativePath = `${assetsFolder}/${fileName}`.replace(/\\/g, '/')
+    const relativePath = encodeOutlookAssetPath(`${assetsFolder}/${fileName}`)
 
     urlMap.set(source.url, relativePath)
-    files.push({ relativePath, fileName, bytes: decoded.bytes })
+    files.push({ relativePath, fileName, bytes })
   }
 
   return { urlMap, files }
@@ -199,11 +232,11 @@ export const rewriteRecordImageUrls = (
   return next
 }
 
-export const bundleSignatureHtmlImages = (
+export const bundleSignatureHtmlImages = async (
   htmlBody: string,
   form: SignatureFormState,
   assetsFolder: string
-): { html: string; files: ImageAssetFile[]; urlMap: Map<string, string> } => {
+): Promise<{ html: string; files: ImageAssetFile[]; urlMap: Map<string, string> }> => {
   const sources = [
     ...collectFormImageSources(form),
     ...collectDataImageUrlsFromHtml(htmlBody).map((url, index) => ({
@@ -211,7 +244,7 @@ export const bundleSignatureHtmlImages = (
       baseName: `embedded-image-${index + 1}`
     }))
   ]
-  const { urlMap, files } = buildImageAssets(sources, assetsFolder)
+  const { urlMap, files } = await buildImageAssets(sources, assetsFolder)
   return {
     html: rewriteUrlsInHtml(htmlBody, urlMap),
     files,
