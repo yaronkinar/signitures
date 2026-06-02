@@ -248,35 +248,11 @@ export const generateBulkOutlookSignaturesZip = async (
 
   const zip = new JSZip()
   const usedNames = new Set<string>()
-  const assetsFolder = 'images'
-  const templateAssets = await buildImageAssets(collectFormImageSources(template), assetsFolder)
-  const exportTemplate = templateAssets.files.length
-    ? rewriteFormImageUrls(template, templateAssets.urlMap)
-    : template
-
-  let htmlUrlMap = templateAssets.urlMap
-
-  if (rows.length > 0) {
-    const sampleForm = mergeBulkRowIntoForm(exportTemplate, rows[0])
-    const sampleLayout = getLayoutSettings(sampleForm)
-    const sampleHtml = buildSignatureHtml(sampleForm, sampleLayout)
-    const bundledSample = await buildImageAssets(
-      [
-        ...collectFormImageSources(sampleForm),
-        ...collectDataImageUrlsFromHtml(sampleHtml).map((url, index) => ({
-          url,
-          baseName: `embedded-image-${index + 1}`
-        }))
-      ],
-      assetsFolder
-    )
-    htmlUrlMap = bundledSample.urlMap
-  }
 
   for (const row of rows) {
-    const form = mergeBulkRowIntoForm(exportTemplate, row)
+    const form = mergeBulkRowIntoForm(template, row)
     const layout = getLayoutSettings(form)
-    const bodyHtml = rewriteUrlsInHtml(buildSignatureHtml(form, layout), htmlUrlMap)
+    const bodyHtml = buildSignatureHtml(form, layout)
     const fileBase = uniqueFileName(
       toOutlookSignatureFileBase(form.fullName, form.email, ''),
       usedNames

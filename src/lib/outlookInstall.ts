@@ -175,11 +175,13 @@ $rtfContent = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase6
 [System.IO.File]::WriteAllText($rtfFile, $rtfContent, [System.Text.Encoding]::UTF8)
 ${writeAssetFilesPs ? `\n${writeAssetFilesPs}\n` : ''}
 $relativeFilesPrefix = "$signatureName" + "_files/"
-$filesDirUri = "file:///" + ($filesDir.Replace('\\', '/').Replace(' ', '%20'))
-$htmlContent = $htmlContent.Replace('src="' + $relativeFilesPrefix, 'src="' + $filesDirUri + '/')
-$htmlContent = $htmlContent.Replace("src='" + $relativeFilesPrefix, "src='" + $filesDirUri + '/')
-$htmlContent = $htmlContent.Replace("url('" + $relativeFilesPrefix, "url('" + $filesDirUri + '/')
-$htmlContent = $htmlContent.Replace('url("' + $relativeFilesPrefix, 'url("' + $filesDirUri + '/')
+if ($htmlContent.Contains($relativeFilesPrefix)) {
+  $filesDirUri = "file:///" + ($filesDir.Replace('\\', '/').Replace(' ', '%20'))
+  $htmlContent = $htmlContent.Replace('src="' + $relativeFilesPrefix, 'src="' + $filesDirUri + '/')
+  $htmlContent = $htmlContent.Replace("src='" + $relativeFilesPrefix, "src='" + $filesDirUri + '/')
+  $htmlContent = $htmlContent.Replace("url('" + $relativeFilesPrefix, "url('" + $filesDirUri + '/')
+  $htmlContent = $htmlContent.Replace('url("' + $relativeFilesPrefix, 'url("' + $filesDirUri + '/')
+}
 [System.IO.File]::WriteAllText($htmlFile, $htmlContent, [System.Text.Encoding]::UTF8)
 $mailSettingsPaths = @(
   "HKCU:\\Software\\Microsoft\\Office\\16.0\\Common\\MailSettings",
@@ -273,8 +275,20 @@ export const copyHtmlForPasting = async (html: string): Promise<boolean> => {
   }
 }
 
-export const installForNewOutlook = async (htmlBody: string, lang: AppLanguage): Promise<void> => {
-  const richCopied = await copyHtmlForPasting(htmlBody)
+export const installForNewOutlook = async (
+  htmlBody: string,
+  lang: AppLanguage,
+  form?: SignatureFormState
+): Promise<void> => {
+  let htmlForClipboard = htmlBody
+  if (form) {
+    const { html: bundledBody } = await bundleSignatureHtmlImages(htmlBody, form, 'images', {
+      embedImages: true
+    })
+    htmlForClipboard = wrapHtmlDocument(bundledBody, lang, { fontFamily: form.fontFamily })
+  }
+
+  const richCopied = await copyHtmlForPasting(htmlForClipboard)
   const popup = window.open(NEW_OUTLOOK_SIGNATURE_SETTINGS_URL, '_blank', 'noopener,noreferrer')
   const openedSettings = !!popup
 
@@ -301,7 +315,7 @@ export const downloadHtmlOutput = async (
 ): Promise<void> => {
   const assetsFolder = 'images'
   const { html: bundledHtmlBody, files: imageFiles } = form
-    ? await bundleSignatureHtmlImages(htmlBody, form, assetsFolder)
+    ? await bundleSignatureHtmlImages(htmlBody, form, assetsFolder, { embedImages: true })
     : { html: htmlBody, files: [] }
   const htmlDocument = wrapHtmlDocument(bundledHtmlBody, lang, fontFamily)
 

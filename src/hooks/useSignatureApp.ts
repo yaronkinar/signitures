@@ -461,7 +461,7 @@ export const useSignatureApp = () => {
   const handleInstallNewOutlook = useCallback(async () => {
     try {
       const html = outputHtml.trim() ? outputHtml : await generate()
-      await installForNewOutlook(html, lang)
+      await installForNewOutlook(html, lang, form)
     } catch {
       window.alert(t(lang, 'alertNewOutlookFailed'))
     }

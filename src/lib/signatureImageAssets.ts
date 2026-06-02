@@ -130,9 +130,12 @@ const fetchRemoteImage = async (url: string): Promise<{ mimeType: string; bytes:
   }
 }
 
+export type ImageAssetOutputMode = 'files' | 'embed'
+
 export const buildImageAssets = async (
   sources: ImageSource[],
-  assetsFolder: string
+  assetsFolder: string,
+  outputMode: ImageAssetOutputMode = 'files'
 ): Promise<{ urlMap: Map<string, string>; files: ImageAssetFile[] }> => {
   const urlMap = new Map<string, string>()
   const files: ImageAssetFile[] = []
@@ -155,6 +158,11 @@ export const buildImageAssets = async (
       mimeType = fetched.mimeType
       bytes = fetched.bytes
     } else {
+      continue
+    }
+
+    if (outputMode === 'embed') {
+      urlMap.set(source.url, bytesToDataUrl(bytes, mimeType))
       continue
     }
 
@@ -235,8 +243,10 @@ export const rewriteRecordImageUrls = (
 export const bundleSignatureHtmlImages = async (
   htmlBody: string,
   form: SignatureFormState,
-  assetsFolder: string
+  assetsFolder: string,
+  options: { embedImages?: boolean } = {}
 ): Promise<{ html: string; files: ImageAssetFile[]; urlMap: Map<string, string> }> => {
+  const outputMode: ImageAssetOutputMode = options.embedImages ? 'embed' : 'files'
   const sources = [
     ...collectFormImageSources(form),
     ...collectDataImageUrlsFromHtml(htmlBody).map((url, index) => ({
@@ -244,7 +254,7 @@ export const bundleSignatureHtmlImages = async (
       baseName: `embedded-image-${index + 1}`
     }))
   ]
-  const { urlMap, files } = await buildImageAssets(sources, assetsFolder)
+  const { urlMap, files } = await buildImageAssets(sources, assetsFolder, outputMode)
   return {
     html: rewriteUrlsInHtml(htmlBody, urlMap),
     files,
