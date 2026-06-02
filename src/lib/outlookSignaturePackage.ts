@@ -54,6 +54,52 @@ const signatureFileBaseFromEmail = (email: string): string | null => {
     .replace(/\s+/g, ' ')
 }
 
+const HEBREW_TO_ASCII_MAP: Record<string, string> = {
+  א: 'a',
+  ב: 'b',
+  ג: 'g',
+  ד: 'd',
+  ה: 'h',
+  ו: 'v',
+  ז: 'z',
+  ח: 'ch',
+  ט: 't',
+  י: 'y',
+  כ: 'k',
+  ך: 'k',
+  ל: 'l',
+  מ: 'm',
+  ם: 'm',
+  נ: 'n',
+  ן: 'n',
+  ס: 's',
+  ע: 'a',
+  פ: 'p',
+  ף: 'p',
+  צ: 'tz',
+  ץ: 'tz',
+  ק: 'k',
+  ר: 'r',
+  ש: 'sh',
+  ת: 't'
+}
+
+const signatureFileBaseFromFullName = (fullName: string): string | null => {
+  const trimmed = fullName.trim()
+  if (!trimmed) return null
+
+  const transliterated = [...trimmed]
+    .map((char) => HEBREW_TO_ASCII_MAP[char] ?? char)
+    .join('')
+    .replace(/[^A-Za-z0-9._\s-]+/g, ' ')
+    .replace(/[._-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  if (transliterated.length < 2) return null
+  return transliterated
+}
+
 /** Outlook often fails to register non-ASCII signature file names (Hebrew, etc.). */
 export const toOutlookSignatureFileBase = (
   fullName: string,
@@ -70,6 +116,9 @@ export const toOutlookSignatureFileBase = (
 
   const fromEmail = signatureFileBaseFromEmail(email)
   if (fromEmail && isAsciiOnlySignatureName(fromEmail)) return fromEmail
+
+  const fromFullName = signatureFileBaseFromFullName(fullName)
+  if (fromFullName && isAsciiOnlySignatureName(fromFullName)) return fromFullName
 
   return hashSignatureFileBase(cleaned)
 }
