@@ -8,6 +8,7 @@ const DEFAULT_BRAND_PRESET = SBA_BRAND_PRESETS[0].values
 export const createDefaultFormState = (): SignatureFormState => ({
   signatureLanguage: 'he',
   fullName: '',
+  outlookSignatureName: '',
   jobTitle: '',
   company: '',
   phone: '',

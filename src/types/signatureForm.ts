@@ -54,6 +54,8 @@ export type SignatureLayoutSettings = {
 export type SignatureFormState = {
   signatureLanguage: AppLanguage
   fullName: string
+  /** ASCII name for classic Outlook signature files (list + .htm base name). */
+  outlookSignatureName: string
   jobTitle: string
   company: string
   phone: string

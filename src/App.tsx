@@ -211,10 +211,16 @@ export default function App() {
 
   const onOutlookHelpClick = useCallback(
     (event: React.MouseEvent<HTMLParagraphElement>) => {
-      const target = (event.target as HTMLElement).closest('.open-signatures-folder')
-      if (target) {
+      const openFolder = (event.target as HTMLElement).closest('.open-signatures-folder')
+      if (openFolder) {
         event.preventDefault()
         app.handleOpenSignaturesFolder()
+        return
+      }
+      const exportZip = (event.target as HTMLElement).closest('.export-signatures-zip')
+      if (exportZip) {
+        event.preventDefault()
+        app.handleExportSignaturesZip()
       }
     },
     [app]
@@ -487,6 +493,16 @@ export default function App() {
                   placeholder={t(lang, 'fullNamePlaceholder')}
                   onChange={(e) => updateForm({ fullName: e.target.value })}
                 />
+              </Field>
+              <Field label={t(lang, 'outlookSignatureName')}>
+                <TextInput
+                  value={form.outlookSignatureName}
+                  placeholder={t(lang, 'outlookSignatureNamePlaceholder')}
+                  onChange={(e) => updateForm({ outlookSignatureName: e.target.value })}
+                />
+                <p className="hint" style={{ marginTop: 6 }}>
+                  {t(lang, 'outlookSignatureNameHint')}
+                </p>
               </Field>
               <Field label={t(lang, 'jobTitle')}>
                 <TextInput

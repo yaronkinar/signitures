@@ -82,6 +82,10 @@ const translations = {
     langEnglish: 'English',
     langHebrew: 'Hebrew (עברית)',
     fullName: 'Full name',
+    outlookSignatureName: 'Outlook signature name (English)',
+    outlookSignatureNamePlaceholder: 'Hila Melinovsky',
+    outlookSignatureNameHint:
+      'Used as the name in classic Outlook’s signature list. Use English/Latin letters when the display name is Hebrew.',
     jobTitle: 'Job title',
     company: 'Company',
     phone: 'Phone',
@@ -226,12 +230,16 @@ const translations = {
     composeReplySettings: 'Compose and reply settings',
     signatureFolderPrefix: 'Classic Outlook signatures folder: ',
     signatureFolderLink: 'open folder',
+    exportSignaturesZipLink: 'ZIP for IT',
     signatureFolderSuffix: '.',
+    batSignaturesZipCreated: 'ZIP created on your Desktop:',
+    batSignaturesZipFailed:
+      'Could not create ZIP. Run Install to Outlook first, or check that the Signatures folder is not empty.',
     newOutlookSetupPrefix: 'New Outlook setup: open ',
     newOutlookSetupSuffix: ', paste into signature editor, then save.',
     alertGenerateFailed: 'Could not generate social icons. Please try again.',
     alertOutlookInstallSuccess:
-      'Downloaded install-outlook-signature.bat. It installs the font on Windows and your signature in one step. Double-click the bat file, then restart Outlook.',
+      'Downloaded install-outlook-signature.bat. It installs the font on Windows and your signature in one step. Double-click the bat file, then restart Outlook. In Outlook, look for the English signature name you entered (or your email username if left blank).',
     alertOutlookInstallFailed: 'Could not prepare Outlook installer. Please generate the signature first.',
     batInstallerCorrupt: 'Installer script is corrupted.',
     batInstallComplete: 'Signature installation completed.',
@@ -355,6 +363,10 @@ const translations = {
     langEnglish: 'English',
     langHebrew: 'עברית',
     fullName: 'שם מלא',
+    outlookSignatureName: 'שם חתימה ב-Outlook (באנגלית)',
+    outlookSignatureNamePlaceholder: 'Hila Melinovsky',
+    outlookSignatureNameHint:
+      'שם שמופיע ברשימת החתימות ב-Outlook הקלאסי. מומלץ באנגלית כשהשם המלא בעברית.',
     jobTitle: 'תפקיד',
     company: 'חברה',
     phone: 'טלפון',
@@ -499,12 +511,16 @@ const translations = {
     composeReplySettings: 'הגדרות כתיבה ומענה',
     signatureFolderPrefix: 'תיקיית חתימות Outlook הקלאסי: ',
     signatureFolderLink: 'פתיחת התיקייה',
+    exportSignaturesZipLink: 'ZIP ל-IT',
     signatureFolderSuffix: '.',
+    batSignaturesZipCreated: 'קובץ ZIP נוצר בשולחן העבודה:',
+    batSignaturesZipFailed:
+      'לא ניתן ליצור ZIP. הריצו התקנה ב-Outlook תחילה, או ודאו שתיקיית החתימות לא ריקה.',
     newOutlookSetupPrefix: 'הגדרת Outlook החדש: פתחו ',
     newOutlookSetupSuffix: ' — הדביקו בעורך החתימה ושמרו.',
     alertGenerateFailed: 'לא ניתן ליצור אייקונים חברתיים. נסו שוב.',
     alertOutlookInstallSuccess:
-      'הורד install-outlook-signature.bat. הוא מתקין את הגופן ב-Windows ואת החתימה בצעד אחד. לחצו פעמיים על הקובץ, ואז הפעילו מחדש את Outlook.',
+      'הורד install-outlook-signature.bat. הוא מתקין את הגופן ב-Windows ואת החתימה בצעד אחד. לחצו פעמיים על הקובץ, ואז הפעילו מחדש את Outlook. ב-Outlook חפשו את שם החתימה באנגלית שהזנתם (או את שם המשתמש מהאימייל אם השדה ריק).',
     alertOutlookInstallFailed: 'לא ניתן להכין את מתקין Outlook. יש ליצור חתימה תחילה.',
     batInstallerCorrupt: 'קובץ ההתקנה פגום.',
     batInstallComplete: 'התקנת החתימה הושלמה.',
@@ -590,7 +606,7 @@ const NEW_OUTLOOK_SIGNATURE_SETTINGS_URL =
 export const OUTLOOK_SIGNATURES_FOLDER_PATH = '%APPDATA%\\Microsoft\\Signatures'
 
 export const signatureFolderStatusHtml = (lang: AppLanguage): string =>
-  `${t(lang, 'signatureFolderPrefix')}<button type="button" class="text-link open-signatures-folder">${t(lang, 'signatureFolderLink')}</button> <span dir="ltr" class="outlook-folder-path">(${OUTLOOK_SIGNATURES_FOLDER_PATH})</span>${t(lang, 'signatureFolderSuffix')}`
+  `${t(lang, 'signatureFolderPrefix')}<button type="button" class="text-link open-signatures-folder">${t(lang, 'signatureFolderLink')}</button> · <button type="button" class="text-link export-signatures-zip">${t(lang, 'exportSignaturesZipLink')}</button> <span dir="ltr" class="outlook-folder-path">(${OUTLOOK_SIGNATURES_FOLDER_PATH})</span>${t(lang, 'signatureFolderSuffix')}`
 
 export const newOutlookStatusHtml = (lang: AppLanguage): string =>
   `${t(lang, 'newOutlookSetupPrefix')}<a href="${NEW_OUTLOOK_SIGNATURE_SETTINGS_URL}" target="_blank" rel="noopener noreferrer">${t(lang, 'composeReplySettings')}</a>${t(lang, 'newOutlookSetupSuffix')}`

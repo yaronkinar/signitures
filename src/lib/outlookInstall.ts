@@ -90,6 +90,53 @@ const sanitizeSignatureName = (value: string): string => {
   return cleaned || 'Outlook-Signature'
 }
 
+const isAsciiOnlySignatureName = (value: string): boolean => /^[\x20-\x7E]+$/.test(value)
+
+const hashSignatureFileBase = (value: string): string => {
+  let hash = 2166136261
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index)
+    hash = Math.imul(hash, 16777619)
+  }
+  return `Signature-${(hash >>> 0).toString(36)}`
+}
+
+const signatureFileBaseFromEmail = (email: string): string | null => {
+  const localPart = email.trim().split('@')[0]?.trim()
+  if (!localPart) return null
+
+  const safe = localPart
+    .replace(/[^A-Za-z0-9._-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+  if (safe.length < 2) return null
+
+  return safe
+    .replace(/[._-]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ')
+}
+
+/** Outlook often fails to register non-ASCII signature file names (Hebrew, etc.). */
+export const toOutlookSignatureFileBase = (
+  fullName: string,
+  email = '',
+  outlookSignatureName = ''
+): string => {
+  const englishName = sanitizeSignatureName(outlookSignatureName)
+  if (englishName !== 'Outlook-Signature' && isAsciiOnlySignatureName(englishName)) {
+    return englishName
+  }
+
+  const cleaned = sanitizeSignatureName(fullName)
+  if (isAsciiOnlySignatureName(cleaned)) return cleaned
+
+  const fromEmail = signatureFileBaseFromEmail(email)
+  if (fromEmail && isAsciiOnlySignatureName(fromEmail)) return fromEmail
+
+  return hashSignatureFileBase(cleaned)
+}
+
 const toBase64Utf8 = (value: string): string => {
   const utf8Bytes = new TextEncoder().encode(value)
   let binary = ''
@@ -126,6 +173,28 @@ const plainTextToRtf = (plainText: string): string => {
   return `{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0 Arial;}}\\f0\\fs20 ${escaped}}`
 }
 
+export const downloadExportSignaturesFolderBat = (lang: AppLanguage): void => {
+  const zipCreated = psConsoleMessage(lang, 'batSignaturesZipCreated')
+  const zipFailed = psConsoleMessage(lang, 'batSignaturesZipFailed')
+  const pressEnter = psConsoleMessage(lang, 'batPressEnterToClose')
+
+  downloadBatFile(
+    'export-outlook-signatures.bat',
+    `@echo off
+setlocal
+${batUtf8Preamble(lang)}cd /d "%~dp0"
+set "EC=0"
+"${POWERSHELL_EXE}" -NoProfile -ExecutionPolicy Bypass -Command "${psInlinePreamble(lang)}$ErrorActionPreference='Stop'; $signatureDir=Join-Path $env:APPDATA 'Microsoft\\Signatures'; if (-not (Test-Path $signatureDir)) { Write-Error 'missing' }; $desktop=[Environment]::GetFolderPath('Desktop'); $stamp=Get-Date -Format 'yyyyMMdd-HHmm'; $zipPath=Join-Path $desktop ('Outlook-Signatures-' + $stamp + '.zip'); if (Test-Path $zipPath) { Remove-Item -LiteralPath $zipPath -Force }; $items=Get-ChildItem -LiteralPath $signatureDir -Force; if (-not $items) { Write-Error 'empty' }; Compress-Archive -LiteralPath ($items | ForEach-Object { $_.FullName }) -DestinationPath $zipPath -Force; ${psHostStatement(lang, zipCreated)}; Write-Host $zipPath; Invoke-Item -LiteralPath $zipPath"
+if errorlevel 1 (
+  "${POWERSHELL_EXE}" -NoProfile -ExecutionPolicy Bypass -Command "${psInlinePreamble(lang)}${psHostStatement(lang, zipFailed)}; ${psReadHostStatement(lang, pressEnter)}"
+  exit /b 1
+)
+"${POWERSHELL_EXE}" -NoProfile -ExecutionPolicy Bypass -Command "${psInlinePreamble(lang)}${psReadHostStatement(lang, pressEnter)}"
+exit /b 0
+`
+  )
+}
+
 export const downloadOpenSignaturesFolderBat = (lang: AppLanguage): void => {
   const folderOpened = psConsoleMessage(lang, 'batFolderOpened')
   const pressEnter = psConsoleMessage(lang, 'batPressEnterToClose')
@@ -148,7 +217,11 @@ export const downloadOutlookInstaller = async (
   form: SignatureFormState
 ): Promise<void> => {
   const lang = form.signatureLanguage
-  const signatureName = sanitizeSignatureName(form.fullName)
+  const signatureName = toOutlookSignatureFileBase(
+    form.fullName,
+    form.email,
+    form.outlookSignatureName
+  )
   const filesFolderName = `${signatureName}_files`
   const fontFileNames = getOutlookSignatureFontFileNames(form)
   const fontPayloads = fontFileNames.length ? await fetchSignatureFontPayloads(fontFileNames) : []
@@ -217,6 +290,17 @@ foreach ($path in $mailSettingsPaths) {
     New-ItemProperty -Path $path -Name "NewSignature" -Value $signatureName -PropertyType String -Force | Out-Null
     New-ItemProperty -Path $path -Name "ReplySignature" -Value $signatureName -PropertyType String -Force | Out-Null
   }
+}
+
+$outlookSetupPaths = @(
+  "HKCU:\\Software\\Microsoft\\Office\\16.0\\Outlook\\Setup",
+  "HKCU:\\Software\\Microsoft\\Office\\15.0\\Outlook\\Setup"
+)
+foreach ($path in $outlookSetupPaths) {
+  if (-not (Test-Path $path)) {
+    New-Item -Path $path -Force | Out-Null
+  }
+  New-ItemProperty -Path $path -Name "DisableRoamingSignatures" -Value 1 -PropertyType DWord -Force | Out-Null
 }
 
 ${installSuccessLine}

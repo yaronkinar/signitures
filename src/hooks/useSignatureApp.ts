@@ -27,6 +27,7 @@ import {
 import { createDefaultFormState } from '../lib/defaultFormState'
 import {
   downloadHtmlOutput,
+  downloadExportSignaturesFolderBat,
   downloadOpenSignaturesFolderBat,
   downloadOutlookInstaller,
   installForNewOutlook
@@ -470,6 +471,10 @@ export const useSignatureApp = () => {
     downloadOpenSignaturesFolderBat(lang)
   }, [lang])
 
+  const handleExportSignaturesZip = useCallback(() => {
+    downloadExportSignaturesFolderBat(lang)
+  }, [lang])
+
   const applyAiPreset = useCallback(
     (presetId: string) => {
       const prompt = aiPresetPrompts.get(presetId)
@@ -713,6 +718,7 @@ export const useSignatureApp = () => {
     handleInstallNewOutlook,
     handleInstallWindowsFont,
     handleOpenSignaturesFolder,
+    handleExportSignaturesZip,
     addLinkImage,
     updateLinkImage,
     removeLinkImage,
