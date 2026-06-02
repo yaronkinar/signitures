@@ -1,8 +1,10 @@
 {
   "name": "signitures",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "scripts": {
+    "prepare": "node scripts/install-git-hooks.mjs",
+    "version:bump": "node scripts/bump-version.mjs",
     "dev": "vite",
     "build": "node scripts/generate-pwa-icons.mjs && node scripts/copy-signature-fonts.mjs && vite build && node scripts/bundle-api.mjs",
     "fonts": "node scripts/copy-signature-fonts.mjs",
