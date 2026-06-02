@@ -3,7 +3,11 @@ import { t } from '../i18n'
 import type { SignatureFormState } from '../types/signatureForm'
 import { bundleSignatureHtmlImages, imageAssetsToWritePayloads } from './signatureImageAssets'
 import { wrapHtmlDocument } from './signatureUtils'
-import { buildOutlookSignaturePackage, toOutlookSignatureFileBase } from './outlookSignaturePackage'
+import {
+  addOutlookSignaturePackageToZip,
+  buildOutlookSignaturePackage,
+  toOutlookSignatureFileBase
+} from './outlookSignaturePackage'
 import { buildWriteFontFilesPs, buildWindowsFontInstallPsForForm } from './fontInstallScripts'
 import JSZip from 'jszip'
 import {
@@ -85,26 +89,22 @@ const toBase64Utf8 = (value: string): string => {
   return btoa(binary)
 }
 
-export const downloadExportSignaturesFolderBat = (lang: AppLanguage): void => {
-  const zipCreated = psConsoleMessage(lang, 'batSignaturesZipCreated')
-  const zipFailed = psConsoleMessage(lang, 'batSignaturesZipFailed')
-  const pressEnter = psConsoleMessage(lang, 'batPressEnterToClose')
-
-  downloadBatFile(
-    'export-outlook-signatures.bat',
-    `@echo off
-setlocal
-${batUtf8Preamble(lang)}cd /d "%~dp0"
-set "EC=0"
-"${POWERSHELL_EXE}" -NoProfile -ExecutionPolicy Bypass -Command "${psInlinePreamble(lang)}$ErrorActionPreference='Stop'; $signatureDir=Join-Path $env:APPDATA 'Microsoft\\Signatures'; if (-not (Test-Path $signatureDir)) { Write-Error 'missing' }; $desktop=[Environment]::GetFolderPath('Desktop'); $stamp=Get-Date -Format 'yyyyMMdd-HHmm'; $zipPath=Join-Path $desktop ('Outlook-Signatures-' + $stamp + '.zip'); if (Test-Path $zipPath) { Remove-Item -LiteralPath $zipPath -Force }; $items=Get-ChildItem -LiteralPath $signatureDir -Force; if (-not $items) { Write-Error 'empty' }; Compress-Archive -LiteralPath ($items | ForEach-Object { $_.FullName }) -DestinationPath $zipPath -Force; ${psHostStatement(lang, zipCreated)}; Write-Host $zipPath; Invoke-Item -LiteralPath $zipPath"
-if errorlevel 1 (
-  "${POWERSHELL_EXE}" -NoProfile -ExecutionPolicy Bypass -Command "${psInlinePreamble(lang)}${psHostStatement(lang, zipFailed)}; ${psReadHostStatement(lang, pressEnter)}"
-  exit /b 1
-)
-"${POWERSHELL_EXE}" -NoProfile -ExecutionPolicy Bypass -Command "${psInlinePreamble(lang)}${psReadHostStatement(lang, pressEnter)}"
-exit /b 0
-`
-  )
+export const downloadExportSignaturesFolderBat = async (
+  htmlBody: string,
+  form: SignatureFormState
+): Promise<void> => {
+  const pkg = await buildOutlookSignaturePackage(htmlBody, form)
+  const zip = new JSZip()
+  addOutlookSignaturePackageToZip(zip, pkg)
+  const zipBlob = await zip.generateAsync({ type: 'blob' })
+  const zipUrl = URL.createObjectURL(zipBlob)
+  const link = document.createElement('a')
+  link.href = zipUrl
+  link.download = `${pkg.fileBase}-outlook-signature.zip`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(zipUrl)
 }
 
 export const downloadOpenSignaturesFolderBat = (lang: AppLanguage): void => {
