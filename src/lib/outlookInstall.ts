@@ -244,8 +244,11 @@ ${installSuccessLine}
 Write-Host $htmlFile
 Write-Host ""
 try {
-  $desktop = [Environment]::GetFolderPath('Desktop')
-  $zipPath = Join-Path $desktop ($signatureName + '-outlook-signature.zip')
+  $zipDir = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Signatures'
+  if (-not (Test-Path -LiteralPath $zipDir)) {
+    New-Item -Path $zipDir -ItemType Directory -Force | Out-Null
+  }
+  $zipPath = Join-Path $zipDir ($signatureName + '-outlook-signature.zip')
   if (Test-Path -LiteralPath $zipPath) {
     Remove-Item -LiteralPath $zipPath -Force
   }
