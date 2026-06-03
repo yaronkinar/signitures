@@ -327,6 +327,11 @@ const translations = {
     bulkDownloadZip: 'Download HTML ZIP',
     bulkDownloadItZip: 'Download ZIP for IT',
     bulkClearPreviews: 'Clear previews',
+    bulkEditRow: 'Edit in designer',
+    bulkApplyRow: 'Save to batch',
+    bulkEditingHint: 'Editing “{name}” in the form above. Adjust contact details or design, then save to batch.',
+    bulkAppliedRow: 'Updated “{name}” in the batch.',
+    bulkRowCustomized: 'Customized',
     bulkItHint:
       'ZIP for IT uses Outlook Signatures layout (.htm, .txt, .rtf, and *_files per person). Send outlook-signatures-for-it.zip to IT. The “ZIP for IT” link under Install only exports signatures already on this PC.',
     bulkWorking: 'Generating signatures…',
@@ -667,6 +672,11 @@ const translations = {
     bulkDownloadZip: 'הורדת ZIP של HTML',
     bulkDownloadItZip: 'הורדת ZIP ל-IT',
     bulkClearPreviews: 'ניקוי תצוגות',
+    bulkEditRow: 'עריכה במעצב',
+    bulkApplyRow: 'שמירה לקבוצה',
+    bulkEditingHint: 'עריכת «{name}» בטופס למעלה. עדכנו פרטים או עיצוב, ואז שמרו לקבוצה.',
+    bulkAppliedRow: '«{name}» עודכן בקבוצה.',
+    bulkRowCustomized: 'מותאם',
     bulkItHint:
       'ZIP ל-IT בפריסת תיקיית Signatures של Outlook (.htm, .txt, .rtf ו-*_files לכל אדם). שלחו את outlook-signatures-for-it.zip ל-IT. הקישור "ZIP ל-IT" ליד ההתקנה מייצא רק חתימות שכבר מותקנות במחשב זה.',
     bulkWorking: 'יוצר חתימות…',

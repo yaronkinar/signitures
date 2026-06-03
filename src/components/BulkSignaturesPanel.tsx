@@ -3,37 +3,61 @@ import { Panel } from './Panel'
 import { t, type AppLanguage } from '../i18n'
 import {
   bulkErrorMessageKey,
+  buildBulkSignaturePreviewAt,
   buildBulkSignaturePreviews,
+  cloneSignatureFormState,
   downloadBlob,
   downloadBulkTemplate,
+  formToBulkPersonRow,
   generateBulkOutlookSignaturesZip,
   generateBulkSignaturesZip,
   parseBulkErrorCode,
   parseBulkSpreadsheet,
+  resolveBulkRowForm,
   type BulkPersonRow,
+  type BulkRowFormOverrides,
   type BulkSignaturePreview
 } from '../lib/bulkSignatures'
 import type { SignatureFormState } from '../types/signatureForm'
+import type { SetFormOptions } from '../hooks/useFormHistory'
 
 type BulkSignaturesPanelProps = {
   template: SignatureFormState
+  designerForm: SignatureFormState
   lang: AppLanguage
+  onLoadDesignerForm: (form: SignatureFormState, options?: SetFormOptions) => void
 }
 
-export const BulkSignaturesPanel = ({ template, lang }: BulkSignaturesPanelProps) => {
+export const BulkSignaturesPanel = ({
+  template,
+  designerForm,
+  lang,
+  onLoadDesignerForm
+}: BulkSignaturesPanelProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [working, setWorking] = useState(false)
   const [status, setStatus] = useState('')
   const [statusTone, setStatusTone] = useState<'idle' | 'success' | 'error'>('idle')
   const [rows, setRows] = useState<BulkPersonRow[] | null>(null)
   const [previews, setPreviews] = useState<BulkSignaturePreview[] | null>(null)
+  const [overrides, setOverrides] = useState<BulkRowFormOverrides>([])
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
 
   const statusClass =
     statusTone === 'success' ? 'ai-status is-success' : statusTone === 'error' ? 'ai-status is-error' : 'ai-status'
 
+  const scrollToDesigner = () => {
+    const target = document.getElementById('contact-details-panel')
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   const clearPreviews = () => {
     setRows(null)
     setPreviews(null)
+    setOverrides([])
+    setEditingIndex(null)
     setStatus('')
     setStatusTone('idle')
     if (fileInputRef.current) fileInputRef.current.value = ''
@@ -45,6 +69,8 @@ export const BulkSignaturesPanel = ({ template, lang }: BulkSignaturesPanelProps
     setStatusTone('idle')
     setRows(null)
     setPreviews(null)
+    setOverrides([])
+    setEditingIndex(null)
 
     try {
       const buffer = await file.arrayBuffer()
@@ -52,6 +78,7 @@ export const BulkSignaturesPanel = ({ template, lang }: BulkSignaturesPanelProps
       const builtPreviews = await buildBulkSignaturePreviews(template, parsedRows)
       setRows(parsedRows)
       setPreviews(builtPreviews)
+      setOverrides(parsedRows.map(() => null))
       setStatus(
         parsedRows.length === 1
           ? t(lang, 'bulkPreviewReadyOne')
@@ -70,6 +97,54 @@ export const BulkSignaturesPanel = ({ template, lang }: BulkSignaturesPanelProps
     }
   }
 
+  const startEditRow = (index: number) => {
+    if (!rows) return
+    const row = rows[index]
+    const form = resolveBulkRowForm(template, row, overrides[index])
+    onLoadDesignerForm(form, { immediate: true })
+    setEditingIndex(index)
+    setStatus(
+      t(lang, 'bulkEditingHint').replace(
+        '{name}',
+        previews?.[index]?.label ?? (row.fullName.trim() || row.email.trim() || String(index + 1))
+      )
+    )
+    setStatusTone('idle')
+    scrollToDesigner()
+  }
+
+  const applyEditRow = async () => {
+    if (editingIndex === null || !rows || !previews) return
+    const index = editingIndex
+    setWorking(true)
+
+    try {
+      const savedForm = cloneSignatureFormState(designerForm)
+      const nextRows = [...rows]
+      nextRows[index] = formToBulkPersonRow(savedForm)
+      const nextOverrides = [...overrides]
+      nextOverrides[index] = savedForm
+      const preview = await buildBulkSignaturePreviewAt(template, nextRows, nextOverrides, index)
+      const nextPreviews = [...previews]
+      nextPreviews[index] = preview
+
+      setRows(nextRows)
+      setOverrides(nextOverrides)
+      setPreviews(nextPreviews)
+      setEditingIndex(null)
+      setStatus(t(lang, 'bulkAppliedRow').replace('{name}', preview.label))
+      setStatusTone('success')
+    } catch (error) {
+      const code = parseBulkErrorCode(error)
+      const key = bulkErrorMessageKey(code)
+      const message = code === 'UNKNOWN' && error instanceof Error ? error.message : t(lang, key)
+      setStatus(`${t(lang, 'bulkFailed')} ${message}`)
+      setStatusTone('error')
+    } finally {
+      setWorking(false)
+    }
+  }
+
   const downloadZip = async (forItOutlook: boolean) => {
     if (!rows?.length) return
     setWorking(true)
@@ -78,8 +153,8 @@ export const BulkSignaturesPanel = ({ template, lang }: BulkSignaturesPanelProps
 
     try {
       const zip = forItOutlook
-        ? await generateBulkOutlookSignaturesZip(template, rows)
-        : await generateBulkSignaturesZip(template, rows)
+        ? await generateBulkOutlookSignaturesZip(template, rows, overrides)
+        : await generateBulkSignaturesZip(template, rows, overrides)
       downloadBlob(zip, forItOutlook ? 'outlook-signatures-for-it.zip' : 'signatures.zip')
       setStatus(
         rows.length === 1
@@ -138,6 +213,11 @@ export const BulkSignaturesPanel = ({ template, lang }: BulkSignaturesPanelProps
             <button type="button" className="secondary" disabled={working} onClick={() => downloadZip(true)}>
               {t(lang, 'bulkDownloadItZip')}
             </button>
+            {editingIndex !== null && (
+              <button type="button" className="primary" disabled={working} onClick={() => applyEditRow()}>
+                {t(lang, 'bulkApplyRow')}
+              </button>
+            )}
             <button type="button" className="secondary" disabled={working} onClick={clearPreviews}>
               {t(lang, 'bulkClearPreviews')}
             </button>
@@ -145,19 +225,30 @@ export const BulkSignaturesPanel = ({ template, lang }: BulkSignaturesPanelProps
         )}
       </div>
       <p className="hint">{t(lang, 'bulkItHint')}</p>
-      {previews && previews.length > 0 && !working && statusTone !== 'error' && (
+      {previews && previews.length > 0 && !working && statusTone !== 'error' && editingIndex === null && (
         <p className="hint">{t(lang, 'bulkUsesCurrentDesign')}</p>
       )}
       {status && <p className={statusClass}>{status}</p>}
       {previews && previews.length > 0 && (
-        <section className="bulk-previews" aria-label={t(lang, 'bulkPreviewHeading').replace('{count}', String(previews.length))}>
+        <section
+          className="bulk-previews"
+          aria-label={t(lang, 'bulkPreviewHeading').replace('{count}', String(previews.length))}
+        >
           <h3 className="bulk-previews-title">
             {t(lang, 'bulkPreviewHeading').replace('{count}', String(previews.length))}
           </h3>
           <div className="bulk-previews-grid">
-            {previews.map((preview) => (
-              <article key={preview.id} className="bulk-preview-card">
-                <h4 className="bulk-preview-label">{preview.label}</h4>
+            {previews.map((preview, index) => (
+              <article
+                key={preview.id}
+                className={`bulk-preview-card${editingIndex === index ? ' is-editing' : ''}`}
+              >
+                <div className="bulk-preview-card-header">
+                  <h4 className="bulk-preview-label">{preview.label}</h4>
+                  {preview.customized && (
+                    <span className="bulk-preview-badge">{t(lang, 'bulkRowCustomized')}</span>
+                  )}
+                </div>
                 <div className="bulk-preview-frame">
                   <div
                     className="preview bulk-preview-signature"
@@ -169,6 +260,16 @@ export const BulkSignaturesPanel = ({ template, lang }: BulkSignaturesPanelProps
                     }}
                     dangerouslySetInnerHTML={{ __html: preview.html }}
                   />
+                </div>
+                <div className="bulk-preview-card-actions">
+                  <button
+                    type="button"
+                    className="secondary"
+                    disabled={working}
+                    onClick={() => startEditRow(index)}
+                  >
+                    {t(lang, 'bulkEditRow')}
+                  </button>
                 </div>
               </article>
             ))}

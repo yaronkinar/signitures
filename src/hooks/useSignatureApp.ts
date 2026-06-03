@@ -729,6 +729,7 @@ export const useSignatureApp = () => {
 
   return {
     form,
+    setForm,
     updateForm,
     handleLanguageChange,
     handleFileToField,

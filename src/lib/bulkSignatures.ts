@@ -179,6 +179,52 @@ export const mergeBulkRowIntoForm = (
   outlookSignatureName: row.outlookSignatureName?.trim() || template.outlookSignatureName
 })
 
+export type BulkRowFormOverrides = (SignatureFormState | null)[]
+
+export const cloneSignatureFormState = (form: SignatureFormState): SignatureFormState =>
+  JSON.parse(JSON.stringify(form)) as SignatureFormState
+
+export const formToBulkPersonRow = (form: SignatureFormState): BulkPersonRow => ({
+  fullName: form.fullName,
+  jobTitle: form.jobTitle,
+  company: form.company,
+  phone: form.phone,
+  email: form.email,
+  website: form.website,
+  outlookSignatureName: form.outlookSignatureName,
+  language: form.signatureLanguage
+})
+
+export const resolveBulkRowForm = (
+  template: SignatureFormState,
+  row: BulkPersonRow,
+  override: SignatureFormState | null | undefined
+): SignatureFormState =>
+  override
+    ? stripOutlookStoredAssetPathsFromForm(override)
+    : mergeBulkRowIntoForm(template, row)
+
+const bulkPreviewLabel = (row: BulkPersonRow, index: number): string =>
+  row.fullName.trim() || row.email.trim() || `signature-${index + 1}`
+
+const buildBulkSignaturePreview = async (
+  form: SignatureFormState,
+  row: BulkPersonRow,
+  index: number,
+  customized: boolean
+): Promise<BulkSignaturePreview> => {
+  const { html, layout } = await buildPreviewHtmlForForm(form)
+  return {
+    id: `bulk-preview-${index}`,
+    label: bulkPreviewLabel(row, index),
+    html,
+    width: layout.signatureWidth,
+    minHeight: layout.signatureHeight,
+    emailAlign: layout.emailAlign,
+    customized
+  }
+}
+
 export type BulkSignaturePreview = {
   id: string
   label: string
@@ -186,6 +232,8 @@ export type BulkSignaturePreview = {
   width: number
   minHeight: number
   emailAlign: TextAlign
+  /** True when this row was customized in the designer (not template + Excel only). */
+  customized?: boolean
 }
 
 /** Same HTML pipeline as live preview (embedded images, social icons, text images). */
@@ -216,7 +264,8 @@ const buildBundledSignatureHtmlDocument = async (
 
 export const buildBulkSignaturePreviews = async (
   template: SignatureFormState,
-  rows: BulkPersonRow[]
+  rows: BulkPersonRow[],
+  overrides: BulkRowFormOverrides = []
 ): Promise<BulkSignaturePreview[]> => {
   await initializeSocialIconDataUrls()
   const exportTemplate = stripOutlookStoredAssetPathsFromForm(template)
@@ -224,20 +273,26 @@ export const buildBulkSignaturePreviews = async (
 
   for (let index = 0; index < rows.length; index += 1) {
     const row = rows[index]
-    const form = mergeBulkRowIntoForm(exportTemplate, row)
-    const { html, layout } = await buildPreviewHtmlForForm(form)
-    const label = row.fullName.trim() || row.email.trim() || `signature-${index + 1}`
-    previews.push({
-      id: `bulk-preview-${index}`,
-      label,
-      html,
-      width: layout.signatureWidth,
-      minHeight: layout.signatureHeight,
-      emailAlign: layout.emailAlign
-    })
+    const override = overrides[index] ?? null
+    const form = resolveBulkRowForm(exportTemplate, row, override)
+    previews.push(await buildBulkSignaturePreview(form, row, index, Boolean(override)))
   }
 
   return previews
+}
+
+export const buildBulkSignaturePreviewAt = async (
+  template: SignatureFormState,
+  rows: BulkPersonRow[],
+  overrides: BulkRowFormOverrides,
+  index: number
+): Promise<BulkSignaturePreview> => {
+  await initializeSocialIconDataUrls()
+  const exportTemplate = stripOutlookStoredAssetPathsFromForm(template)
+  const row = rows[index]
+  const override = overrides[index] ?? null
+  const form = resolveBulkRowForm(exportTemplate, row, override)
+  return buildBulkSignaturePreview(form, row, index, Boolean(override))
 }
 
 const addBundledFontsToZip = async (zip: JSZip, fontFamily: string): Promise<void> => {
@@ -260,7 +315,8 @@ const addBundledFontsToZip = async (zip: JSZip, fontFamily: string): Promise<voi
 
 export const generateBulkSignaturesZip = async (
   template: SignatureFormState,
-  rows: BulkPersonRow[]
+  rows: BulkPersonRow[],
+  overrides: BulkRowFormOverrides = []
 ): Promise<Blob> => {
   await initializeSocialIconDataUrls()
 
@@ -270,11 +326,12 @@ export const generateBulkSignaturesZip = async (
 
   await addBundledFontsToZip(zip, getLayoutSettings(exportTemplate).fontFamily)
 
-  for (const row of rows) {
-    const form = mergeBulkRowIntoForm(exportTemplate, row)
+  for (let index = 0; index < rows.length; index += 1) {
+    const row = rows[index]
+    const form = resolveBulkRowForm(exportTemplate, row, overrides[index])
     const htmlDocument = await buildBundledSignatureHtmlDocument(form)
 
-    const label = row.fullName.trim() || row.email.trim() || 'signature'
+    const label = bulkPreviewLabel(row, index)
     const base = sanitizeFileName(label)
     const fileBase = uniqueFileName(base, usedNames)
     zip.file(`${fileBase}.html`, htmlDocument)
@@ -286,7 +343,8 @@ export const generateBulkSignaturesZip = async (
 /** Outlook Signatures folder layout (.htm / .txt / .rtf + *_files) for IT server deploy. */
 export const generateBulkOutlookSignaturesZip = async (
   template: SignatureFormState,
-  rows: BulkPersonRow[]
+  rows: BulkPersonRow[],
+  overrides: BulkRowFormOverrides = []
 ): Promise<Blob> => {
   await initializeSocialIconDataUrls()
 
@@ -295,8 +353,9 @@ export const generateBulkOutlookSignaturesZip = async (
 
   const exportTemplate = stripOutlookStoredAssetPathsFromForm(template)
 
-  for (const row of rows) {
-    const form = mergeBulkRowIntoForm(exportTemplate, row)
+  for (let index = 0; index < rows.length; index += 1) {
+    const row = rows[index]
+    const form = resolveBulkRowForm(exportTemplate, row, overrides[index])
     const fileBase = uniqueFileName(
       toOutlookSignatureFileBase(form.fullName, form.email, form.outlookSignatureName),
       usedNames

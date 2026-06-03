@@ -482,7 +482,7 @@ export default function App() {
             {app.imageImportStatus && <p className={imageImportStatusClass}>{app.imageImportStatus}</p>}
           </Panel>
 
-          <Panel defaultOpen summary={t(lang, 'contactDetails')}>
+          <Panel id="contact-details-panel" defaultOpen summary={t(lang, 'contactDetails')}>
             <div className="grid">
               <Field label={t(lang, 'language')}>
                 <SelectInput
@@ -549,7 +549,12 @@ export default function App() {
             </div>
           </Panel>
 
-          <BulkSignaturesPanel template={form} lang={lang} />
+          <BulkSignaturesPanel
+            template={form}
+            designerForm={form}
+            lang={lang}
+            onLoadDesignerForm={(loaded, options) => app.setForm(loaded, options)}
+          />
 
           <Panel summary={t(lang, 'logoBanner')}>
             <p className="hint">{t(lang, 'logoBannerHint')}</p>
