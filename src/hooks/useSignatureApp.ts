@@ -28,11 +28,14 @@ import { createDefaultFormState } from '../lib/defaultFormState'
 import {
   downloadHtmlOutput,
   downloadExportSignaturesFolderBat,
+  downloadOpenDownloadsFolderBat,
   downloadOpenSignaturesFolderBat,
-  downloadOutlookInstaller,
-  installForNewOutlook
+  installForNewOutlook,
+  saveOutlookInstaller,
+  type OutlookInstallerSaveResult
 } from '../lib/outlookInstall'
 import { downloadWindowsFontInstaller } from '../lib/fontInstallScripts'
+import { getBundledFontCssFamily, isBundledWebFont } from '../lib/signatureFonts'
 import { buildSignatureHtml } from '../lib/signatureHtmlBuilder'
 import { generateSignatureTextImages } from '../lib/signatureTextImages'
 import {
@@ -85,6 +88,12 @@ export const useSignatureApp = () => {
   const [layout, setLayout] = useState(() => getLayoutSettings(createInitialFormState()))
   const [previewOpen, setPreviewOpen] = useState(true)
   const [previewHighlight, setPreviewHighlight] = useState(false)
+  const [installWizardOpen, setInstallWizardOpen] = useState(false)
+  const [installWizardPhase, setInstallWizardPhase] = useState<'options' | 'running' | 'done'>('options')
+  const [installWizardWorking, setInstallWizardWorking] = useState(false)
+  const [installWizardSave, setInstallWizardSave] = useState<OutlookInstallerSaveResult | null>(null)
+  const [installRestartOutlook, setInstallRestartOutlook] = useState(true)
+  const [installFontOnPc, setInstallFontOnPc] = useState(false)
   const [showAiPreview, setShowAiPreview] = useState(false)
 
   const [aiBrief, setAiBrief] = useState('')
@@ -443,15 +452,48 @@ export const useSignatureApp = () => {
     await downloadHtmlOutput(value, lang, form.fontFamily, form)
   }, [form, lang, outputHtml])
 
-  const handleInstallOutlook = useCallback(async () => {
+  const openInstallWizard = useCallback(() => {
+    setInstallWizardPhase('options')
+    setInstallWizardSave(null)
+    setInstallRestartOutlook(true)
+    setInstallFontOnPc(!form.rasterizeNameTitle && isBundledWebFont(form.fontFamily))
+    setInstallWizardOpen(true)
+  }, [form.fontFamily, form.rasterizeNameTitle])
+
+  const closeInstallWizard = useCallback(() => {
+    setInstallWizardOpen(false)
+    setInstallWizardWorking(false)
+  }, [])
+
+  const confirmInstallDownload = useCallback(async () => {
+    setInstallWizardWorking(true)
+    setInstallWizardPhase('running')
     try {
       const html = await generate()
-      await downloadOutlookInstaller(html, form)
-      window.alert(t(lang, 'alertOutlookInstallSuccess'))
-    } catch {
+      const result = await saveOutlookInstaller(html, form, {
+        restartOutlook: installRestartOutlook,
+        installFont: installFontOnPc && isBundledWebFont(form.fontFamily),
+        autoRun: true
+      })
+      setInstallWizardSave(result)
+      setInstallWizardPhase('done')
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        setInstallWizardPhase('options')
+        return
+      }
+      setInstallWizardPhase('options')
       window.alert(t(lang, 'alertOutlookInstallFailed'))
+    } finally {
+      setInstallWizardWorking(false)
     }
-  }, [form, generate, lang, outputHtml])
+  }, [form, generate, installFontOnPc, installRestartOutlook, lang])
+
+  const handleOpenInstallDownloads = useCallback(() => {
+    downloadOpenDownloadsFolderBat(lang)
+  }, [lang])
+
+  const handleInstallOutlook = openInstallWizard
 
   const handleInstallWindowsFont = useCallback(async () => {
     try {
@@ -721,6 +763,19 @@ export const useSignatureApp = () => {
     handleDownload,
     handleInstallOutlook,
     handleInstallNewOutlook,
+    installWizardOpen,
+    installWizardPhase,
+    installWizardWorking,
+    installWizardSave,
+    installRestartOutlook,
+    setInstallRestartOutlook,
+    installFontOnPc,
+    setInstallFontOnPc,
+    closeInstallWizard,
+    confirmInstallDownload,
+    handleOpenInstallDownloads,
+    installBundledFontName: getBundledFontCssFamily(form.fontFamily),
+    showInstallFontOption: isBundledWebFont(form.fontFamily),
     handleInstallWindowsFont,
     handleOpenSignaturesFolder,
     handleExportSignaturesZip,

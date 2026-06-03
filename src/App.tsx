@@ -4,6 +4,7 @@ import { BulkSignaturesPanel } from './components/BulkSignaturesPanel'
 import { Field, SelectInput, TextInput } from './components/Field'
 import { ColorInput } from './components/ColorInput'
 import { Panel } from './components/Panel'
+import { InstallOutlookWizard } from './components/InstallOutlookWizard'
 import { Toaster } from './components/Toaster'
 import { StyleSummary } from './components/StyleSummary'
 import { UpdatePrompt } from './components/UpdatePrompt'
@@ -14,7 +15,8 @@ import {
   googleFontDownloadUrl,
   isBundledWebFont
 } from './lib/signatureFonts'
-import { buildStampTitle, formatBuildStamp } from './lib/buildInfo'
+import { formatBuildStamp } from './lib/buildInfo'
+import { ChangelogModal } from './components/ChangelogModal'
 import { normalizeSocialIconVariant, type SocialPlatform } from './lib/socialIconCatalog'
 import { fileToDataUrl } from './lib/signatureUtils'
 import { SocialIconVariantPicker } from './components/SocialIconVariantPicker'
@@ -188,6 +190,7 @@ export default function App() {
   const [aiPresetId, setAiPresetId] = useState('')
   const [brandPresetId, setBrandPresetId] = useState('')
   const [signatureImageFile, setSignatureImageFile] = useState<File | undefined>()
+  const [changelogOpen, setChangelogOpen] = useState(false)
 
   const alignOptions = [
     { value: 'left', label: t(lang, 'alignLeft') },
@@ -898,6 +901,16 @@ export default function App() {
 
           <Panel summary={t(lang, 'positionAlignment')}>
             <div className="grid">
+              <Field label={t(lang, 'contactMatchNameTitle')}>
+                <label className="ai-keep-contact">
+                  <input
+                    type="checkbox"
+                    checked={form.contactMatchNameTitle !== false}
+                    onChange={(e) => updateForm({ contactMatchNameTitle: e.target.checked })}
+                  />
+                  <span className="hint">{t(lang, 'contactMatchNameTitleHint')}</span>
+                </label>
+              </Field>
               {(
                 [
                   ['textAlign', 'mainTextAlign'],
@@ -908,6 +921,7 @@ export default function App() {
                 <Field key={key} label={t(lang, labelKey)}>
                   <SelectInput
                     value={form[key]}
+                    disabled={key === 'textAlign' && form.contactMatchNameTitle !== false}
                     onChange={(e) =>
                       updateForm({ [key]: e.target.value as SignatureFormState[typeof key] })
                     }
@@ -918,6 +932,7 @@ export default function App() {
                       </option>
                     ))}
                   </SelectInput>
+                  {key === 'textAlign' ? <p className="hint">{t(lang, 'mainTextAlignHint')}</p> : null}
                 </Field>
               ))}
               {(
@@ -1101,10 +1116,36 @@ export default function App() {
         </details>
       </section>
       <Toaster toasts={app.toasts} onDismiss={app.dismissToast} />
+      <InstallOutlookWizard
+        open={app.installWizardOpen}
+        phase={app.installWizardPhase}
+        lang={lang}
+        working={app.installWizardWorking}
+        saveResult={app.installWizardSave}
+        restartOutlook={app.installRestartOutlook}
+        installFont={app.installFontOnPc}
+        showFontOption={app.showInstallFontOption}
+        rasterizeNameTitle={app.form.rasterizeNameTitle}
+        bundledFontName={app.installBundledFontName}
+        onRestartOutlookChange={app.setInstallRestartOutlook}
+        onInstallFontChange={app.setInstallFontOnPc}
+        onDownload={() => {
+          app.confirmInstallDownload().catch(() => undefined)
+        }}
+        onOpenDownloads={app.handleOpenInstallDownloads}
+        onClose={app.closeInstallWizard}
+      />
+      <ChangelogModal open={changelogOpen} lang={lang} onClose={() => setChangelogOpen(false)} />
       <UpdatePrompt lang={lang} />
-      <div className="build-stamp" title={buildStampTitle()} aria-label={buildStampTitle()}>
+      <button
+        type="button"
+        className="build-stamp"
+        title={t(lang, 'changelogTitle')}
+        aria-label={t(lang, 'changelogTitle')}
+        onClick={() => setChangelogOpen(true)}
+      >
         {formatBuildStamp(lang)}
-      </div>
+      </button>
     </main>
   )
 }

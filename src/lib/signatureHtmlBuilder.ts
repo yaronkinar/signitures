@@ -14,13 +14,13 @@ export type BuildSignatureHtmlOptions = {
 const buildTextImageRow = (
   slot: SignatureTextImageSlot,
   nameTitleDirection: string,
-  contentAlignAttr: string,
-  contentAlign: string,
+  nameTitleAlignAttr: string,
+  nameTitleAlign: string,
   padding: string
 ): string => {
   const src = escapeHtml(slot.dataUrl)
   const alt = escapeHtml(slot.alt)
-  return `<tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="padding:${padding};font-size:0;line-height:0;text-align:${contentAlign};">
+  return `<tr><td dir="${nameTitleDirection}" align="${nameTitleAlignAttr}" style="padding:${padding};font-size:0;line-height:0;text-align:${nameTitleAlign};">
         <img src="${src}" alt="${alt}" width="${slot.width}" height="${slot.height}" style="display:block;width:${slot.width}px;height:${slot.height}px;border:0;max-width:100%;" />
       </td></tr>`
 }
@@ -32,7 +32,21 @@ export const buildSignatureHtml = (
 ): string => {
   const lang: AppLanguage = form.signatureLanguage
   const strings = signatureStrings[lang]
-  const contactDirection = lang === 'he' ? 'rtl' : 'ltr'
+  const rtlContent =
+    lang === 'he' || [form.fullName, form.jobTitle, form.company].some(hasHebrew)
+  const nameTitleDirection = rtlContent ? 'rtl' : 'ltr'
+  const contactDirection = nameTitleDirection
+  const textOffsetLeft = Math.max(layout.textOffsetX, 0)
+  const textOffsetRight = Math.max(-layout.textOffsetX, 0)
+  const nameTitleAlign = rtlContent ? 'right' : layout.nameTitleAlign
+  const nameTitleAlignAttr =
+    nameTitleAlign === 'left' ? 'left' : nameTitleAlign === 'center' ? 'center' : 'right'
+  const contactAlign = form.contactMatchNameTitle !== false ? nameTitleAlign : layout.textAlign
+  const contactAlignAttr =
+    contactAlign === 'left' ? 'left' : contactAlign === 'center' ? 'center' : 'right'
+  const edgeInset = 8
+  const dividerInset = 12
+
   const fullName = sanitizeSignatureInlineHtml(form.fullName.trim())
   const jobTitle = sanitizeSignatureInlineHtml(form.jobTitle.trim())
   const company = sanitizeSignatureInlineHtml(form.company.trim())
@@ -69,16 +83,6 @@ export const buildSignatureHtml = (
   const detailsLineHeight = Math.max(1, layout.lineSpacing - 0.15)
   const nameLineHeight = Math.max(1, layout.lineSpacing - 0.35)
   const titleLineHeight = Math.max(1, layout.lineSpacing - 0.3)
-  const rtlContent =
-    lang === 'he' || [form.fullName, form.jobTitle, form.company].some(hasHebrew)
-  const nameTitleDirection = rtlContent ? 'rtl' : 'ltr'
-  const textOffsetLeft = Math.max(layout.textOffsetX, 0)
-  const textOffsetRight = Math.max(-layout.textOffsetX, 0)
-  const contentAlign = rtlContent ? 'right' : layout.nameTitleAlign
-  const contentAlignAttr =
-    contentAlign === 'left' ? 'left' : contentAlign === 'center' ? 'center' : 'right'
-  const edgeInset = 8
-  const dividerInset = 12
 
   const contactRowBorder = dividerColor
   const formatBreakableText = (value: string): string =>
@@ -121,7 +125,7 @@ export const buildSignatureHtml = (
       ? ''
       : `border-bottom:1px solid ${contactRowBorder};`
     return `<tr>
-      <td dir="${contactDirection}" align="${contentAlignAttr}" style="padding:3px ${edgeInset}px 6px;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};text-align:${contentAlign};${contactBorderStyle}">
+      <td dir="${contactDirection}" align="${contactAlignAttr}" style="padding:3px 0 6px;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};text-align:${contactAlign};${contactBorderStyle}">
         <span style="font-weight:${titleFontWeight};color:${contactLabelColor};">${labelHtml}</span>&nbsp;<span style="${valueStyle}font-weight:${bodyFontWeight};">${valueHtml}</span>
       </td>
     </tr>`
@@ -140,8 +144,7 @@ export const buildSignatureHtml = (
     contactRows.push(
       buildContactRow(
         strings.emailLabel,
-        `<a href="${escapeHtml(normalizeUrl(`mailto:${email}`))}" style="text-decoration:underline;color:${emailColor};font-size:${compactLinkFontSizePx};white-space:nowrap;">${escapeHtml(email)}</a>`,
-        'unicode-bidi:plaintext;white-space:nowrap;'
+        `<a href="${escapeHtml(normalizeUrl(`mailto:${email}`))}" style="text-decoration:underline;color:${emailColor};font-size:${compactLinkFontSizePx};overflow-wrap:anywhere;word-break:break-word;">${formatBreakableText(email)}</a>`
       )
     )
   }
@@ -156,7 +159,6 @@ export const buildSignatureHtml = (
   }
 
   const socialIconSize = layout.bodyFontSize + 4
-  const socialAlign = contentAlign
   const socialIconGapPx = Math.max(0, layout.socialIconGap)
   const socialIconSpacerPx = Math.max(16, socialIconGapPx + 12)
   const socialIconCellPadPx = 2
@@ -164,7 +166,8 @@ export const buildSignatureHtml = (
   const socialIconsRowWidth =
     orderedSocialLinks.length * socialIconSize +
     Math.max(0, orderedSocialLinks.length - 1) * socialIconGapPx
-  const socialIconsTableAlign = contentAlignAttr
+  const socialAlign = nameTitleAlign
+  const socialIconsTableAlign = nameTitleAlignAttr
   const socialFooterPadHorizontal = '0'
   const socialFooterPadIcons = '0 0 10px'
 
@@ -192,11 +195,11 @@ export const buildSignatureHtml = (
     .join('')
 
   const socialFooterBlock = socialLinks.length
-    ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contentAlignAttr}" dir="${nameTitleDirection}" style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;text-align:${socialAlign};">
+    ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${nameTitleAlignAttr}" dir="${nameTitleDirection}" style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;text-align:${socialAlign};">
       ${
         contactRows.length
           ? `<tr>
-      <td align="${contentAlignAttr}" style="padding:10px 0 0;font-size:1px;line-height:1px;mso-line-height-rule:exactly;">
+      <td align="${nameTitleAlignAttr}" style="padding:10px 0 0;font-size:1px;line-height:1px;mso-line-height-rule:exactly;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
           <tr>
             <td height="1" style="height:1px;line-height:1px;font-size:1px;border-top:1px solid ${contactRowBorder};mso-line-height-rule:exactly;padding:0;">&nbsp;</td>
@@ -207,10 +210,10 @@ export const buildSignatureHtml = (
           : ''
       }
       <tr>
-        <td height="${socialIconSpacerPx}" align="${contentAlignAttr}" style="height:${socialIconSpacerPx}px;line-height:${socialIconSpacerPx}px;font-size:${socialIconSpacerPx}px;mso-line-height-rule:exactly;padding:${socialFooterPadHorizontal};">&nbsp;</td>
+        <td height="${socialIconSpacerPx}" align="${nameTitleAlignAttr}" style="height:${socialIconSpacerPx}px;line-height:${socialIconSpacerPx}px;font-size:${socialIconSpacerPx}px;mso-line-height-rule:exactly;padding:${socialFooterPadHorizontal};">&nbsp;</td>
       </tr>
       <tr>
-        <td align="${contentAlignAttr}" valign="top" style="padding:${socialFooterPadIcons};vertical-align:top;">
+        <td align="${nameTitleAlignAttr}" valign="top" style="padding:${socialFooterPadIcons};vertical-align:top;">
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${socialIconsTableAlign}" width="${socialIconsRowWidth}" style="width:${socialIconsRowWidth}px;max-width:100%;table-layout:fixed;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
             <tr>
               ${socialIconRowCells}
@@ -239,31 +242,31 @@ export const buildSignatureHtml = (
   const textCell = `<td valign="${textColumnVerticalAlign}" style="${dividerOnTextSide}vertical-align:${textColumnVerticalAlign};padding-left:${textPaddingLeft}px;padding-right:${textPaddingRight}px;padding-top:${Math.max(
     0,
     layout.textOffsetY
-  ) + edgeInset}px;padding-bottom:${Math.max(0, -layout.textOffsetY) + edgeInset}px;width:${textColumnWidth}px;max-width:${textColumnWidth}px;text-align:${contentAlign};unicode-bidi:plaintext;overflow:visible;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contentAlignAttr}" dir="${nameTitleDirection}" style="${fontFamilyStyle}text-align:${contentAlign};border-collapse:collapse;">
+  ) + edgeInset}px;padding-bottom:${Math.max(0, -layout.textOffsetY) + edgeInset}px;width:${textColumnWidth}px;max-width:100%;text-align:${nameTitleAlign};unicode-bidi:plaintext;overflow:visible;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${nameTitleAlignAttr}" dir="${nameTitleDirection}" style="${fontFamilyStyle}text-align:${nameTitleAlign};border-collapse:collapse;">
         ${
           options.textImages?.name
             ? buildTextImageRow(
                 options.textImages.name,
                 nameTitleDirection,
-                contentAlignAttr,
-                contentAlign,
+                nameTitleAlignAttr,
+                nameTitleAlign,
                 '0 0 1px'
               )
-            : `<tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="${fontFamilyStyle}font-size:${layout.nameFontSize}px;line-height:${nameLineHeight};font-weight:${nameFontWeight};color:${nameColor};padding:0 0 1px;text-align:${contentAlign};unicode-bidi:plaintext;">${fullName || strings.fullNamePlaceholder}</td></tr>`
+            : `<tr><td dir="${nameTitleDirection}" align="${nameTitleAlignAttr}" style="${fontFamilyStyle}font-size:${layout.nameFontSize}px;line-height:${nameLineHeight};font-weight:${nameFontWeight};color:${nameColor};padding:0 0 1px;text-align:${nameTitleAlign};unicode-bidi:plaintext;">${fullName || strings.fullNamePlaceholder}</td></tr>`
         }
         ${
           options.textImages?.titleBlock
             ? buildTextImageRow(
                 options.textImages.titleBlock,
                 nameTitleDirection,
-                contentAlignAttr,
-                contentAlign,
+                nameTitleAlignAttr,
+                nameTitleAlign,
                 '0 0 3px'
               )
-            : `<tr><td dir="${nameTitleDirection}" align="${contentAlignAttr}" style="${fontFamilyStyle}font-size:${layout.titleFontSize}px;line-height:${titleLineHeight};font-weight:${titleFontWeight};color:${jobTitleColor};padding:0 0 3px;text-align:${contentAlign};unicode-bidi:plaintext;">${jobTitle || strings.jobTitlePlaceholder}${company ? `<br style="line-height:${titleLineHeight};" /><span style="${fontFamilyStyle}font-weight:${titleFontWeight};line-height:${titleLineHeight};color:${companyColor};">${company}</span>` : ''}</td></tr>`
+            : `<tr><td dir="${nameTitleDirection}" align="${nameTitleAlignAttr}" style="${fontFamilyStyle}font-size:${layout.titleFontSize}px;line-height:${titleLineHeight};font-weight:${titleFontWeight};color:${jobTitleColor};padding:0 0 3px;text-align:${nameTitleAlign};unicode-bidi:plaintext;">${jobTitle || strings.jobTitlePlaceholder}${company ? `<br style="line-height:${titleLineHeight};" /><span style="${fontFamilyStyle}font-weight:${titleFontWeight};line-height:${titleLineHeight};color:${companyColor};">${company}</span>` : ''}</td></tr>`
         }
-        ${contactRows.length ? `<tr><td dir="${contactDirection}" align="${contentAlignAttr}" style="padding-top:2px;padding-bottom:0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contentAlignAttr}" dir="${contactDirection}" style="text-align:${contentAlign};border-collapse:collapse;">${contactRows.join('')}</table></td></tr>` : ''}
+        ${contactRows.length ? `<tr><td dir="${contactDirection}" align="${contactAlignAttr}" style="padding-top:2px;padding-bottom:0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contactAlignAttr}" dir="${contactDirection}" style="text-align:${contactAlign};border-collapse:collapse;">${contactRows.join('')}</table></td></tr>` : ''}
       </table>
       ${socialFooterBlock}
     </td>`
@@ -283,16 +286,16 @@ export const buildSignatureHtml = (
 
   const rowCells = logoOnLeft ? [logoCell, textCell] : [textCell, logoCell]
 
-  const signatureTable = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${layout.emailAlign}" style="direction:ltr;font-family:${fontFamilyCss};color:${textColor};background:${backgroundColor};width:${signatureWidth}px;max-width:${signatureWidth}px;border-collapse:collapse;mso-line-height-rule:exactly;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+  const signatureTable = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${layout.emailAlign}" width="${signatureWidth}" style="direction:ltr;font-family:${fontFamilyCss};color:${textColor};background:${backgroundColor};width:${signatureWidth}px;max-width:100%;border-collapse:collapse;mso-line-height-rule:exactly;mso-table-lspace:0pt;mso-table-rspace:0pt;">
   <tr>
     ${rowCells.join('\n    ')}
   </tr>
 </table>`
 
   return `<!-- Outlook email signature -->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" dir="ltr" style="direction:ltr;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" dir="ltr" style="direction:ltr;width:100%;max-width:100%;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
   <tr>
-    <td align="${layout.emailAlign}" style="text-align:${layout.emailAlign};">
+    <td align="${layout.emailAlign}" style="text-align:${layout.emailAlign};max-width:100%;">
       ${signatureTable}
     </td>
   </tr>

@@ -178,6 +178,10 @@ const translations = {
     logoMaxWidth: 'Logo max width (px)',
     positionAlignment: 'Position & alignment',
     mainTextAlign: 'Main text align',
+    mainTextAlignHint: 'Aligns phone, email, and website when not matching name/title.',
+    contactMatchNameTitle: 'Match name & title alignment',
+    contactMatchNameTitleHint:
+      'When checked, phone, email, and website line up with the name and title. Uncheck to use Main text align instead.',
     nameTitleAlign: 'Name/title align',
     emailAlign: 'Position in email',
     logoAlign: 'Logo align',
@@ -214,6 +218,34 @@ const translations = {
     installGuideLead:
       'Follow these steps to install your signature in classic Outlook desktop.',
     installGuideAlt: 'Animated guide: generate signature, install to Outlook, run the installer, restart Outlook',
+    installWizardTitle: 'Install signature in Outlook (Classic)',
+    installWizardIntro:
+      'Choose options below, then click Install now. On Windows the installer starts automatically when your browser allows it.',
+    installWizardRestartOutlook: 'Close and reopen Outlook after install (recommended)',
+    installWizardInstallFont: 'Also install {font} on this PC',
+    installWizardFontSkippedHint:
+      'Name and title are rendered as images, so the font install is optional. Recipients still see the correct look without {font} on their device.',
+    installWizardInstallNow: 'Install now',
+    installWizardDownloading: 'Preparing installer…',
+    installWizardRunning:
+      'Preparing installer… Check the browser download bar — click Open on install-outlook-signature.bat when it appears.',
+    installWizardStepAllowRun:
+      'In the browser download bar, click Open on install-outlook-signature.bat (or double-click it in Downloads).',
+    installWizardStepRunFile: 'Double-click install-outlook-signature.bat (or the file you saved).',
+    installWizardStepSmartScreen:
+      'If Windows SmartScreen appears, choose More info, then Run anyway.',
+    installWizardStepDoneRestart:
+      'Outlook will reopen automatically. In Signatures, pick your English signature name for new messages.',
+    installWizardStepDoneManual:
+      'Restart Outlook if it was open. In File → Options → Mail → Signatures, pick your English signature name.',
+    installWizardSavedAs: 'Installer saved as {file}.',
+    installWizardSavedDownloads: 'Installer saved to your Downloads folder as {file}.',
+    installWizardSavedProtocol: 'Installer updated. Windows should start it automatically — allow if prompted.',
+    installWizardOpenDownloads: 'Open Downloads folder',
+    installWizardClose: 'Close',
+    batDownloadsFolderOpened: 'Downloads folder opened.',
+    batPsClosingOutlook: 'Closing Outlook…',
+    batPsStartingOutlook: 'Starting Outlook…',
     newOutlookSetup: 'New Outlook setup',
     preview: 'Preview',
     livePreviewHint: 'Actual size in an Outlook message body. Updates as you edit.',
@@ -303,6 +335,9 @@ const translations = {
     bulkErrorNoValidRows: 'No rows with a name or email were found.',
     bulkErrorTooManyRows: 'Maximum 500 people per file.',
     bulkErrorUnknown: 'Could not read the spreadsheet.',
+    changelogTitle: 'Change log',
+    changelogIntro: 'Updates in this app (current build v{version}), sorted by date.',
+    changelogClose: 'Close',
     appUpdateAvailable: 'A new version is available. Reload to get the latest changes.',
     appUpdateReload: 'Reload',
     appUpdateDismiss: 'Later'
@@ -473,6 +508,10 @@ const translations = {
     logoMaxWidth: 'רוחב מקסימלי ללוגו (px)',
     positionAlignment: 'מיקום ויישור',
     mainTextAlign: 'יישור טקסט ראשי',
+    mainTextAlignHint: 'מיישר טלפון, דוא"ל ואתר כשלא מסומן «יישור כמו שם/תפקיד».',
+    contactMatchNameTitle: 'יישור כמו שם ותפקיד',
+    contactMatchNameTitleHint:
+      'כשמסומן, טלפון, דוא"ל ואתר מיושרים עם השם והתפקיד. בטלו סימון כדי להשתמש ב«יישור טקסט ראשי».',
     nameTitleAlign: 'יישור שם/תפקיד',
     emailAlign: 'מיקום בדוא"ל',
     logoAlign: 'יישור לוגו',
@@ -509,6 +548,33 @@ const translations = {
     installGuideLead: 'עקבו אחר השלבים להתקנת החתימה ב-Outlook הקלאסי (שולחן עבודה).',
     installGuideAlt:
       'מדריך מונפש: יצירת חתימה, התקנה ב-Outlook, הרצת קובץ ההתקנה והפעלה מחדש של Outlook',
+    installWizardTitle: 'התקנת חתימה ב-Outlook (קלאסי)',
+    installWizardIntro:
+      'בחרו אפשרויות ולחצו «התקנה עכשיו». ב-Windows המתקין אמור להתחיל אוטומטית כשהדפדפן מאפשר זאת.',
+    installWizardRestartOutlook: 'סגירה והפעלה מחדש של Outlook אחרי ההתקנה (מומלץ)',
+    installWizardInstallFont: 'התקנת {font} גם במחשב זה',
+    installWizardFontSkippedHint:
+      'השם והתפקיד מוצגים כתמונה, ולכן התקנת הגופן אופציונלית. נמענים עדיין יראו את המראה הנכון גם בלי {font} במכשיר שלהם.',
+    installWizardInstallNow: 'התקנה עכשיו',
+    installWizardDownloading: 'מכין מתקין…',
+    installWizardRunning:
+      'מכין מתקין… בדקו את שורת ההורדות של הדפדפן — לחצו «פתח» על install-outlook-signature.bat כשמופיע.',
+    installWizardStepAllowRun:
+      'בשורת ההורדות של הדפדפן לחצו «פתח» על install-outlook-signature.bat (או לחצו פעמיים עליו בתיקיית ההורדות).',
+    installWizardStepRunFile: 'לחצו פעמיים על install-outlook-signature.bat (או על הקובץ ששמרתם).',
+    installWizardStepSmartScreen: 'אם מופיע SmartScreen, בחרו «מידע נוסף» ואז «הרץ בכל זאת».',
+    installWizardStepDoneRestart:
+      'Outlook ייפתח מחדש אוטומטית. ב«חתימות» בחרו את שם החתימה באנגלית להודעות חדשות.',
+    installWizardStepDoneManual:
+      'הפעילו מחדש את Outlook אם היה פתוח. בקובץ → אפשרויות → דואר → חתימות, בחרו את שם החתימה באנגלית.',
+    installWizardSavedAs: 'המתקין נשמר בשם {file}.',
+    installWizardSavedDownloads: 'המתקין נשמר בתיקיית ההורדות בשם {file}.',
+    installWizardSavedProtocol: 'המתקין עודכן. Windows אמור להפעיל אותו אוטומטית — אשרו אם תתבקשו.',
+    installWizardOpenDownloads: 'פתיחת תיקיית ההורדות',
+    installWizardClose: 'סגירה',
+    batDownloadsFolderOpened: 'תיקיית ההורדות נפתחה.',
+    batPsClosingOutlook: 'סוגר את Outlook…',
+    batPsStartingOutlook: 'פותח את Outlook…',
     newOutlookSetup: 'הגדרת Outlook החדש',
     preview: 'תצוגה מקדימה',
     livePreviewHint: 'בגודל אמיתי כמו בגוף הודעה ב-Outlook. מתעדכנת בזמן עריכה.',
@@ -597,6 +663,9 @@ const translations = {
     bulkErrorNoValidRows: 'לא נמצאו שורות עם שם או דוא"ל.',
     bulkErrorTooManyRows: 'מקסימום 500 אנשים לקובץ.',
     bulkErrorUnknown: 'לא ניתן לקרוא את קובץ ה-Excel.',
+    changelogTitle: 'יומן שינויים',
+    changelogIntro: 'עדכונים באפליקציה (גרסת build נוכחית v{version}), לפי תאריך.',
+    changelogClose: 'סגירה',
     appUpdateAvailable: 'גרסה חדשה זמינה. רעננו כדי לקבל את העדכון האחרון.',
     appUpdateReload: 'רענון',
     appUpdateDismiss: 'אחר כך'

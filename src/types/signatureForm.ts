@@ -55,6 +55,8 @@ export type SignatureFormState = {
   signatureLanguage: AppLanguage
   /** When true, name and title/company render as PNG images so recipients see the same typography. */
   rasterizeNameTitle: boolean
+  /** When true, phone/email/website use the same horizontal alignment as name and title. */
+  contactMatchNameTitle: boolean
   fullName: string
   /** ASCII name for classic Outlook signature files (list + .htm base name). */
   outlookSignatureName: string

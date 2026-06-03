@@ -124,11 +124,52 @@ exit /b 0
   )
 }
 
-export const downloadOutlookInstaller = async (
+export type OutlookInstallOptions = {
+  /** Close and reopen Outlook after writing signature files. */
+  restartOutlook?: boolean
+  /** Install Rubik/Cairo on Windows before writing the signature. */
+  installFont?: boolean
+  /** After save, attempt to launch the installer on Windows (default true). */
+  autoRun?: boolean
+}
+
+export type OutlookInstallerSaveResult = {
+  fileName: string
+  /** User-facing hint: folder name or file name from save picker. */
+  locationHint: string
+  usedSavePicker: boolean
+}
+
+const OUTLOOK_INSTALL_PROTOCOL = 'outlook-signature-install'
+const OUTLOOK_INSTALL_LOCAL_DIR = 'outlook-signature-install'
+const INSTALLER_FILE_NAME = 'install-outlook-signature.bat'
+
+export const isWindowsPlatform = (): boolean => /Windows/i.test(navigator.userAgent)
+
+export const downloadOpenDownloadsFolderBat = (lang: AppLanguage): void => {
+  const folderOpened = psConsoleMessage(lang, 'batDownloadsFolderOpened')
+  const pressEnter = psConsoleMessage(lang, 'batPressEnterToClose')
+
+  downloadBatFile(
+    'open-downloads-folder.bat',
+    `@echo off
+setlocal
+${batUtf8Preamble(lang)}cd /d "%~dp0"
+start "" explorer.exe shell:Downloads
+"${POWERSHELL_EXE}" -NoProfile -ExecutionPolicy Bypass -Command "${psInlinePreamble(lang)}${psHostStatement(lang, folderOpened)}; ${psReadHostStatement(lang, pressEnter)}"
+exit /b 0
+`
+  )
+}
+
+const buildOutlookInstallScriptContent = async (
   htmlBody: string,
-  form: SignatureFormState
-): Promise<void> => {
+  form: SignatureFormState,
+  options: OutlookInstallOptions = {}
+): Promise<string> => {
   const lang = form.signatureLanguage
+  const restartOutlook = options.restartOutlook !== false
+  const installFont = options.installFont === true
   const logoSide = form.logoSide === 'left' ? 'left' : 'right'
   const pkg = await buildOutlookSignaturePackage(htmlBody, form)
   const signatureName = pkg.fileBase
@@ -136,7 +177,17 @@ export const downloadOutlookInstaller = async (
   const txtBase64 = toBase64Utf8(pkg.txt)
   const rtfBase64 = toBase64Utf8(pkg.rtf)
   const writeAssetFilesPs = buildWriteFontFilesPs('$filesDir', imageAssetsToWritePayloads(pkg.assetFiles))
-  const windowsFontInstallPs = await buildWindowsFontInstallPsForForm(lang, form)
+  const windowsFontInstallPs = installFont ? await buildWindowsFontInstallPsForForm(lang, form) : ''
+  const closingOutlookLine = psHostStatement(lang, psConsoleMessage(lang, 'batPsClosingOutlook'))
+  const startingOutlookLine = psHostStatement(lang, psConsoleMessage(lang, 'batPsStartingOutlook'))
+  const restartOutlookPs = restartOutlook
+    ? `$shouldRestartOutlook = $true
+${closingOutlookLine}
+Get-Process -Name OUTLOOK -ErrorAction SilentlyContinue | Stop-Process -Force
+Start-Sleep -Seconds 2
+`
+    : `$shouldRestartOutlook = $false
+`
   const installSuccessLine = psHostStatement(lang, psConsoleMessage(lang, 'batPsInstallSuccess'), {
     foregroundColor: 'Green'
   })
@@ -150,11 +201,11 @@ export const downloadOutlookInstaller = async (
   const installMissingAssetRefsPrefix = psConsoleMessage(lang, 'batPsInstallMissingAssetRefs')
   const installCorruptPrefix = psConsoleMessage(lang, 'batInstallerCorrupt')
 
-  const scriptContent = prefixPowerShellScript(
+  return prefixPowerShellScript(
     lang,
     `$ErrorActionPreference = "Stop"
 
-${windowsFontInstallPs ? `${windowsFontInstallPs}\n` : ''}$signatureName = "${signatureName.replace(/"/g, "'")}"
+${restartOutlookPs}${windowsFontInstallPs ? `${windowsFontInstallPs}\n` : ''}$signatureName = "${signatureName.replace(/"/g, "'")}"
 $signatureDir = Join-Path $env:APPDATA "Microsoft\\Signatures"
 $htmlFile = Join-Path $signatureDir "$signatureName.htm"
 $txtFile = Join-Path $signatureDir "$signatureName.txt"
@@ -266,11 +317,121 @@ try {
   ${psWarningStatement(lang, installZipFailedPrefix, '$_.Exception.Message')}
 }
 ${setDefaultLine}
-${restartOutlookLine}
-${classicNoteLine}
+${restartOutlook ? '' : `${restartOutlookLine}\n`}${classicNoteLine}
+if ($shouldRestartOutlook) {
+  ${startingOutlookLine}
+  $outlookCandidates = @(
+    (Join-Path $env:ProgramFiles "Microsoft Office\\root\\Office16\\OUTLOOK.EXE"),
+    (Join-Path \${env:ProgramFiles(x86)} "Microsoft Office\\root\\Office16\\OUTLOOK.EXE"),
+    (Join-Path $env:ProgramFiles "Microsoft Office\\Office16\\OUTLOOK.EXE"),
+    (Join-Path \${env:ProgramFiles(x86)} "Microsoft Office\\Office16\\OUTLOOK.EXE")
+  )
+  $outlookExe = $outlookCandidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+  if ($outlookExe) {
+    Start-Process -FilePath $outlookExe
+  } else {
+    Start-Process -FilePath "outlook" -ErrorAction SilentlyContinue
+  }
+} else {
+  ${restartOutlookLine}
+}
+
+try {
+  $oneClickDir = Join-Path $env:LOCALAPPDATA "${OUTLOOK_INSTALL_LOCAL_DIR}"
+  if (-not (Test-Path -LiteralPath $oneClickDir)) {
+    New-Item -Path $oneClickDir -ItemType Directory -Force | Out-Null
+  }
+  if ($scriptSourcePath -and (Test-Path -LiteralPath $scriptSourcePath)) {
+    Copy-Item -LiteralPath $scriptSourcePath -Destination (Join-Path $oneClickDir "${INSTALLER_FILE_NAME}") -Force
+  }
+  $launchPs1 = @'
+$bat = Join-Path (Join-Path $env:LOCALAPPDATA '${OUTLOOK_INSTALL_LOCAL_DIR}') '${INSTALLER_FILE_NAME}'
+if (Test-Path -LiteralPath $bat) {
+  Start-Process -FilePath $bat -Wait
+}
+'@
+  Set-Content -LiteralPath (Join-Path $oneClickDir 'launch.ps1') -Value $launchPs1 -Encoding UTF8
+  $protocol = '${OUTLOOK_INSTALL_PROTOCOL}'
+  New-Item -Path ("HKCU:\\Software\\Classes\\" + $protocol) -Force | Out-Null
+  New-ItemProperty -Path ("HKCU:\\Software\\Classes\\" + $protocol) -Name 'URL Protocol' -Value '' -PropertyType String -Force | Out-Null
+  $psExe = (Get-Command powershell.exe).Source
+  $launchFile = Join-Path $oneClickDir 'launch.ps1'
+  $handler = '"' + $psExe + '" -NoProfile -ExecutionPolicy Bypass -File "' + $launchFile + '"'
+  New-Item -Path ("HKCU:\\Software\\Classes\\" + $protocol + "\\shell\\open\\command") -Force | Out-Null
+  Set-Item -Path ("HKCU:\\Software\\Classes\\" + $protocol + "\\shell\\open\\command") -Value $handler
+} catch {
+}
 `
   )
-  downloadBatFile('install-outlook-signature.bat', buildSelfContainedInstallBat(scriptContent, lang))
+}
+
+export const saveOutlookInstaller = async (
+  htmlBody: string,
+  form: SignatureFormState,
+  options: OutlookInstallOptions = {}
+): Promise<OutlookInstallerSaveResult> => {
+  const lang = form.signatureLanguage
+  const autoRun = options.autoRun !== false && isWindowsPlatform()
+  const scriptContent = await buildOutlookInstallScriptContent(htmlBody, form, options)
+  const batContent = buildSelfContainedInstallBat(scriptContent, lang)
+  const fileName = INSTALLER_FILE_NAME
+  const bytes = encodeBatFile(batContent)
+
+  // Wizard flow: one download to Downloads, no blocking pickers behind the modal.
+  if (autoRun) {
+    downloadBatFile(fileName, batContent)
+    return {
+      fileName,
+      locationHint: 'Downloads',
+      usedSavePicker: false
+    }
+  }
+
+  const savePicker = (
+    window as typeof window & {
+      showSaveFilePicker?: (options: {
+        suggestedName?: string
+        types?: { description: string; accept: Record<string, string[]> }[]
+      }) => Promise<FileSystemFileHandle>
+    }
+  ).showSaveFilePicker
+
+  if (savePicker) {
+    try {
+      const handle = await savePicker({
+        suggestedName: fileName,
+        types: [{ description: 'Batch file', accept: { 'application/x-bat': ['.bat'] } }]
+      })
+      const writable = await handle.createWritable()
+      await writable.write(bytes)
+      await writable.close()
+      return {
+        fileName: handle.name || fileName,
+        locationHint: handle.name || fileName,
+        usedSavePicker: true
+      }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw error
+      }
+    }
+  }
+
+  downloadBatFile(fileName, batContent)
+  return {
+    fileName,
+    locationHint: 'Downloads',
+    usedSavePicker: false
+  }
+}
+
+/** @deprecated Prefer saveOutlookInstaller with OutlookInstallOptions. */
+export const downloadOutlookInstaller = async (
+  htmlBody: string,
+  form: SignatureFormState,
+  options: OutlookInstallOptions = {}
+): Promise<void> => {
+  await saveOutlookInstaller(htmlBody, form, options)
 }
 
 export const copyHtmlForPasting = async (html: string): Promise<boolean> => {

@@ -3,6 +3,10 @@ import type { AppLanguage } from '../i18n'
 const version = import.meta.env.VITE_APP_VERSION ?? 'dev'
 const buildTime = import.meta.env.VITE_BUILD_TIME ?? ''
 
+export function getAppVersion(): string {
+  return version
+}
+
 export function formatBuildStamp(lang: AppLanguage): string {
   if (!buildTime) return `v${version}`
   const date = new Date(buildTime)
