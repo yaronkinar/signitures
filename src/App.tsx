@@ -17,6 +17,7 @@ import {
 } from './lib/signatureFonts'
 import { formatBuildStamp } from './lib/buildInfo'
 import { ChangelogModal } from './components/ChangelogModal'
+import { CreatorModal, CREATOR_NAME } from './components/CreatorModal'
 import { normalizeSocialIconVariant, type SocialPlatform } from './lib/socialIconCatalog'
 import { fileToDataUrl } from './lib/signatureUtils'
 import { SocialIconVariantPicker } from './components/SocialIconVariantPicker'
@@ -191,6 +192,7 @@ export default function App() {
   const [brandPresetId, setBrandPresetId] = useState('')
   const [signatureImageFile, setSignatureImageFile] = useState<File | undefined>()
   const [changelogOpen, setChangelogOpen] = useState(false)
+  const [creatorOpen, setCreatorOpen] = useState(false)
 
   const alignOptions = [
     { value: 'left', label: t(lang, 'alignLeft') },
@@ -1136,7 +1138,17 @@ export default function App() {
         onClose={app.closeInstallWizard}
       />
       <ChangelogModal open={changelogOpen} lang={lang} onClose={() => setChangelogOpen(false)} />
+      <CreatorModal open={creatorOpen} lang={lang} onClose={() => setCreatorOpen(false)} />
       <UpdatePrompt lang={lang} />
+      <footer className="app-footer">
+        <button
+          type="button"
+          className="app-footer-creator"
+          onClick={() => setCreatorOpen(true)}
+        >
+          {t(lang, 'creatorFooter').replace('{name}', CREATOR_NAME)}
+        </button>
+      </footer>
       <button
         type="button"
         className="build-stamp"

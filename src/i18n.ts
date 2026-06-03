@@ -338,6 +338,11 @@ const translations = {
     changelogTitle: 'Change log',
     changelogIntro: 'Updates in this app (current build v{version}), sorted by date.',
     changelogClose: 'Close',
+    creatorFooter: 'Created by {name}',
+    creatorModalTitle: 'Creator',
+    creatorPhoneLabel: 'Phone',
+    creatorEmailLabel: 'Email',
+    creatorClose: 'Close',
     appUpdateAvailable: 'A new version is available. Reload to get the latest changes.',
     appUpdateReload: 'Reload',
     appUpdateDismiss: 'Later'
@@ -666,6 +671,11 @@ const translations = {
     changelogTitle: 'יומן שינויים',
     changelogIntro: 'עדכונים באפליקציה (גרסת build נוכחית v{version}), לפי תאריך.',
     changelogClose: 'סגירה',
+    creatorFooter: 'נוצר על ידי {name}',
+    creatorModalTitle: 'יוצר',
+    creatorPhoneLabel: 'טלפון',
+    creatorEmailLabel: 'דוא"ל',
+    creatorClose: 'סגירה',
     appUpdateAvailable: 'גרסה חדשה זמינה. רעננו כדי לקבל את העדכון האחרון.',
     appUpdateReload: 'רענון',
     appUpdateDismiss: 'אחר כך'

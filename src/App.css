@@ -58,6 +58,89 @@ outline: 2px solid rgba(48, 187, 237, 0.45);
 outline-offset: 2px;
 }
 
+.app-footer {
+position: fixed;
+inset-inline-start: 12px;
+inset-block-end: 12px;
+z-index: 40;
+margin: 0;
+}
+
+.app-footer-creator {
+margin: 0;
+padding: 4px 8px;
+border: 1px solid var(--border);
+border-radius: 6px;
+font-size: 11px;
+line-height: 1.4;
+color: var(--muted);
+background: rgb(255 255 255 / 0.92);
+box-shadow: 0 1px 4px rgb(0 0 0 / 0.06);
+cursor: pointer;
+font-family: inherit;
+}
+
+.app-footer-creator:hover {
+color: var(--brand-charcoal);
+border-color: var(--brand-cyan);
+box-shadow: 0 2px 8px rgb(0 0 0 / 0.08);
+}
+
+.app-footer-creator:focus-visible {
+outline: 2px solid rgba(48, 187, 237, 0.45);
+outline-offset: 2px;
+}
+
+.creator-modal {
+width: min(360px, 100%);
+}
+
+.creator-details {
+margin: 0 0 8px;
+}
+
+.creator-name {
+margin: 0 0 14px;
+font-size: 18px;
+font-weight: 600;
+color: var(--brand-charcoal);
+}
+
+.creator-contact-list {
+margin: 0;
+display: grid;
+gap: 10px;
+}
+
+.creator-contact-row {
+display: grid;
+grid-template-columns: minmax(0, 5.5rem) minmax(0, 1fr);
+gap: 8px 12px;
+align-items: baseline;
+}
+
+.creator-contact-row dt {
+margin: 0;
+font-size: 13px;
+font-weight: 500;
+color: var(--muted);
+}
+
+.creator-contact-row dd {
+margin: 0;
+font-size: 14px;
+}
+
+.creator-contact-row a {
+color: var(--brand-magenta);
+text-decoration: none;
+word-break: break-all;
+}
+
+.creator-contact-row a:hover {
+text-decoration: underline;
+}
+
 .changelog-modal {
 width: min(520px, 100%);
 }
