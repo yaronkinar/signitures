@@ -161,8 +161,14 @@ export const buildSignatureHtml = (
   const socialIconSize = Math.max(layout.bodyFontSize + 8, 22)
   const socialIconGapPx = Math.max(0, layout.socialIconGap)
   const socialIconSpacerPx = Math.max(16, socialIconGapPx + 12)
-  const socialIconCellPadPx = 4
-  const socialIconCellWidth = socialIconSize + socialIconCellPadPx * 2
+  const socialIconPadTopPx = 6
+  const socialIconPadBottomPx = 4
+  const socialIconCellWidth = socialIconSize + socialIconPadTopPx + socialIconPadBottomPx
+  const socialIconRowHeight = socialIconSize + socialIconPadTopPx + socialIconPadBottomPx
+  const buildOutlookSpacerRow = (heightPx: number): string =>
+    `<tr>
+      <td align="${nameTitleAlignAttr}" height="${heightPx}" style="height:${heightPx}px;mso-height-rule:exactly;line-height:${heightPx}px;font-size:${heightPx}px;mso-line-height-rule:exactly;padding:0;border:0;">&nbsp;</td>
+    </tr>`
   const orderedSocialLinks = rtlContent ? [...socialLinks].reverse() : socialLinks
   const socialIconsRowWidth =
     orderedSocialLinks.length * socialIconCellWidth +
@@ -173,18 +179,18 @@ export const buildSignatureHtml = (
   const buildSocialIconGapCell = (): string =>
     socialIconGapPx <= 0
       ? ''
-      : `<td width="${socialIconGapPx}" style="width:${socialIconGapPx}px;min-width:${socialIconGapPx}px;max-width:${socialIconGapPx}px;font-size:1px;line-height:1px;mso-line-height-rule:exactly;padding:0;border:0;">&nbsp;</td>`
+      : `<td width="${socialIconGapPx}" height="${socialIconRowHeight}" valign="middle" style="width:${socialIconGapPx}px;min-width:${socialIconGapPx}px;max-width:${socialIconGapPx}px;height:${socialIconRowHeight}px;font-size:1px;line-height:1px;vertical-align:middle;mso-line-height-rule:exactly;padding:0;border:0;">&nbsp;</td>`
 
   const buildSocialIconCell = (item: (typeof socialLinks)[number]): string =>
-    `<td width="${socialIconCellWidth}" valign="top" align="center" style="width:${socialIconCellWidth}px;padding:${socialIconCellPadPx}px 0;vertical-align:top;text-align:center;">
-      <a href="${escapeHtml(item.url)}" title="${escapeHtml(item.label)}" style="display:block;text-decoration:none;">
+    `<td width="${socialIconCellWidth}" height="${socialIconRowHeight}" valign="middle" align="center" style="width:${socialIconCellWidth}px;height:${socialIconRowHeight}px;padding:${socialIconPadTopPx}px 0 ${socialIconPadBottomPx}px;vertical-align:middle;text-align:center;line-height:${socialIconSize}px;mso-line-height-rule:exactly;">
+      <a href="${escapeHtml(item.url)}" title="${escapeHtml(item.label)}" style="display:block;text-decoration:none;line-height:${socialIconSize}px;">
         <img
           src="${escapeHtml(item.iconUrl)}"
           alt="${escapeHtml(item.label)}"
           width="${socialIconSize}"
           height="${socialIconSize}"
           border="0"
-          style="display:block;width:${socialIconSize}px;height:${socialIconSize}px;border:0;margin:0;padding:0;-ms-interpolation-mode:bicubic;"
+          style="display:block;width:${socialIconSize}px;height:${socialIconSize}px;border:0;margin:0 auto;padding:0;-ms-interpolation-mode:bicubic;"
         />
       </a>
     </td>`
@@ -196,14 +202,32 @@ export const buildSignatureHtml = (
   const buildSocialFooterRows = (): string => {
     if (!socialLinks.length) return ''
 
-    const iconSectionDivider = contactRows.length ? `border-top:1px solid ${contactRowBorder};` : ''
-    const iconSectionPadTop = contactRows.length ? socialIconSpacerPx : Math.max(12, socialIconSpacerPx - 4)
+    const gapBelowDividerPx = Math.max(20, socialIconSpacerPx)
+    const dividerRow = contactRows.length
+      ? `<tr>
+      <td align="${nameTitleAlignAttr}" style="padding:10px 0 0;font-size:1px;line-height:1px;mso-line-height-rule:exactly;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
+          <tr>
+            <td style="height:1px;line-height:1px;font-size:1px;border-top:1px solid ${contactRowBorder};mso-line-height-rule:exactly;padding:0;">&nbsp;</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    ${buildOutlookSpacerRow(gapBelowDividerPx)}`
+      : buildOutlookSpacerRow(14)
 
     return `<tr>
-      <td align="${nameTitleAlignAttr}" valign="top" style="${iconSectionDivider}padding:${iconSectionPadTop}px ${socialFooterPadHorizontal} 10px;vertical-align:top;text-align:${nameTitleAlign};mso-line-height-rule:exactly;">
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${socialIconsTableAlign}" width="${socialIconsRowWidth}" style="width:${socialIconsRowWidth}px;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+      <td align="${nameTitleAlignAttr}" valign="top" style="padding:0 ${socialFooterPadHorizontal} 10px;vertical-align:top;text-align:${nameTitleAlign};">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${nameTitleAlignAttr}" dir="${nameTitleDirection}" style="width:100%;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+          ${dividerRow}
           <tr>
-            ${socialIconRowCells}
+            <td align="${nameTitleAlignAttr}" valign="middle" style="padding:2px 0 0;mso-padding-top-alt:2px;text-align:${nameTitleAlign};vertical-align:middle;mso-line-height-rule:exactly;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${socialIconsTableAlign}" width="${socialIconsRowWidth}" style="width:${socialIconsRowWidth}px;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+                <tr valign="middle" style="vertical-align:middle;">
+                  ${socialIconRowCells}
+                </tr>
+              </table>
+            </td>
           </tr>
         </table>
       </td>

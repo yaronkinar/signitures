@@ -66,6 +66,10 @@ const linkedInWhiteIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24"
 </svg>`
 
 const SOCIAL_ICON_PNG_PIXEL_SIZE = 72
+/** Transparent margin baked into PNG so Outlook compose does not crop visible artwork. */
+const SOCIAL_ICON_PNG_SAFE_PAD_TOP = 5
+const SOCIAL_ICON_PNG_SAFE_PAD_BOTTOM = 2
+const SOCIAL_ICON_PNG_SAFE_PAD_X = 2
 
 const svgToPngDataUrl = (svg: string, size = SOCIAL_ICON_PNG_PIXEL_SIZE): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -82,7 +86,15 @@ const svgToPngDataUrl = (svg: string, size = SOCIAL_ICON_PNG_PIXEL_SIZE): Promis
         reject(new Error('Canvas not available'))
         return
       }
-      context.drawImage(image, 0, 0, size, size)
+      const drawWidth = size - SOCIAL_ICON_PNG_SAFE_PAD_X * 2
+      const drawHeight = size - SOCIAL_ICON_PNG_SAFE_PAD_TOP - SOCIAL_ICON_PNG_SAFE_PAD_BOTTOM
+      context.drawImage(
+        image,
+        SOCIAL_ICON_PNG_SAFE_PAD_X,
+        SOCIAL_ICON_PNG_SAFE_PAD_TOP,
+        drawWidth,
+        drawHeight
+      )
       URL.revokeObjectURL(svgUrl)
       resolve(canvas.toDataURL('image/png'))
     }
