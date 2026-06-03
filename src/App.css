@@ -1224,8 +1224,9 @@ justify-content: flex-start;
 
 .preview {
 width: 400px;
-height: 200px;
-overflow: hidden;
+min-height: 200px;
+height: auto;
+overflow: visible;
 background: #ffffff;
 }
 

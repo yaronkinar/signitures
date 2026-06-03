@@ -65,7 +65,9 @@ const linkedInWhiteIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24"
   <path fill="#ffffff" d="${linkedInGlyphPath}"/>
 </svg>`
 
-const svgToPngDataUrl = (svg: string, size = 44): Promise<string> =>
+const SOCIAL_ICON_PNG_PIXEL_SIZE = 72
+
+const svgToPngDataUrl = (svg: string, size = SOCIAL_ICON_PNG_PIXEL_SIZE): Promise<string> =>
   new Promise((resolve, reject) => {
     const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' })
     const svgUrl = URL.createObjectURL(svgBlob)
@@ -80,16 +82,7 @@ const svgToPngDataUrl = (svg: string, size = 44): Promise<string> =>
         reject(new Error('Canvas not available'))
         return
       }
-      const insetX = Math.max(3, Math.round(size * 0.12))
-      const insetTop = Math.max(5, Math.round(size * 0.22))
-      const insetBottom = Math.max(4, Math.round(size * 0.14))
-      context.drawImage(
-        image,
-        insetX,
-        insetTop,
-        size - insetX * 2,
-        size - insetTop - insetBottom
-      )
+      context.drawImage(image, 0, 0, size, size)
       URL.revokeObjectURL(svgUrl)
       resolve(canvas.toDataURL('image/png'))
     }
