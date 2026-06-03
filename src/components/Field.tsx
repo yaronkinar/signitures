@@ -1,4 +1,10 @@
-import type { CSSProperties, InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react'
+import type {
+  CSSProperties,
+  InputHTMLAttributes,
+  ReactNode,
+  SelectHTMLAttributes,
+  TextareaHTMLAttributes
+} from 'react'
 
 type FieldProps = {
   label: ReactNode
@@ -18,6 +24,10 @@ export const Field = ({ label, children, hint, className, style }: FieldProps) =
 
 export const TextInput = (props: InputHTMLAttributes<HTMLInputElement>) => (
   <input type="text" {...props} />
+)
+
+export const TextAreaInput = (props: TextareaHTMLAttributes<HTMLTextAreaElement>) => (
+  <textarea rows={2} {...props} />
 )
 
 export const SelectInput = (props: SelectHTMLAttributes<HTMLSelectElement>) => (

@@ -79,11 +79,14 @@ const parseInlineStyleColor = (style: string): string | null => {
   return normalizeHexColor(match[1].trim())
 }
 
+const escapeSignatureTextChunk = (text: string): string =>
+  escapeHtml(text).replace(/\r\n|\r|\n/g, '<br />')
+
 /** Allows plain text, line breaks, and span color tags for signature text fields. */
 export const sanitizeSignatureInlineHtml = (raw: string): string => {
   const trimmed = raw.trim()
   if (!trimmed) return ''
-  if (!/[<>]/.test(trimmed)) return escapeHtml(trimmed)
+  if (!/[<>]/.test(trimmed)) return escapeSignatureTextChunk(trimmed)
 
   const out: string[] = []
   const openSpanCount = { value: 0 }
@@ -93,7 +96,7 @@ export const sanitizeSignatureInlineHtml = (raw: string): string => {
 
   while ((match = tagRegex.exec(trimmed)) !== null) {
     if (match.index > lastIndex) {
-      out.push(escapeHtml(trimmed.slice(lastIndex, match.index)))
+      out.push(escapeSignatureTextChunk(trimmed.slice(lastIndex, match.index)))
     }
 
     const [full, tagName, styleAttr = ''] = match
@@ -121,7 +124,7 @@ export const sanitizeSignatureInlineHtml = (raw: string): string => {
   }
 
   if (lastIndex < trimmed.length) {
-    out.push(escapeHtml(trimmed.slice(lastIndex)))
+    out.push(escapeSignatureTextChunk(trimmed.slice(lastIndex)))
   }
 
   while (openSpanCount.value > 0) {

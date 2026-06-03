@@ -1,7 +1,7 @@
 import JSZip from 'jszip'
 import * as XLSX from 'xlsx'
 import type { AppLanguage, I18nKey } from '../i18n'
-import type { SignatureFormState } from '../types/signatureForm'
+import type { SignatureFormState, SignatureLayoutSettings, TextAlign } from '../types/signatureForm'
 import { bundleSignatureHtmlImages, stripOutlookStoredAssetPathsFromForm } from './signatureImageAssets'
 import { buildSignatureHtml } from './signatureHtmlBuilder'
 import { generateSignatureTextImages } from './signatureTextImages'
@@ -60,6 +60,15 @@ const cellToString = (value: unknown): string => {
   if (typeof value === 'number' && Number.isFinite(value)) return String(value)
   return String(value).trim()
 }
+
+/** Preserves in-cell line breaks from Excel (Alt+Enter), CSV, or literal \\n in exports. */
+export const normalizeBulkMultilineText = (value: string): string =>
+  value
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/\u2028|\u2029/g, '\n')
+    .trim()
 
 const matchField = (header: string): BulkField | null => {
   for (const [field, aliases] of Object.entries(COLUMN_ALIASES) as [BulkField, string[]][]) {
@@ -127,7 +136,10 @@ export const parseBulkSpreadsheet = (
     }
 
     columnMap.forEach((field, colIndex) => {
-      const value = cellToString(line[colIndex])
+      let value = cellToString(line[colIndex])
+      if (field === 'jobTitle' || field === 'company') {
+        value = normalizeBulkMultilineText(value)
+      }
       if (field === 'language') {
         row.language = parseLanguage(value, defaultLanguage)
       } else {
@@ -159,18 +171,27 @@ export const mergeBulkRowIntoForm = (
   ...template,
   signatureLanguage: row.language ?? template.signatureLanguage,
   fullName: row.fullName || template.fullName,
-  jobTitle: row.jobTitle || template.jobTitle,
-  company: row.company || template.company,
+  jobTitle: row.jobTitle.length > 0 ? row.jobTitle : template.jobTitle,
+  company: row.company.length > 0 ? row.company : template.company,
   phone: row.phone || template.phone,
   email: row.email || template.email,
   website: row.website || template.website,
   outlookSignatureName: row.outlookSignatureName?.trim() || template.outlookSignatureName
 })
 
-/** Same HTML pipeline as single install / preview (embedded images, social icons, text images). */
-const buildBundledSignatureHtmlDocument = async (
+export type BulkSignaturePreview = {
+  id: string
+  label: string
+  html: string
+  width: number
+  minHeight: number
+  emailAlign: TextAlign
+}
+
+/** Same HTML pipeline as live preview (embedded images, social icons, text images). */
+const buildPreviewHtmlForForm = async (
   form: SignatureFormState
-): Promise<string> => {
+): Promise<{ html: string; layout: SignatureLayoutSettings }> => {
   const installForm = stripOutlookStoredAssetPathsFromForm(form)
   const layout = getLayoutSettings(installForm)
   const textImages = await generateSignatureTextImages(installForm, layout)
@@ -178,10 +199,45 @@ const buildBundledSignatureHtmlDocument = async (
   const { html: bundledHtml } = await bundleSignatureHtmlImages(bodyHtml, installForm, 'images', {
     embedImages: true
   })
+  return { html: bundledHtml, layout }
+}
+
+/** Same HTML pipeline as single install / export (full document with font folder). */
+const buildBundledSignatureHtmlDocument = async (
+  form: SignatureFormState
+): Promise<string> => {
+  const installForm = stripOutlookStoredAssetPathsFromForm(form)
+  const { html: bundledHtml, layout } = await buildPreviewHtmlForForm(installForm)
   return wrapHtmlDocument(bundledHtml, installForm.signatureLanguage, {
     fontFamily: layout.fontFamily,
     bundledFontAssetsBase: 'fonts'
   })
+}
+
+export const buildBulkSignaturePreviews = async (
+  template: SignatureFormState,
+  rows: BulkPersonRow[]
+): Promise<BulkSignaturePreview[]> => {
+  await initializeSocialIconDataUrls()
+  const exportTemplate = stripOutlookStoredAssetPathsFromForm(template)
+  const previews: BulkSignaturePreview[] = []
+
+  for (let index = 0; index < rows.length; index += 1) {
+    const row = rows[index]
+    const form = mergeBulkRowIntoForm(exportTemplate, row)
+    const { html, layout } = await buildPreviewHtmlForForm(form)
+    const label = row.fullName.trim() || row.email.trim() || `signature-${index + 1}`
+    previews.push({
+      id: `bulk-preview-${index}`,
+      label,
+      html,
+      width: layout.signatureWidth,
+      minHeight: layout.signatureHeight,
+      emailAlign: layout.emailAlign
+    })
+  }
+
+  return previews
 }
 
 const addBundledFontsToZip = async (zip: JSZip, fontFamily: string): Promise<void> => {
@@ -273,7 +329,7 @@ export const buildBulkTemplateWorkbook = (lang: AppLanguage): ArrayBuffer => {
     lang === 'he'
       ? [
           'ישראל ישראלי',
-          'מנהל מכירות',
+          'מנהל מכירות\nאזור אירופה',
           'חברה בע״מ',
           '050-1234567',
           'israel@example.com',
@@ -283,7 +339,7 @@ export const buildBulkTemplateWorkbook = (lang: AppLanguage): ArrayBuffer => {
         ]
       : [
           'Jane Doe',
-          'Sales Manager',
+          'Sales Manager\nEMEA',
           'Acme Ltd',
           '+1 555 123 4567',
           'jane@acme.com',

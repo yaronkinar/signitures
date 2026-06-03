@@ -12,5 +12,5 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src", "lib", "api", "api-src"]
+  "include": ["src", "lib", "api", "api-src", "e2e", "playwright.config.ts"]
 }

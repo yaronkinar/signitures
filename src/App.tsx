@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { SBA_BRAND_COLORS, SBA_BRAND_PRESETS } from './brandPresets'
 import { BulkSignaturesPanel } from './components/BulkSignaturesPanel'
-import { Field, SelectInput, TextInput } from './components/Field'
+import { Field, SelectInput, TextAreaInput, TextInput } from './components/Field'
 import { ColorInput } from './components/ColorInput'
 import { Panel } from './components/Panel'
 import { InstallOutlookWizard } from './components/InstallOutlookWizard'
@@ -511,7 +511,8 @@ export default function App() {
                 </p>
               </Field>
               <Field label={t(lang, 'jobTitle')}>
-                <TextInput
+                <TextAreaInput
+                  className="field-textarea"
                   value={form.jobTitle}
                   placeholder={t(lang, 'jobTitlePlaceholder')}
                   onChange={(e) => updateForm({ jobTitle: e.target.value })}

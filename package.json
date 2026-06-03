@@ -1,6 +1,6 @@
 {
   "name": "signitures",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "",
   "scripts": {
     "prepare": "node scripts/install-git-hooks.mjs",
@@ -12,16 +12,25 @@
     "preview": "vite preview",
     "image:html": "node scripts/convert-image-to-html.mjs",
     "capture:install-frames": "node scripts/capture-install-frames.mjs",
-    "build:install-gif": "node scripts/capture-install-frames.mjs"
+    "build:install-gif": "node scripts/capture-install-frames.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:all": "npm test && npm run test:e2e",
+    "playwright:install": "playwright install chromium"
   },
   "devDependencies": {
+    "@playwright/test": "^1.51.0",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.2.0",
+    "happy-dom": "^20.0.10",
     "playwright": "^1.51.0",
     "sharp": "^0.34.2",
     "typescript": "^5.5.3",
     "vite": "^7.3.3",
+    "vitest": "^3.2.4",
     "vite-plugin-pwa": "^1.0.1"
   },
   "private": true,

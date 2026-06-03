@@ -316,10 +316,17 @@ const translations = {
     bulkSignaturesLead:
       'Upload a spreadsheet with one person per row. Each row gets an HTML signature file using your current design (logo, colors, layout).',
     bulkSignaturesColumns:
-      'Columns: fullName (or name), jobTitle, company, phone, email, website — optional outlookSignatureName, language (en/he). First row must be headers.',
+      'Columns: fullName (or name), jobTitle, company, phone, email, website — optional outlookSignatureName, language (en/he). First row must be headers. In jobTitle (and company), use Alt+Enter in Excel for multiple lines, or \\n in CSV exports.',
     bulkDownloadTemplate: 'Download Excel template',
-    bulkUploadExcel: 'Upload Excel (HTML ZIP)',
-    bulkUploadExcelIt: 'Upload Excel → ZIP for IT',
+    bulkUploadExcel: 'Upload Excel',
+    bulkUploadExcelIt: 'Upload Excel (IT layout)',
+    bulkPreviewHeading: 'Preview — {count} signatures',
+    bulkPreviewReady: '{count} signatures ready. Download a ZIP below when you are satisfied.',
+    bulkPreviewReadyOne: '1 signature ready. Download a ZIP below when you are satisfied.',
+    bulkBuildingPreviews: 'Building previews…',
+    bulkDownloadZip: 'Download HTML ZIP',
+    bulkDownloadItZip: 'Download ZIP for IT',
+    bulkClearPreviews: 'Clear previews',
     bulkItHint:
       'ZIP for IT uses Outlook Signatures layout (.htm, .txt, .rtf, and *_files per person). Send outlook-signatures-for-it.zip to IT. The “ZIP for IT” link under Install only exports signatures already on this PC.',
     bulkWorking: 'Generating signatures…',
@@ -649,10 +656,17 @@ const translations = {
     bulkSignaturesLead:
       'העלו קובץ Excel עם שורה לכל אדם. לכל שורה נוצר קובץ HTML לפי העיצוב הנוכחי (לוגו, צבעים, פריסה).',
     bulkSignaturesColumns:
-      'עמודות: fullName (או שם), jobTitle, company, phone, email, website — outlookSignatureName ושפה (en/he) אופציונליים. שורה ראשונה = כותרות.',
+      'עמודות: fullName (או שם), jobTitle, company, phone, email, website — outlookSignatureName ושפה (en/he) אופציונליים. שורה ראשונה = כותרות. בתפקיד/חברה: Alt+Enter ב-Excel לשורות נוספות, או \\n ב-CSV.',
     bulkDownloadTemplate: 'הורדת תבנית Excel',
-    bulkUploadExcel: 'העלאת Excel (ZIP של HTML)',
-    bulkUploadExcelIt: 'העלאת Excel → ZIP ל-IT',
+    bulkUploadExcel: 'העלאת Excel',
+    bulkUploadExcelIt: 'העלאת Excel (פריסת IT)',
+    bulkPreviewHeading: 'תצוגה מקדימה — {count} חתימות',
+    bulkPreviewReady: '{count} חתימות מוכנות. הורידו ZIP למטה כשאתם מרוצים.',
+    bulkPreviewReadyOne: 'חתימה אחת מוכנה. הורידו ZIP למטה כשאתם מרוצים.',
+    bulkBuildingPreviews: 'בונה תצוגות מקדימות…',
+    bulkDownloadZip: 'הורדת ZIP של HTML',
+    bulkDownloadItZip: 'הורדת ZIP ל-IT',
+    bulkClearPreviews: 'ניקוי תצוגות',
     bulkItHint:
       'ZIP ל-IT בפריסת תיקיית Signatures של Outlook (.htm, .txt, .rtf ו-*_files לכל אדם). שלחו את outlook-signatures-for-it.zip ל-IT. הקישור "ZIP ל-IT" ליד ההתקנה מייצא רק חתימות שכבר מותקנות במחשב זה.',
     bulkWorking: 'יוצר חתימות…',

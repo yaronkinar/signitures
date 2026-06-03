@@ -91,6 +91,68 @@ type RenderTextBlockOptions = {
   maxWidth: number
 }
 
+const measureLineWidth = (ctx: CanvasRenderingContext2D, line: string): number =>
+  ctx.measureText(line).width
+
+const wrapLineByChars = (
+  ctx: CanvasRenderingContext2D,
+  line: string,
+  maxWidth: number
+): string[] => {
+  const chars = [...line]
+  if (!chars.length) return []
+
+  const lines: string[] = []
+  let current = ''
+  for (const char of chars) {
+    const candidate = current + char
+    if (measureLineWidth(ctx, candidate) <= maxWidth) {
+      current = candidate
+      continue
+    }
+
+    if (current) lines.push(current)
+    current = measureLineWidth(ctx, char) <= maxWidth ? char : ''
+  }
+
+  if (current) lines.push(current)
+  return lines.length ? lines : [line]
+}
+
+const wrapLineToMaxWidth = (
+  ctx: CanvasRenderingContext2D,
+  line: string,
+  maxWidth: number
+): string[] => {
+  const trimmed = line.trim()
+  if (!trimmed) return []
+  if (measureLineWidth(ctx, trimmed) <= maxWidth) return [trimmed]
+
+  const words = trimmed.split(/\s+/).filter(Boolean)
+  if (words.length <= 1) return wrapLineByChars(ctx, trimmed, maxWidth)
+
+  const lines: string[] = []
+  let current = ''
+  for (const word of words) {
+    const candidate = current ? `${current} ${word}` : word
+    if (measureLineWidth(ctx, candidate) <= maxWidth) {
+      current = candidate
+      continue
+    }
+
+    if (current) lines.push(current)
+    if (measureLineWidth(ctx, word) > maxWidth) {
+      lines.push(...wrapLineByChars(ctx, word, maxWidth))
+      current = ''
+    } else {
+      current = word
+    }
+  }
+
+  if (current) lines.push(current)
+  return lines.length ? lines : wrapLineByChars(ctx, trimmed, maxWidth)
+}
+
 const renderTextBlockToImage = async (
   options: RenderTextBlockOptions
 ): Promise<SignatureTextImageSlot | null> => {
@@ -107,16 +169,34 @@ const renderTextBlockToImage = async (
   const measureCtx = measureCanvas.getContext('2d')
   if (!measureCtx) return null
 
-  measureCtx.font = `${options.fontWeight} ${options.fontSize}px "${cssFamily}", Arial, Helvetica, sans-serif`
+  const fontCss = `${options.fontWeight} ${options.fontSize}px "${cssFamily}", Arial, Helvetica, sans-serif`
+  measureCtx.font = fontCss
+
+  const wrappedLines: string[] = []
+  const lineColors: string[] = []
+  nonEmpty.forEach((line, sourceIndex) => {
+    const segments = wrapLineToMaxWidth(measureCtx, line, options.maxWidth)
+    const color = options.colors[sourceIndex] ?? options.colors[0] ?? '#000000'
+    for (const segment of segments) {
+      wrappedLines.push(segment)
+      lineColors.push(color)
+    }
+  })
+
+  if (!wrappedLines.length) return null
 
   const lineGap = options.fontSize * options.lineHeight
   let maxLineWidth = 0
-  for (const line of nonEmpty) {
-    maxLineWidth = Math.max(maxLineWidth, measureCtx.measureText(line).width)
+  for (const line of wrappedLines) {
+    maxLineWidth = Math.max(maxLineWidth, measureLineWidth(measureCtx, line))
   }
 
-  const width = Math.min(Math.ceil(maxLineWidth) + 2, options.maxWidth)
-  const height = Math.ceil(options.fontSize + (nonEmpty.length - 1) * lineGap + 2)
+  const usedFullColumnWidth =
+    wrappedLines.length > nonEmpty.length || maxLineWidth >= options.maxWidth - 1
+  const width = usedFullColumnWidth
+    ? options.maxWidth
+    : Math.min(Math.ceil(maxLineWidth) + 2, options.maxWidth)
+  const height = Math.ceil(options.fontSize + (wrappedLines.length - 1) * lineGap + 2)
 
   const canvas = document.createElement('canvas')
   const dpr = Math.min(window.devicePixelRatio || 1, 2)
@@ -128,7 +208,7 @@ const renderTextBlockToImage = async (
 
   ctx.scale(dpr, dpr)
   ctx.clearRect(0, 0, width, height)
-  ctx.font = `${options.fontWeight} ${options.fontSize}px "${cssFamily}", Arial, Helvetica, sans-serif`
+  ctx.font = fontCss
   ctx.direction = options.direction
   ctx.textBaseline = 'top'
   ctx.textAlign = options.align
@@ -136,8 +216,8 @@ const renderTextBlockToImage = async (
   const x =
     options.align === 'left' ? 0 : options.align === 'center' ? width / 2 : width
 
-  nonEmpty.forEach((line, index) => {
-    ctx.fillStyle = options.colors[index] ?? options.colors[0] ?? '#000000'
+  wrappedLines.forEach((line, index) => {
+    ctx.fillStyle = lineColors[index] ?? options.colors[0] ?? '#000000'
     ctx.fillText(line, x, 1 + index * lineGap)
   })
 
@@ -166,16 +246,17 @@ export const generateSignatureTextImages = async (
   const titleLineHeight = Math.max(1, layout.lineSpacing - 0.3)
 
   const fullName = stripInlineHtmlToPlainText(form.fullName)
-  const jobTitle = stripInlineHtmlToPlainText(form.jobTitle)
+  const jobTitleLines = stripInlineHtmlToPlainText(form.jobTitle)
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
   const company = stripInlineHtmlToPlainText(form.company)
 
-  const titleLines = [jobTitle, company].filter(Boolean)
-  const titleColors =
-    jobTitle && company
-      ? [layout.jobTitleColor, layout.companyColor]
-      : jobTitle
-        ? [layout.jobTitleColor]
-        : [layout.companyColor]
+  const titleLines = [...jobTitleLines, ...(company ? [company] : [])]
+  const titleColors = [
+    ...jobTitleLines.map(() => layout.jobTitleColor),
+    ...(company ? [layout.companyColor] : [])
+  ]
 
   const [name, titleBlock] = await Promise.all([
     fullName
