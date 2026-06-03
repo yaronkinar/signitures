@@ -316,7 +316,7 @@ const translations = {
     bulkSignaturesLead:
       'Upload a spreadsheet with one person per row. Each row gets an HTML signature file using your current design (logo, colors, layout).',
     bulkSignaturesColumns:
-      'Columns: fullName (or name), jobTitle, company, phone, email, website — optional language (en/he). First row must be headers.',
+      'Columns: fullName (or name), jobTitle, company, phone, email, website — optional outlookSignatureName, language (en/he). First row must be headers.',
     bulkDownloadTemplate: 'Download Excel template',
     bulkUploadExcel: 'Upload Excel (HTML ZIP)',
     bulkUploadExcelIt: 'Upload Excel → ZIP for IT',
@@ -649,7 +649,7 @@ const translations = {
     bulkSignaturesLead:
       'העלו קובץ Excel עם שורה לכל אדם. לכל שורה נוצר קובץ HTML לפי העיצוב הנוכחי (לוגו, צבעים, פריסה).',
     bulkSignaturesColumns:
-      'עמודות: fullName (או שם), jobTitle, company, phone, email, website — שפה אופציונלית (en/he). שורה ראשונה = כותרות.',
+      'עמודות: fullName (או שם), jobTitle, company, phone, email, website — outlookSignatureName ושפה (en/he) אופציונליים. שורה ראשונה = כותרות.',
     bulkDownloadTemplate: 'הורדת תבנית Excel',
     bulkUploadExcel: 'העלאת Excel (ZIP של HTML)',
     bulkUploadExcelIt: 'העלאת Excel → ZIP ל-IT',

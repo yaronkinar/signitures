@@ -2,14 +2,7 @@ import JSZip from 'jszip'
 import * as XLSX from 'xlsx'
 import type { AppLanguage, I18nKey } from '../i18n'
 import type { SignatureFormState } from '../types/signatureForm'
-import {
-  addImageAssetsToZip,
-  buildImageAssets,
-  collectDataImageUrlsFromHtml,
-  collectFormImageSources,
-  rewriteFormImageUrls,
-  rewriteUrlsInHtml
-} from './signatureImageAssets'
+import { bundleSignatureHtmlImages, stripOutlookStoredAssetPathsFromForm } from './signatureImageAssets'
 import { buildSignatureHtml } from './signatureHtmlBuilder'
 import { generateSignatureTextImages } from './signatureTextImages'
 import { sanitizeFileName, uniqueFileName } from './fileNames'
@@ -32,6 +25,7 @@ export type BulkPersonRow = {
   phone: string
   email: string
   website: string
+  outlookSignatureName?: string
   language?: AppLanguage
 }
 
@@ -44,6 +38,13 @@ const COLUMN_ALIASES: Record<BulkField, string[]> = {
   phone: ['phone', 'mobile', 'tel', 'telephone', 'נייד', 'טלפון'],
   email: ['email', 'e-mail', 'mail', 'דואל', 'דוא"ל', 'אימייל'],
   website: ['website', 'web', 'url', 'אתר'],
+  outlookSignatureName: [
+    'outlook signature name',
+    'signature name',
+    'outlook name',
+    'שם חתימה',
+    'שם חתימה ב-outlook'
+  ],
   language: ['language', 'lang', 'שפה']
 }
 
@@ -162,8 +163,26 @@ export const mergeBulkRowIntoForm = (
   company: row.company || template.company,
   phone: row.phone || template.phone,
   email: row.email || template.email,
-  website: row.website || template.website
+  website: row.website || template.website,
+  outlookSignatureName: row.outlookSignatureName?.trim() || template.outlookSignatureName
 })
+
+/** Same HTML pipeline as single install / preview (embedded images, social icons, text images). */
+const buildBundledSignatureHtmlDocument = async (
+  form: SignatureFormState
+): Promise<string> => {
+  const installForm = stripOutlookStoredAssetPathsFromForm(form)
+  const layout = getLayoutSettings(installForm)
+  const textImages = await generateSignatureTextImages(installForm, layout)
+  const bodyHtml = buildSignatureHtml(installForm, layout, { textImages })
+  const { html: bundledHtml } = await bundleSignatureHtmlImages(bodyHtml, installForm, 'images', {
+    embedImages: true
+  })
+  return wrapHtmlDocument(bundledHtml, installForm.signatureLanguage, {
+    fontFamily: layout.fontFamily,
+    bundledFontAssetsBase: 'fonts'
+  })
+}
 
 const addBundledFontsToZip = async (zip: JSZip, fontFamily: string): Promise<void> => {
   const fileNames = allBundledSignatureFontFileNames(fontFamily)
@@ -191,47 +210,13 @@ export const generateBulkSignaturesZip = async (
 
   const zip = new JSZip()
   const usedNames = new Set<string>()
-  const templateLayout = getLayoutSettings(template)
-  const assetsFolder = 'images'
-  const templateAssets = await buildImageAssets(collectFormImageSources(template), assetsFolder)
-  const exportTemplate = templateAssets.files.length
-    ? rewriteFormImageUrls(template, templateAssets.urlMap)
-    : template
+  const exportTemplate = stripOutlookStoredAssetPathsFromForm(template)
 
-  let sharedImageAssets = [...templateAssets.files]
-  let htmlUrlMap = templateAssets.urlMap
-
-  if (rows.length > 0) {
-    const sampleForm = mergeBulkRowIntoForm(exportTemplate, rows[0])
-    const sampleLayout = getLayoutSettings(sampleForm)
-    const sampleTextImages = await generateSignatureTextImages(sampleForm, sampleLayout)
-    const sampleHtml = buildSignatureHtml(sampleForm, sampleLayout, { textImages: sampleTextImages })
-    const bundledSample = await buildImageAssets(
-      [
-        ...collectFormImageSources(sampleForm),
-        ...collectDataImageUrlsFromHtml(sampleHtml).map((url, index) => ({
-          url,
-          baseName: `embedded-image-${index + 1}`
-        }))
-      ],
-      assetsFolder
-    )
-    sharedImageAssets = bundledSample.files
-    htmlUrlMap = bundledSample.urlMap
-  }
-
-  await addBundledFontsToZip(zip, templateLayout.fontFamily)
-  addImageAssetsToZip(zip, assetsFolder, sharedImageAssets)
+  await addBundledFontsToZip(zip, getLayoutSettings(exportTemplate).fontFamily)
 
   for (const row of rows) {
     const form = mergeBulkRowIntoForm(exportTemplate, row)
-    const layout = getLayoutSettings(form)
-    const textImages = await generateSignatureTextImages(form, layout)
-    const bodyHtml = rewriteUrlsInHtml(buildSignatureHtml(form, layout, { textImages }), htmlUrlMap)
-    const htmlDocument = wrapHtmlDocument(bodyHtml, form.signatureLanguage, {
-      fontFamily: layout.fontFamily,
-      bundledFontAssetsBase: 'fonts'
-    })
+    const htmlDocument = await buildBundledSignatureHtmlDocument(form)
 
     const label = row.fullName.trim() || row.email.trim() || 'signature'
     const base = sanitizeFileName(label)
@@ -252,16 +237,15 @@ export const generateBulkOutlookSignaturesZip = async (
   const zip = new JSZip()
   const usedNames = new Set<string>()
 
+  const exportTemplate = stripOutlookStoredAssetPathsFromForm(template)
+
   for (const row of rows) {
-    const form = mergeBulkRowIntoForm(template, row)
-    const layout = getLayoutSettings(form)
-    const textImages = await generateSignatureTextImages(form, layout)
-    const bodyHtml = buildSignatureHtml(form, layout, { textImages })
+    const form = mergeBulkRowIntoForm(exportTemplate, row)
     const fileBase = uniqueFileName(
-      toOutlookSignatureFileBase(form.fullName, form.email, ''),
+      toOutlookSignatureFileBase(form.fullName, form.email, form.outlookSignatureName),
       usedNames
     )
-    const pkg = await buildOutlookSignaturePackage(bodyHtml, form, fileBase)
+    const pkg = await buildOutlookSignaturePackage('', form, fileBase)
     addOutlookSignaturePackageToZip(zip, pkg)
   }
 
@@ -282,13 +266,31 @@ export const downloadBlob = (blob: Blob, filename: string): void => {
 export const buildBulkTemplateWorkbook = (lang: AppLanguage): ArrayBuffer => {
   const headers =
     lang === 'he'
-      ? ['שם מלא', 'תפקיד', 'חברה', 'טלפון', 'דוא"ל', 'אתר', 'שפה']
-      : ['fullName', 'jobTitle', 'company', 'phone', 'email', 'website', 'language']
+      ? ['שם מלא', 'תפקיד', 'חברה', 'טלפון', 'דוא"ל', 'אתר', 'שם חתימה ב-Outlook', 'שפה']
+      : ['fullName', 'jobTitle', 'company', 'phone', 'email', 'website', 'outlookSignatureName', 'language']
 
   const sample =
     lang === 'he'
-      ? ['ישראל ישראלי', 'מנהל מכירות', 'חברה בע״מ', '050-1234567', 'israel@example.com', 'https://example.com', 'he']
-      : ['Jane Doe', 'Sales Manager', 'Acme Ltd', '+1 555 123 4567', 'jane@acme.com', 'https://acme.com', 'en']
+      ? [
+          'ישראל ישראלי',
+          'מנהל מכירות',
+          'חברה בע״מ',
+          '050-1234567',
+          'israel@example.com',
+          'https://example.com',
+          'Israel Israeli',
+          'he'
+        ]
+      : [
+          'Jane Doe',
+          'Sales Manager',
+          'Acme Ltd',
+          '+1 555 123 4567',
+          'jane@acme.com',
+          'https://acme.com',
+          'Jane Doe',
+          'en'
+        ]
 
   const sheet = XLSX.utils.aoa_to_sheet([headers, sample])
   const workbook = XLSX.utils.book_new()
