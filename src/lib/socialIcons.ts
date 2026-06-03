@@ -65,11 +65,13 @@ const linkedInWhiteIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24"
   <path fill="#ffffff" d="${linkedInGlyphPath}"/>
 </svg>`
 
-const SOCIAL_ICON_PNG_PIXEL_SIZE = 72
-/** Transparent margin baked into PNG so Outlook compose does not crop visible artwork. */
-const SOCIAL_ICON_PNG_SAFE_PAD_TOP = 5
-const SOCIAL_ICON_PNG_SAFE_PAD_BOTTOM = 2
-const SOCIAL_ICON_PNG_SAFE_PAD_X = 2
+const SOCIAL_ICON_PNG_PIXEL_SIZE = 80
+/** Bump when rasterization changes so cached data URLs are rebuilt on next load. */
+const SOCIAL_ICON_GENERATION = 4
+/** Equal transparent margin on all sides — Outlook often crops the top or bottom edge. */
+const SOCIAL_ICON_PNG_SAFE_PAD = 8
+
+let socialIconsLoadedGeneration = 0
 
 const svgToPngDataUrl = (svg: string, size = SOCIAL_ICON_PNG_PIXEL_SIZE): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -86,15 +88,9 @@ const svgToPngDataUrl = (svg: string, size = SOCIAL_ICON_PNG_PIXEL_SIZE): Promis
         reject(new Error('Canvas not available'))
         return
       }
-      const drawWidth = size - SOCIAL_ICON_PNG_SAFE_PAD_X * 2
-      const drawHeight = size - SOCIAL_ICON_PNG_SAFE_PAD_TOP - SOCIAL_ICON_PNG_SAFE_PAD_BOTTOM
-      context.drawImage(
-        image,
-        SOCIAL_ICON_PNG_SAFE_PAD_X,
-        SOCIAL_ICON_PNG_SAFE_PAD_TOP,
-        drawWidth,
-        drawHeight
-      )
+      const inset = SOCIAL_ICON_PNG_SAFE_PAD
+      const drawSize = size - inset * 2
+      context.drawImage(image, inset, inset, drawSize, drawSize)
       URL.revokeObjectURL(svgUrl)
       resolve(canvas.toDataURL('image/png'))
     }
@@ -146,9 +142,20 @@ const renderSimpleIconVariants = async (
   await Promise.all(tasks)
 }
 
+const resetSocialIconCache = (): void => {
+  for (const platform of Object.keys(socialIconVariantDataUrls) as SocialPlatform[]) {
+    socialIconVariantDataUrls[platform] = {}
+  }
+}
+
 export const initializeSocialIconDataUrls = async (): Promise<void> => {
-  if (socialIconsInitializationPromise) {
+  if (socialIconsInitializationPromise && socialIconsLoadedGeneration === SOCIAL_ICON_GENERATION) {
     return socialIconsInitializationPromise
+  }
+
+  if (socialIconsLoadedGeneration !== SOCIAL_ICON_GENERATION) {
+    resetSocialIconCache()
+    socialIconsInitializationPromise = null
   }
 
   socialIconsInitializationPromise = Promise.all([
@@ -168,7 +175,9 @@ export const initializeSocialIconDataUrls = async (): Promise<void> => {
     svgToPngDataUrl(linkedInWhiteIconSvg).then((dataUrl) => {
       setVariantUrl('LinkedIn', 'white', dataUrl)
     })
-  ]).then(() => undefined)
+  ]).then(() => {
+    socialIconsLoadedGeneration = SOCIAL_ICON_GENERATION
+  })
 
   return socialIconsInitializationPromise
 }
