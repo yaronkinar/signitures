@@ -460,6 +460,24 @@ export const downloadOutlookInstaller = async (
   await saveOutlookInstaller(htmlBody, form, options)
 }
 
+export const prepareHtmlForOutlookPaste = async (
+  htmlBody: string,
+  form: SignatureFormState
+): Promise<string> => {
+  const { html } = await bundleSignatureHtmlImages(htmlBody, form, 'images', {
+    embedImages: true
+  })
+  return html
+}
+
+export const copySignatureForOutlookPaste = async (
+  htmlBody: string,
+  form: SignatureFormState
+): Promise<boolean> => {
+  const html = await prepareHtmlForOutlookPaste(htmlBody, form)
+  return copyHtmlForPasting(html)
+}
+
 export const copyHtmlForPasting = async (html: string): Promise<boolean> => {
   const clipboardItemCtor = (window as typeof window & { ClipboardItem?: typeof ClipboardItem })
     .ClipboardItem
@@ -506,13 +524,8 @@ export const installForNewOutlook = async (
   lang: AppLanguage,
   form?: SignatureFormState
 ): Promise<void> => {
-  let htmlForClipboard = htmlBody
-  if (form) {
-    const { html: bundledBody } = await bundleSignatureHtmlImages(htmlBody, form, 'images', {
-      embedImages: true
-    })
-    htmlForClipboard = wrapHtmlDocument(bundledBody, lang, { fontFamily: form.fontFamily })
-  }
+  const htmlForClipboard =
+    form != null ? await prepareHtmlForOutlookPaste(htmlBody, form) : htmlBody
 
   const richCopied = await copyHtmlForPasting(htmlForClipboard)
   const popup = window.open(NEW_OUTLOOK_SIGNATURE_SETTINGS_URL, '_blank', 'noopener,noreferrer')

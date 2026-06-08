@@ -26,6 +26,7 @@ import {
 } from '../lib/formStorage'
 import { createDefaultFormState, createDefaultLinkImage } from '../lib/defaultFormState'
 import {
+  copySignatureForOutlookPaste,
   downloadHtmlOutput,
   downloadExportSignaturesFolderBat,
   downloadOpenDownloadsFolderBat,
@@ -443,8 +444,11 @@ export const useSignatureApp = () => {
   const copyOutput = useCallback(async () => {
     const value = outputHtml.trim()
     if (!value) return
-    await navigator.clipboard.writeText(value)
-  }, [outputHtml])
+    const richCopied = await copySignatureForOutlookPaste(value, form)
+    if (!richCopied) {
+      await navigator.clipboard.writeText(value)
+    }
+  }, [form, outputHtml])
 
   const handleDownload = useCallback(async () => {
     const value = outputHtml.trim()
