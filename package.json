@@ -1,6 +1,6 @@
 {
   "name": "signitures",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "description": "",
   "scripts": {
     "prepare": "node scripts/install-git-hooks.mjs",
@@ -30,8 +30,8 @@
     "sharp": "^0.34.2",
     "typescript": "^5.5.3",
     "vite": "^7.3.3",
-    "vitest": "^3.2.4",
-    "vite-plugin-pwa": "^1.0.1"
+    "vite-plugin-pwa": "^1.0.1",
+    "vitest": "^3.2.4"
   },
   "private": true,
   "dependencies": {
@@ -40,6 +40,7 @@
     "@vercel/blob": "^2.4.0",
     "@vercel/node": "^5.8.3",
     "esbuild": "^0.25.0",
+    "html-to-image": "^1.11.13",
     "jszip": "^3.10.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

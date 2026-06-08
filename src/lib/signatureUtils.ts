@@ -159,6 +159,52 @@ export const fileToDataUrl = (file: File): Promise<string> =>
     reader.readAsDataURL(file)
   })
 
+export type ImageDisplaySize = {
+  width: number
+  height: number
+}
+
+export const scaleImageToMaxWidth = (
+  naturalWidth: number,
+  naturalHeight: number,
+  maxWidth: number
+): ImageDisplaySize => {
+  if (naturalWidth <= 0 || naturalHeight <= 0) {
+    return { width: maxWidth, height: maxWidth }
+  }
+  if (naturalWidth <= maxWidth) {
+    return { width: naturalWidth, height: naturalHeight }
+  }
+  return {
+    width: maxWidth,
+    height: Math.max(1, Math.round((naturalHeight * maxWidth) / naturalWidth))
+  }
+}
+
+export const loadImageNaturalSize = (url: string): Promise<ImageDisplaySize | null> =>
+  new Promise((resolve) => {
+    const image = new Image()
+    image.onload = () => {
+      resolve({
+        width: image.naturalWidth,
+        height: image.naturalHeight
+      })
+    }
+    image.onerror = () => resolve(null)
+    image.src = url
+  })
+
+export const resolveImageDisplaySize = async (
+  url: string,
+  maxWidth: number
+): Promise<ImageDisplaySize | null> => {
+  const trimmed = url.trim()
+  if (!trimmed) return null
+  const natural = await loadImageNaturalSize(trimmed)
+  if (!natural) return null
+  return scaleImageToMaxWidth(natural.width, natural.height, maxWidth)
+}
+
 const SIGNATURE_GOOGLE_FONT_STYLESHEETS: { match: RegExp; href: string }[] = [
   {
     match: /rubik/i,

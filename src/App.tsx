@@ -1348,6 +1348,15 @@ export default function App() {
               >
                 {t(lang, 'copyHtml')}
               </button>
+              <button
+                type="button"
+                className="btn-preview-outline"
+                onClick={() => {
+                  app.handleDownloadPng().catch(() => undefined)
+                }}
+              >
+                {t(lang, 'downloadPng')}
+              </button>
               <button type="button" className="btn-preview-outline" onClick={app.handleInstallOutlook}>
                 {t(lang, 'installOutlook')}
               </button>
@@ -1420,6 +1429,15 @@ export default function App() {
           </button>
           <button type="button" className="secondary" onClick={app.handleDownload}>
             {t(lang, 'downloadHtml')}
+          </button>
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => {
+              app.handleDownloadPng().catch(() => undefined)
+            }}
+          >
+            {t(lang, 'downloadPng')}
           </button>
           <button type="button" className="secondary" onClick={app.handleInstallOutlook}>
             {t(lang, 'installOutlook')}

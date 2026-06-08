@@ -15,6 +15,7 @@ import {
   allBundledSignatureFontFileNames,
   signatureFontPublicUrl
 } from './signatureFonts'
+import { renderSignatureHtmlToPngBlob } from './signatureImageExport'
 import { getLayoutSettings, wrapHtmlDocument } from './signatureUtils'
 import { initializeSocialIconDataUrls } from './socialIcons'
 
@@ -335,6 +336,32 @@ export const generateBulkSignaturesZip = async (
     const base = sanitizeFileName(label)
     const fileBase = uniqueFileName(base, usedNames)
     zip.file(`${fileBase}.html`, htmlDocument)
+  }
+
+  return zip.generateAsync({ type: 'blob' })
+}
+
+export const generateBulkSignaturesPngZip = async (
+  template: SignatureFormState,
+  rows: BulkPersonRow[],
+  overrides: BulkRowFormOverrides = []
+): Promise<Blob> => {
+  await initializeSocialIconDataUrls()
+
+  const zip = new JSZip()
+  const usedNames = new Set<string>()
+  const exportTemplate = stripOutlookStoredAssetPathsFromForm(template)
+
+  for (let index = 0; index < rows.length; index += 1) {
+    const row = rows[index]
+    const form = resolveBulkRowForm(exportTemplate, row, overrides[index])
+    const { html, layout } = await buildPreviewHtmlForForm(form)
+    const pngBlob = await renderSignatureHtmlToPngBlob(html, layout)
+
+    const label = bulkPreviewLabel(row, index)
+    const base = sanitizeFileName(label)
+    const fileBase = uniqueFileName(base, usedNames)
+    zip.file(`${fileBase}.png`, pngBlob)
   }
 
   return zip.generateAsync({ type: 'blob' })

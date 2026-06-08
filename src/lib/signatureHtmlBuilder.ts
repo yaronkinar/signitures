@@ -7,7 +7,15 @@ import type {
 } from '../types/signatureForm'
 import { DEFAULT_LINK_IMAGE_MAX_HEIGHT, DEFAULT_LINK_IMAGE_MAX_WIDTH } from '../types/signatureForm'
 import type { SignatureTextImageSlot } from './signatureTextImages'
-import { escapeHtml, hasHebrew, normalizeUrl, outlookFontFamilyStyle, sanitizeFontFamily, sanitizeSignatureInlineHtml } from './signatureUtils'
+import {
+  escapeHtml,
+  hasHebrew,
+  normalizeUrl,
+  outlookFontFamilyStyle,
+  sanitizeFontFamily,
+  sanitizeSignatureInlineHtml,
+  type ImageDisplaySize
+} from './signatureUtils'
 import { resolveSocialIconUrl } from './socialIcons'
 
 export type BuildSignatureHtmlOptions = {
@@ -15,6 +23,8 @@ export type BuildSignatureHtmlOptions = {
     name?: SignatureTextImageSlot
     titleBlock?: SignatureTextImageSlot
   }
+  logoDisplaySize?: ImageDisplaySize
+  bannerDisplaySize?: ImageDisplaySize
 }
 
 const buildTextImageRow = (
@@ -27,7 +37,7 @@ const buildTextImageRow = (
   const src = escapeHtml(slot.dataUrl)
   const alt = escapeHtml(slot.alt)
   return `<tr><td dir="${nameTitleDirection}" align="${nameTitleAlignAttr}" style="padding:${padding};font-size:0;line-height:0;text-align:${nameTitleAlign};">
-        <img src="${src}" alt="${alt}" width="${slot.width}" height="${slot.height}" style="display:block;width:${slot.width}px;height:${slot.height}px;border:0;max-width:100%;" />
+        <img src="${src}" alt="${alt}" width="${slot.width}" height="${slot.height}" style="display:block;width:${slot.width}px;height:${slot.height}px;border:0;" />
       </td></tr>`
 }
 
@@ -404,17 +414,35 @@ export const buildSignatureHtml = (
   const logoAlignAttr =
     layout.logoAlign === 'left' ? 'left' : layout.logoAlign === 'center' ? 'center' : 'right'
 
-  const buildLogoGraphic = (maxWidth: number): string =>
+  const buildSizedImageTag = (
+    src: string,
+    alt: string,
+    displaySize: ImageDisplaySize | undefined,
+    fallbackMaxWidth: number
+  ): string => {
+    const width = displaySize?.width ?? fallbackMaxWidth
+    const height = displaySize?.height
+    const heightAttr = height ? ` height="${height}"` : ''
+    const heightStyle = height ? `height:${height}px;` : ''
+    return `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" width="${width}"${heightAttr} style="display:block;border:0;width:${width}px;${heightStyle}max-width:${width}px;" />`
+  }
+
+  const buildLogoGraphic = (maxWidth: number, displaySize?: ImageDisplaySize): string =>
     logoUrl
       ? `<span style="display:inline-block;line-height:0;font-size:0;margin-left:${logoHorizontalShift}px;vertical-align:top;">
-          <img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(strings.companyLogoAlt)}" width="${maxWidth}" style="display:block;border:0;max-width:${maxWidth}px;height:auto;" />
+          ${buildSizedImageTag(logoUrl, strings.companyLogoAlt, displaySize, maxWidth)}
         </span>`
       : `<div style="display:inline-block;font-size:14px;color:${accentColor};font-weight:700;margin-left:${logoHorizontalShift}px;">${strings.companyLogoPlaceholder}</div>`
 
   const buildBannerGraphic = (): string => {
     if (!bannerUrl) return ''
-    const bannerWidth = Math.min(layout.bannerMaxWidth, signatureWidth)
-    const img = `<img src="${escapeHtml(bannerUrl)}" alt="${escapeHtml(strings.bannerAlt)}" width="${bannerWidth}" style="display:block;border:0;max-width:${bannerWidth}px;width:100%;height:auto;" />`
+    const bannerMaxWidth = Math.min(layout.bannerMaxWidth, signatureWidth)
+    const img = buildSizedImageTag(
+      bannerUrl,
+      strings.bannerAlt,
+      options.bannerDisplaySize,
+      bannerMaxWidth
+    )
     return bannerLink
       ? `<a href="${escapeHtml(bannerLink)}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">${img}</a>`
       : img
@@ -456,7 +484,7 @@ export const buildSignatureHtml = (
   </tr>`
   }
 
-  const logoGraphic = buildLogoGraphic(layout.logoMaxWidth)
+  const logoGraphic = buildLogoGraphic(layout.logoMaxWidth, options.logoDisplaySize)
 
   const logoVerticalAlign = hasFooterIcons ? 'top' : layout.verticalAlign
   const logoCell = `<td valign="${logoVerticalAlign}" style="vertical-align:${logoVerticalAlign};padding-left:${logoPaddingLeft}px;padding-right:${logoPaddingRight}px;padding-top:${Math.max(
@@ -493,7 +521,10 @@ export const buildSignatureHtml = (
         : `6px ${edgeInset}px ${Math.max(0, -layout.logoOffsetY) + edgeInset}px`
     return `<tr>
     <td align="${logoAlignAttr}" style="padding:${topPadding};text-align:${layout.logoAlign};font-size:0;line-height:0;max-width:100%;">
-      ${buildLogoGraphic(Math.min(layout.logoMaxWidth, signatureWidth - edgeInset * 2))}
+      ${buildLogoGraphic(
+        Math.min(layout.logoMaxWidth, signatureWidth - edgeInset * 2),
+        options.logoDisplaySize
+      )}
     </td>
   </tr>`
   }

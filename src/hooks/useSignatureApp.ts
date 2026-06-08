@@ -40,6 +40,7 @@ import {
 import { downloadWindowsFontInstaller } from '../lib/fontInstallScripts'
 import { getBundledFontCssFamily, isBundledWebFont } from '../lib/signatureFonts'
 import { buildSignatureHtml } from '../lib/signatureHtmlBuilder'
+import { resolveImageDisplaySize } from '../lib/signatureUtils'
 import { generateSignatureTextImages } from '../lib/signatureTextImages'
 import {
   defaultSaveAsName,
@@ -58,6 +59,7 @@ import {
   saveCloudSignature
 } from '../lib/cloudSignatures'
 import { initializeSocialIconDataUrls } from '../lib/socialIcons'
+import { downloadSignaturePng } from '../lib/signatureImageExport'
 import { stripOutlookStoredAssetPathsFromForm } from '../lib/signatureImageAssets'
 import {
   alignForHebrew,
@@ -137,7 +139,22 @@ export const useSignatureApp = () => {
     const readyForm = stripOutlookStoredAssetPathsFromForm(state)
     const nextLayout = getLayoutSettings(readyForm)
     const textImages = await generateSignatureTextImages(readyForm, nextLayout)
-    const html = buildSignatureHtml(readyForm, nextLayout, { textImages })
+    const [logoDisplaySize, bannerDisplaySize] = await Promise.all([
+      readyForm.logoUrl.trim()
+        ? resolveImageDisplaySize(readyForm.logoUrl, nextLayout.logoMaxWidth)
+        : Promise.resolve(null),
+      readyForm.bannerUrl.trim()
+        ? resolveImageDisplaySize(
+            readyForm.bannerUrl,
+            Math.min(nextLayout.bannerMaxWidth, nextLayout.signatureWidth)
+          )
+        : Promise.resolve(null)
+    ])
+    const html = buildSignatureHtml(readyForm, nextLayout, {
+      textImages,
+      logoDisplaySize: logoDisplaySize ?? undefined,
+      bannerDisplaySize: bannerDisplaySize ?? undefined
+    })
     setLayout(nextLayout)
     setOutputHtml(html)
     return html
@@ -455,6 +472,19 @@ export const useSignatureApp = () => {
     if (!value) return
     await downloadHtmlOutput(value, lang, form.fontFamily, form)
   }, [form, lang, outputHtml])
+
+  const handleDownloadPng = useCallback(async () => {
+    try {
+      const value = outputHtml.trim() ? outputHtml : await generate()
+      if (!value.trim()) {
+        addToast(t(lang, 'downloadPngFailed'), 'error')
+        return
+      }
+      await downloadSignaturePng(value, form, layout)
+    } catch {
+      addToast(t(lang, 'downloadPngFailed'), 'error')
+    }
+  }, [addToast, form, generate, lang, layout, outputHtml])
 
   const openInstallWizard = useCallback(() => {
     setInstallWizardPhase('options')
@@ -802,6 +832,7 @@ export const useSignatureApp = () => {
     generate,
     copyOutput,
     handleDownload,
+    handleDownloadPng,
     handleInstallOutlook,
     handleInstallNewOutlook,
     installWizardOpen,

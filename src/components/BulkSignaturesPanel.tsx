@@ -10,6 +10,7 @@ import {
   downloadBulkTemplate,
   formToBulkPersonRow,
   generateBulkOutlookSignaturesZip,
+  generateBulkSignaturesPngZip,
   generateBulkSignaturesZip,
   parseBulkErrorCode,
   parseBulkSpreadsheet,
@@ -182,6 +183,32 @@ export const BulkSignaturesPanel = ({
     }
   }
 
+  const downloadPngZip = async () => {
+    if (!rows?.length) return
+    setWorking(true)
+    setStatus(t(lang, 'bulkWorking'))
+    setStatusTone('idle')
+
+    try {
+      const zip = await generateBulkSignaturesPngZip(template, rows, overrides)
+      downloadBlob(zip, 'signatures-png.zip')
+      setStatus(
+        rows.length === 1
+          ? t(lang, 'bulkPngSuccessOne')
+          : t(lang, 'bulkPngSuccessMany').replace('{count}', String(rows.length))
+      )
+      setStatusTone('success')
+    } catch (error) {
+      const code = parseBulkErrorCode(error)
+      const key = bulkErrorMessageKey(code)
+      const message = code === 'UNKNOWN' && error instanceof Error ? error.message : t(lang, key)
+      setStatus(`${t(lang, 'bulkFailed')} ${message}`)
+      setStatusTone('error')
+    } finally {
+      setWorking(false)
+    }
+  }
+
   return (
     <Panel id="panel-bulk" summary={t(lang, 'bulkSignatures')}>
       <p className="hint">{t(lang, 'bulkSignaturesLead')}</p>
@@ -213,6 +240,16 @@ export const BulkSignaturesPanel = ({
               onClick={() => downloadZip(false)}
             >
               {t(lang, 'bulkDownloadZip')}
+            </button>
+            <button
+              type="button"
+              className="secondary"
+              disabled={working}
+              onClick={() => {
+                downloadPngZip().catch(() => undefined)
+              }}
+            >
+              {t(lang, 'bulkDownloadPngZip')}
             </button>
             <button type="button" className="secondary" disabled={working} onClick={() => downloadZip(true)}>
               {t(lang, 'bulkDownloadItZip')}
