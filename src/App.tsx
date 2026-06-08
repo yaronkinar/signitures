@@ -334,6 +334,11 @@ export default function App() {
 
   return (
     <main className="app-shell">
+      <header className="app-mobile-chrome" aria-label={t(lang, 'uiThemeToggleLabel')}>
+        <ThemeToggle lang={lang} theme={uiTheme} onChange={setUiTheme} />
+        <LanguageToggle lang={lang} onChange={app.handleLanguageChange} />
+      </header>
+
       <div className="ui-precision-only">
         <header className="app-topbar">
           <div className="app-topbar-brand">
