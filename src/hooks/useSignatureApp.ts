@@ -39,9 +39,7 @@ import {
 } from '../lib/outlookInstall'
 import { downloadWindowsFontInstaller } from '../lib/fontInstallScripts'
 import { getBundledFontCssFamily, isBundledWebFont } from '../lib/signatureFonts'
-import { buildSignatureHtml } from '../lib/signatureHtmlBuilder'
-import { resolveImageDisplaySize } from '../lib/signatureUtils'
-import { generateSignatureTextImages } from '../lib/signatureTextImages'
+import { buildSignatureHtml, resolveSignatureHtmlBuildOptions } from '../lib/signatureHtmlBuilder'
 import {
   defaultSaveAsName,
   deleteSavedSignature,
@@ -138,23 +136,8 @@ export const useSignatureApp = () => {
     await initializeSocialIconDataUrls()
     const readyForm = stripOutlookStoredAssetPathsFromForm(state)
     const nextLayout = getLayoutSettings(readyForm)
-    const textImages = await generateSignatureTextImages(readyForm, nextLayout)
-    const [logoDisplaySize, bannerDisplaySize] = await Promise.all([
-      readyForm.logoUrl.trim()
-        ? resolveImageDisplaySize(readyForm.logoUrl, nextLayout.logoMaxWidth)
-        : Promise.resolve(null),
-      readyForm.bannerUrl.trim()
-        ? resolveImageDisplaySize(
-            readyForm.bannerUrl,
-            Math.min(nextLayout.bannerMaxWidth, nextLayout.signatureWidth)
-          )
-        : Promise.resolve(null)
-    ])
-    const html = buildSignatureHtml(readyForm, nextLayout, {
-      textImages,
-      logoDisplaySize: logoDisplaySize ?? undefined,
-      bannerDisplaySize: bannerDisplaySize ?? undefined
-    })
+    const buildOptions = await resolveSignatureHtmlBuildOptions(readyForm, nextLayout)
+    const html = buildSignatureHtml(readyForm, nextLayout, buildOptions)
     setLayout(nextLayout)
     setOutputHtml(html)
     return html

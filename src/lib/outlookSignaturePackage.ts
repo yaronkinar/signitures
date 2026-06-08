@@ -2,8 +2,7 @@ import JSZip from 'jszip'
 import { signatureStrings } from '../i18n'
 import { initializeSocialIconDataUrls } from './socialIcons'
 import type { SignatureFormState } from '../types/signatureForm'
-import { buildSignatureHtml } from './signatureHtmlBuilder'
-import { generateSignatureTextImages } from './signatureTextImages'
+import { buildSignatureHtml, resolveSignatureHtmlBuildOptions } from './signatureHtmlBuilder'
 import {
   bundleSignatureHtmlImages,
   stripOutlookStoredAssetPathsFromForm,
@@ -175,8 +174,8 @@ export const buildOutlookSignaturePackage = async (
   await initializeSocialIconDataUrls()
   const installForm = stripOutlookStoredAssetPathsFromForm(form)
   const layout = getLayoutSettings(installForm)
-  const textImages = await generateSignatureTextImages(installForm, layout)
-  const packageHtmlBody = buildSignatureHtml(installForm, layout, { textImages })
+  const buildOptions = await resolveSignatureHtmlBuildOptions(installForm, layout)
+  const packageHtmlBody = buildSignatureHtml(installForm, layout, buildOptions)
 
   const fileBase =
     fileBaseOverride ??

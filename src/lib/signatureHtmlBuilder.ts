@@ -6,12 +6,13 @@ import type {
   TextAlign
 } from '../types/signatureForm'
 import { DEFAULT_LINK_IMAGE_MAX_HEIGHT, DEFAULT_LINK_IMAGE_MAX_WIDTH } from '../types/signatureForm'
-import type { SignatureTextImageSlot } from './signatureTextImages'
+import { generateSignatureTextImages, type SignatureTextImageSlot } from './signatureTextImages'
 import {
   escapeHtml,
   hasHebrew,
   normalizeUrl,
   outlookFontFamilyStyle,
+  resolveImageDisplaySize,
   sanitizeFontFamily,
   sanitizeSignatureInlineHtml,
   type ImageDisplaySize
@@ -565,4 +566,28 @@ export const buildSignatureHtml = (
     </td>
   </tr>
 </table>`
+}
+
+export const resolveSignatureHtmlBuildOptions = async (
+  form: SignatureFormState,
+  layout: SignatureLayoutSettings
+): Promise<BuildSignatureHtmlOptions> => {
+  const [textImages, logoDisplaySize, bannerDisplaySize] = await Promise.all([
+    generateSignatureTextImages(form, layout),
+    form.logoUrl.trim()
+      ? resolveImageDisplaySize(form.logoUrl, layout.logoMaxWidth)
+      : Promise.resolve(null),
+    form.bannerUrl.trim()
+      ? resolveImageDisplaySize(
+          form.bannerUrl,
+          Math.min(layout.bannerMaxWidth, layout.signatureWidth)
+        )
+      : Promise.resolve(null)
+  ])
+
+  return {
+    textImages,
+    logoDisplaySize: logoDisplaySize ?? undefined,
+    bannerDisplaySize: bannerDisplaySize ?? undefined
+  }
 }

@@ -3,8 +3,7 @@ import * as XLSX from 'xlsx'
 import type { AppLanguage, I18nKey } from '../i18n'
 import type { SignatureFormState, SignatureLayoutSettings, TextAlign } from '../types/signatureForm'
 import { bundleSignatureHtmlImages, stripOutlookStoredAssetPathsFromForm } from './signatureImageAssets'
-import { buildSignatureHtml } from './signatureHtmlBuilder'
-import { generateSignatureTextImages } from './signatureTextImages'
+import { buildSignatureHtml, resolveSignatureHtmlBuildOptions } from './signatureHtmlBuilder'
 import { sanitizeFileName, uniqueFileName } from './fileNames'
 import {
   addOutlookSignaturePackageToZip,
@@ -243,8 +242,8 @@ const buildPreviewHtmlForForm = async (
 ): Promise<{ html: string; layout: SignatureLayoutSettings }> => {
   const installForm = stripOutlookStoredAssetPathsFromForm(form)
   const layout = getLayoutSettings(installForm)
-  const textImages = await generateSignatureTextImages(installForm, layout)
-  const bodyHtml = buildSignatureHtml(installForm, layout, { textImages })
+  const buildOptions = await resolveSignatureHtmlBuildOptions(installForm, layout)
+  const bodyHtml = buildSignatureHtml(installForm, layout, buildOptions)
   const { html: bundledHtml } = await bundleSignatureHtmlImages(bodyHtml, installForm, 'images', {
     embedImages: true
   })
