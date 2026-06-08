@@ -1,0 +1,534 @@
+html[data-ui-theme=classic] .ui-precision-only {
+display: none !important;
+}
+
+html[data-ui-theme=precision] .ui-classic-only {
+display: none !important;
+}
+
+html[data-ui-theme=classic] {
+--border-subtle: #dadee7;
+--brand-teal: #30bbed;
+--font-headline: Arial, Helvetica, sans-serif;
+--font-body: 'Inter', Arial, Helvetica, sans-serif;
+--font-label: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+--surface-container-low: #f2f4f6;
+--surface-container-lowest: #ffffff;
+--on-surface: #191c1e;
+--on-surface-variant: #3d484e;
+--primary: #88236f;
+--field-primary: #006685;
+--field-border: #e2e8f0;
+--radius-md: 6px;
+--radius-lg: 8px;
+--radius-xl: 12px;
+--shadow-sm: 0 1px 3px rgb(0 0 0 / 0.04);
+--classic-sticky-top: 48px;
+}
+
+html[data-ui-theme=classic] .app-shell {
+display: block;
+height: auto;
+max-height: none;
+overflow: visible;
+background: #eef3f8;
+}
+
+html[data-ui-theme=classic] .page {
+overflow: visible !important;
+}
+
+html[data-ui-theme=classic] .app-navbar {
+position: sticky;
+top: 0;
+z-index: 45;
+flex-shrink: 0;
+height: 44px;
+grid-column: 1 / -1;
+background: #fff;
+border: 1px solid #dadee7;
+border-radius: 8px;
+margin: 0 0 12px;
+box-shadow: 0 1px 4px rgb(0 0 0 / 0.06);
+}
+
+html[data-ui-theme=classic] .app-nav-link {
+border: 1px solid #dadee7;
+background: #fff;
+color: #4c4c4e;
+}
+
+html[data-ui-theme=classic] .app-nav-link:hover {
+border-color: #30bbed;
+color: #88236f;
+}
+
+html[data-ui-theme=classic] body {
+overflow: auto !important;
+}
+
+html[data-ui-theme=classic] .workspace {
+display: grid !important;
+grid-template-columns: minmax(0, 1fr) minmax(320px, 480px) !important;
+gap: 16px !important;
+align-items: start !important;
+flex: none !important;
+min-height: 0 !important;
+height: auto !important;
+max-height: none !important;
+overflow: visible !important;
+}
+
+html[data-ui-theme=classic] .editor-sidebar-header {
+display: none !important;
+}
+
+html[data-ui-theme=classic] .editor-sidebar {
+width: auto !important;
+background: transparent !important;
+border: 0 !important;
+overflow: visible !important;
+}
+
+html[data-ui-theme=classic] .editor-sidebar-scroll {
+overflow: visible !important;
+max-height: none !important;
+padding: 0 !important;
+}
+
+html[data-ui-theme=classic] .preview-main {
+position: relative !important;
+inset: auto !important;
+bottom: auto !important;
+z-index: auto;
+align-self: stretch !important;
+width: auto !important;
+min-width: 0 !important;
+height: auto !important;
+max-height: none !important;
+border: 0 !important;
+box-shadow: none !important;
+background: transparent !important;
+overflow: visible !important;
+display: flex;
+flex-direction: column;
+}
+
+html[data-ui-theme=classic] .preview-main-header,
+html[data-ui-theme=classic] .preview-insights {
+display: none !important;
+}
+
+html[data-ui-theme=classic] .preview-sticky-shell {
+position: sticky !important;
+top: var(--classic-sticky-top);
+z-index: 40;
+overflow: visible !important;
+max-height: calc(100vh - var(--classic-sticky-top) - 16px);
+}
+
+html[data-ui-theme=classic] .preview-main-scroll {
+position: static !important;
+overflow: visible !important;
+max-height: none !important;
+}
+
+html[data-ui-theme=classic] .sidebar-preview {
+position: static;
+top: auto;
+max-height: none;
+overflow: visible !important;
+padding: 16px;
+display: flex;
+flex-direction: column;
+gap: 12px;
+min-width: 0;
+}
+
+html[data-ui-theme=classic] .card-preview.sidebar-preview {
+position: static;
+top: auto;
+max-height: none;
+overflow: visible;
+}
+
+html[data-ui-theme=classic] .preview-main-scroll {
+display: flex;
+flex-direction: column;
+gap: 12px;
+}
+
+html[data-ui-theme=classic] .html-output-panel {
+display: none !important;
+}
+
+html[data-ui-theme=classic] .classic-topbar-actions {
+display: flex;
+justify-content: flex-end;
+gap: 8px;
+margin-bottom: 8px;
+}
+
+html[data-ui-theme=classic] .classic-actions-bar {
+margin-top: 16px;
+}
+
+html[data-ui-theme=classic] .classic-actions-bar .actions {
+display: flex;
+flex-wrap: wrap;
+gap: 8px;
+}
+
+/* Classic toolbar — stacked rows (matches workspace-toolbar-* markup) */
+html[data-ui-theme=classic] .form-storage-bar {
+display: flex;
+flex-direction: column;
+align-items: stretch;
+flex-wrap: nowrap;
+gap: 8px;
+width: 100%;
+min-width: 0;
+padding: 0 0 14px;
+margin-bottom: 6px;
+border-bottom: 1px solid var(--field-border, #e2e8f0);
+}
+
+html[data-ui-theme=classic] .workspace-toolbar-row {
+display: flex;
+align-items: center;
+gap: 8px;
+width: 100%;
+min-width: 0;
+}
+
+html[data-ui-theme=classic] .workspace-toolbar-row--primary {
+flex-wrap: nowrap;
+}
+
+html[data-ui-theme=classic] .workspace-toolbar-row--load {
+flex-wrap: wrap;
+}
+
+html[data-ui-theme=classic] .saved-signatures-name,
+html[data-ui-theme=classic] .saved-signatures-select {
+flex: 1 1 0;
+min-width: 0;
+max-width: none;
+width: auto;
+}
+
+html[data-ui-theme=classic] .btn-save-as,
+html[data-ui-theme=classic] .btn-delete-saved {
+flex-shrink: 0;
+}
+
+html[data-ui-theme=classic] .cloud-storage-hint {
+width: 100%;
+flex: 1 1 100%;
+}
+
+html[data-ui-theme=classic] .workspace-toolbar-more {
+align-self: stretch;
+border: 1px solid #dadee7;
+border-radius: 8px;
+background: #fff;
+overflow: hidden;
+}
+
+html[data-ui-theme=classic] .workspace-toolbar-more > summary {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 8px;
+padding: 8px 12px;
+font-size: 13px;
+font-weight: 600;
+color: #4c4c4e;
+}
+
+html[data-ui-theme=classic] .workspace-toolbar-more > summary::after {
+float: none;
+}
+
+html[data-ui-theme=classic] .workspace-toolbar-more-body {
+padding: 0 12px 10px;
+}
+
+@media (max-width: 640px) {
+html[data-ui-theme=classic] .workspace-toolbar-row--primary {
+flex-wrap: wrap;
+}
+
+html[data-ui-theme=classic] .saved-signatures-name {
+flex: 1 1 100%;
+}
+}
+
+/* Classic editor — Precision field look & feel */
+html[data-ui-theme=classic] .card-editor.card {
+border: 1px solid var(--field-border);
+border-radius: var(--radius-xl);
+background: var(--surface-container-lowest);
+box-shadow: var(--shadow-sm);
+overflow: hidden;
+}
+
+html[data-ui-theme=classic] .card-editor .panel {
+border: 1px solid var(--field-border);
+border-radius: var(--radius-xl);
+background: var(--surface-container-lowest);
+overflow: visible;
+box-shadow: var(--shadow-sm);
+}
+
+html[data-ui-theme=classic] .card-editor .panel > summary {
+padding: 14px 16px;
+font-family: var(--font-label);
+font-size: 12px;
+font-weight: 700;
+letter-spacing: 0.03em;
+color: var(--on-surface);
+}
+
+html[data-ui-theme=classic] .card-editor .panel > summary:hover {
+background: var(--surface-container-low);
+}
+
+html[data-ui-theme=classic] .card-editor .panel > summary::after {
+border-right-color: var(--field-primary);
+border-bottom-color: var(--field-primary);
+}
+
+html[data-ui-theme=classic] .card-editor .panel-body {
+padding: 0 16px 16px;
+border-top: 1px solid var(--field-border);
+background: var(--surface-container-lowest);
+}
+
+html[data-ui-theme=classic] .card-editor .panel-summary-label {
+display: inline-flex;
+align-items: center;
+gap: 10px;
+min-width: 0;
+}
+
+html[data-ui-theme=classic] .card-editor .panel-icon {
+font-size: 18px;
+color: var(--field-primary);
+flex-shrink: 0;
+}
+
+html[data-ui-theme=classic] .card-editor .sub-panel {
+border: 1px solid var(--field-border);
+border-radius: var(--radius-lg);
+background: var(--surface-container-lowest);
+}
+
+html[data-ui-theme=classic] .card-editor .sub-panel-body {
+border-top-color: var(--field-border);
+}
+
+html[data-ui-theme=classic] .card-editor label {
+gap: 6px;
+font-family: var(--font-label);
+font-size: 11px;
+font-weight: 500;
+letter-spacing: 0.05em;
+text-transform: uppercase;
+color: var(--on-surface-variant);
+}
+
+html[data-ui-theme=classic] .card-editor .field-hint {
+font-family: var(--font-body);
+font-size: 11px;
+font-weight: 400;
+text-transform: none;
+letter-spacing: normal;
+color: var(--on-surface-variant);
+}
+
+html[data-ui-theme=classic] .card-editor .ai-mode,
+html[data-ui-theme=classic] .card-editor .ai-mode label,
+html[data-ui-theme=classic] .card-editor .ai-keep-contact,
+html[data-ui-theme=classic] .card-editor .ai-preset-label {
+font-family: var(--font-body);
+font-size: 13px;
+font-weight: 600;
+text-transform: none;
+letter-spacing: normal;
+color: var(--on-surface);
+}
+
+html[data-ui-theme=classic] .card-editor input:not([type='checkbox']):not([type='radio']):not([type='color']):not([type='range']):not([type='file']):not([type='hidden']):not([type='button']):not([type='submit']),
+html[data-ui-theme=classic] .card-editor select,
+html[data-ui-theme=classic] .card-editor .field-textarea {
+padding: 9px 10px;
+border-radius: var(--radius-lg);
+border: 1px solid transparent;
+font-family: var(--font-body);
+font-size: 14px;
+font-weight: 400;
+background: var(--surface-container-low);
+color: var(--on-surface);
+transition: box-shadow 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+html[data-ui-theme=classic] .card-editor input:not([type='checkbox']):not([type='radio']):not([type='color']):not([type='range']):not([type='file']):not([type='hidden']):not([type='button']):not([type='submit']):focus,
+html[data-ui-theme=classic] .card-editor select:focus,
+html[data-ui-theme=classic] .card-editor .field-textarea:focus {
+outline: none;
+box-shadow: 0 0 0 2px rgb(0 102 133 / 0.2);
+background: var(--surface-container-lowest);
+border-color: var(--field-primary);
+}
+
+html[data-ui-theme=classic] .card-editor .saved-signatures-name,
+html[data-ui-theme=classic] .card-editor .saved-signatures-select {
+border: 1px solid transparent;
+border-radius: var(--radius-lg);
+padding: 9px 10px;
+font-size: 13px;
+font-weight: 500;
+background: var(--surface-container-low);
+color: var(--on-surface);
+}
+
+html[data-ui-theme=classic] .card-editor .saved-signatures-name:focus,
+html[data-ui-theme=classic] .card-editor .saved-signatures-select:focus {
+outline: none;
+box-shadow: 0 0 0 2px rgb(0 102 133 / 0.2);
+background: var(--surface-container-lowest);
+border-color: var(--field-primary);
+}
+
+html[data-ui-theme=classic] .card-editor .btn-save-as {
+background: var(--field-primary);
+color: #fff;
+border-radius: var(--radius-lg);
+}
+
+html[data-ui-theme=classic] .card-editor .btn-delete-saved {
+padding: 0;
+border: 0;
+background: transparent;
+color: #ba1a1a;
+font-size: 12px;
+text-decoration: underline;
+text-underline-offset: 2px;
+}
+
+html[data-ui-theme=classic] .card-editor .link-image-preview {
+grid-column: 1 / -1;
+display: flex;
+align-items: center;
+justify-content: flex-start;
+min-height: 56px;
+padding: 8px 10px;
+border: 1px dashed var(--field-border);
+border-radius: var(--radius-lg);
+background: var(--surface-container-lowest);
+}
+
+html[data-ui-theme=classic] .card-editor .link-image-preview img {
+display: block;
+max-width: 180px;
+max-height: 48px;
+width: auto;
+height: auto;
+object-fit: contain;
+}
+
+html[data-ui-theme=classic] .card-editor .layout-preset {
+border: 1px solid var(--field-border);
+border-radius: 10px;
+background: var(--surface-container-lowest);
+color: var(--on-surface);
+}
+
+html[data-ui-theme=classic] .card-editor .layout-preset:hover,
+html[data-ui-theme=classic] .card-editor .layout-preset.is-active {
+border-color: var(--field-primary);
+}
+
+html[data-ui-theme=classic] .card-editor .layout-preset.is-active {
+box-shadow: inset 0 0 0 1px var(--field-primary);
+background: rgb(0 102 133 / 0.04);
+}
+
+html[data-ui-theme=classic] .card-editor .layout-preset-icon {
+background: rgb(0 102 133 / 0.08);
+color: var(--field-primary);
+}
+
+html[data-ui-theme=classic] .card-editor .logo-placement-block {
+margin-top: 12px;
+padding: 12px;
+border: 1px solid var(--field-border);
+border-radius: var(--radius-lg);
+background: var(--surface-container-lowest);
+}
+
+html[data-ui-theme=classic] .card-editor .logo-placement-heading,
+html[data-ui-theme=classic] .card-editor .placement-subsection h4 {
+font-size: 13px;
+font-weight: 600;
+color: var(--on-surface);
+}
+
+html[data-ui-theme=classic] .card-editor .social-icon-variant-option:hover:not(:disabled) {
+border-color: var(--field-primary);
+}
+
+html[data-ui-theme=classic] .card-editor .social-icon-variant-option.is-selected {
+border-color: var(--field-primary);
+box-shadow: 0 0 0 1px var(--field-primary);
+}
+
+html[data-ui-theme=classic] .card-editor .workspace-toolbar-more {
+border-color: var(--field-border);
+background: var(--surface-container-lowest);
+}
+
+html[data-ui-theme=classic] .card-editor .workspace-toolbar-more > summary {
+color: var(--on-surface-variant);
+}
+
+html[data-ui-theme=classic] .card-editor textarea,
+html[data-ui-theme=classic] .card-editor .ai-brief {
+width: 100%;
+box-sizing: border-box;
+min-height: 88px;
+padding: 9px 10px;
+border-radius: var(--radius-lg);
+border: 1px solid transparent;
+font-family: var(--font-body);
+font-size: 14px;
+line-height: 1.45;
+background: var(--surface-container-low);
+color: var(--on-surface);
+resize: vertical;
+transition: box-shadow 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+html[data-ui-theme=classic] .card-editor textarea:focus,
+html[data-ui-theme=classic] .card-editor .ai-brief:focus {
+outline: none;
+box-shadow: 0 0 0 2px rgb(0 102 133 / 0.2);
+background: var(--surface-container-lowest);
+border-color: var(--field-primary);
+}
+
+html[data-ui-theme=classic] .card-editor .form-storage-bar {
+border-bottom-color: var(--field-border);
+}
+
+html[data-ui-theme=classic] .card-editor .hint {
+color: var(--on-surface-variant);
+}
+
+@media (max-width: 960px) {
+html[data-ui-theme=classic] .preview-sticky-shell {
+position: static !important;
+max-height: none;
+}
+}

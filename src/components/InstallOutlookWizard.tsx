@@ -10,11 +10,14 @@ type InstallOutlookWizardProps = {
   restartOutlook: boolean
   installFont: boolean
   showFontOption: boolean
+  canSaveAs: boolean
   rasterizeNameTitle: boolean
   bundledFontName: string | null
   onRestartOutlookChange: (value: boolean) => void
   onInstallFontChange: (value: boolean) => void
   onDownload: () => void
+  onSaveAs: () => void
+  onNewOutlook: () => void
   onOpenDownloads: () => void
   onClose: () => void
 }
@@ -28,11 +31,14 @@ export const InstallOutlookWizard = ({
   restartOutlook,
   installFont,
   showFontOption,
+  canSaveAs,
   rasterizeNameTitle,
   bundledFontName,
   onRestartOutlookChange,
   onInstallFontChange,
   onDownload,
+  onSaveAs,
+  onNewOutlook,
   onOpenDownloads,
   onClose
 }: InstallOutlookWizardProps) => {
@@ -89,9 +95,21 @@ export const InstallOutlookWizard = ({
               </p>
             ) : null}
 
+            {canSaveAs ? (
+              <p className="hint install-wizard-save-as-hint">{t(lang, 'installWizardSaveAsHint')}</p>
+            ) : null}
+
             <div className="install-wizard-actions">
               <button type="button" className="primary" disabled={working} onClick={onDownload}>
                 {working ? t(lang, 'installWizardDownloading') : t(lang, 'installWizardInstallNow')}
+              </button>
+              {canSaveAs ? (
+                <button type="button" className="secondary" disabled={working} onClick={onSaveAs}>
+                  {working ? t(lang, 'installWizardDownloading') : t(lang, 'installWizardSaveAs')}
+                </button>
+              ) : null}
+              <button type="button" className="secondary" disabled={working} onClick={onNewOutlook}>
+                {t(lang, 'newOutlookSetup')}
               </button>
               <button type="button" className="secondary" disabled={working} onClick={onClose}>
                 {t(lang, 'installWizardClose')}
@@ -116,7 +134,11 @@ export const InstallOutlookWizard = ({
             </p>
 
             <ol className="install-wizard-steps">
-              <li>{t(lang, 'installWizardStepAllowRun')}</li>
+              <li>
+                {saveResult?.usedSavePicker
+                  ? t(lang, 'installWizardStepRunFile')
+                  : t(lang, 'installWizardStepAllowRun')}
+              </li>
               <li>{t(lang, 'installWizardStepSmartScreen')}</li>
               <li>{restartOutlook ? t(lang, 'installWizardStepDoneRestart') : t(lang, 'installWizardStepDoneManual')}</li>
             </ol>
@@ -132,9 +154,11 @@ export const InstallOutlookWizard = ({
             </div>
 
             <div className="install-wizard-actions">
-              <button type="button" className="secondary" onClick={onOpenDownloads}>
-                {t(lang, 'installWizardOpenDownloads')}
-              </button>
+              {!saveResult?.usedSavePicker ? (
+                <button type="button" className="secondary" onClick={onOpenDownloads}>
+                  {t(lang, 'installWizardOpenDownloads')}
+                </button>
+              ) : null}
               <button type="button" className="primary" onClick={onClose}>
                 {t(lang, 'installWizardClose')}
               </button>

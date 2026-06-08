@@ -62,7 +62,8 @@ export const buildAiBriefPresets = (
   const align = alignWord(snapshot.signatureLanguage, snapshot.nameTitleAlign)
   const logoAlign = alignWord(snapshot.signatureLanguage, snapshot.logoAlign)
   const logoSide = snapshot.logoSide ?? 'right'
-  const oppositeLogoSide = logoSide === 'right' ? 'left' : 'right'
+  const oppositeLogoSide =
+    logoSide === 'top' ? 'left' : logoSide === 'right' ? 'left' : 'right'
   const widerTarget = Math.min(900, snapshot.signatureWidth + 80)
   const narrowerTarget = Math.max(250, snapshot.signatureWidth - 60)
 

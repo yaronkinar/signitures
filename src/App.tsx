@@ -1,12 +1,18 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState, type CSSProperties } from 'react'
 import { SBA_BRAND_COLORS, SBA_BRAND_PRESETS } from './brandPresets'
 import { BulkSignaturesPanel } from './components/BulkSignaturesPanel'
 import { Field, SelectInput, TextAreaInput, TextInput } from './components/Field'
 import { ColorInput } from './components/ColorInput'
 import { Panel } from './components/Panel'
-import { InstallOutlookWizard } from './components/InstallOutlookWizard'
+import { SubPanel } from './components/SubPanel'
+import { EditorNavBar } from './components/EditorNavBar'
+import { LanguageToggle } from './components/LanguageToggle'
+import { ThemeToggle } from './components/ThemeToggle'
 import { Toaster } from './components/Toaster'
 import { StyleSummary } from './components/StyleSummary'
+import { PlacementControl } from './components/PlacementControl'
+import { useResizableSidebar } from './hooks/useResizableSidebar'
+import { useUiTheme } from './hooks/useUiTheme'
 import { UpdatePrompt } from './components/UpdatePrompt'
 import { useSignatureApp } from './hooks/useSignatureApp'
 import { outlookHelpStatusHtml, t, type AppLanguage } from './i18n'
@@ -15,13 +21,19 @@ import {
   googleFontDownloadUrl,
   isBundledWebFont
 } from './lib/signatureFonts'
-import { formatBuildStamp } from './lib/buildInfo'
+import { formatBuildStamp, getAppVersion } from './lib/buildInfo'
 import { ChangelogModal } from './components/ChangelogModal'
 import { CreatorModal, CREATOR_NAME } from './components/CreatorModal'
+import { InstallOutlookWizard } from './components/InstallOutlookWizard'
 import { normalizeSocialIconVariant, type SocialPlatform } from './lib/socialIconCatalog'
-import { fileToDataUrl } from './lib/signatureUtils'
+import {
+  applySignatureLayoutPreset,
+  detectSignatureLayoutPreset,
+  SIGNATURE_LAYOUT_PRESETS
+} from './lib/signatureLayoutPresets'
 import { SocialIconVariantPicker } from './components/SocialIconVariantPicker'
-import type { SignatureFormState, TextAlign } from './types/signatureForm'
+import { fileToDataUrl } from './lib/signatureUtils'
+import type { LinkImagePlacement, SignatureFormState, TextAlign } from './types/signatureForm'
 
 const FONT_OPTIONS = [
   { value: "'Rubik', Arial, Helvetica, sans-serif", label: 'Rubik' },
@@ -99,35 +111,6 @@ const SOCIAL_NETWORKS = [
   iconFileKey: keyof SignatureFormState
 }>
 
-const PlacementControl = ({
-  value,
-  min,
-  max,
-  onChange
-}: {
-  value: number
-  min: number
-  max: number
-  onChange: (value: number) => void
-}) => (
-  <div className="placement-control">
-    <input
-      type="range"
-      min={min}
-      max={max}
-      value={value}
-      onChange={(e) => onChange(Number(e.target.value))}
-    />
-    <input
-      type="number"
-      min={min}
-      max={max}
-      value={value}
-      onChange={(e) => onChange(Number(e.target.value))}
-    />
-  </div>
-)
-
 const PreviewBox = ({
   html,
   width,
@@ -159,7 +142,12 @@ const OutlookPreviewPane = ({
 }) => (
   <div className="outlook-preview" aria-label={t(lang, 'preview')}>
     <div className="outlook-preview-window">
-      <div className="outlook-preview-titlebar">{t(lang, 'outlookPreviewTitle')}</div>
+      <div className="outlook-preview-chrome">
+        <span className="outlook-preview-dot outlook-preview-dot--close" aria-hidden="true" />
+        <span className="outlook-preview-dot outlook-preview-dot--minimize" aria-hidden="true" />
+        <span className="outlook-preview-dot outlook-preview-dot--maximize" aria-hidden="true" />
+        <span className="outlook-preview-chrome-title">{t(lang, 'outlookPreviewTitle')}</span>
+      </div>
       <div className="outlook-preview-compose">
         <div className="outlook-preview-field">
           <span className="outlook-preview-field-label">{t(lang, 'outlookPreviewTo')}</span>
@@ -170,15 +158,17 @@ const OutlookPreviewPane = ({
           dir="ltr"
         >
           <p className="outlook-preview-placeholder">{t(lang, 'outlookPreviewPlaceholder')}</p>
-          <div
-            className="preview outlook-preview-signature"
-            style={{
-              width: `${width}px`,
-              minHeight: `${minHeight}px`,
-              height: 'auto'
-            }}
-            dangerouslySetInnerHTML={{ __html: html }}
-          />
+          <div className="outlook-preview-signature-wrap">
+            <div
+              className="preview outlook-preview-signature"
+              style={{
+                width: `${width}px`,
+                minHeight: `${minHeight}px`,
+                height: 'auto'
+              }}
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -187,7 +177,17 @@ const OutlookPreviewPane = ({
 
 export default function App() {
   const app = useSignatureApp()
+  const { uiTheme, setUiTheme } = useUiTheme()
   const { form, updateForm, lang } = app
+  const {
+    sidebarWidth,
+    sidebarScrollRef,
+    fitToContentWidth,
+    measureAndFitScrollContent,
+    onResizePointerDown,
+    onResizePointerMove,
+    onResizePointerUp
+  } = useResizableSidebar(lang === 'he')
   const [aiPresetId, setAiPresetId] = useState('')
   const [brandPresetId, setBrandPresetId] = useState('')
   const [signatureImageFile, setSignatureImageFile] = useState<File | undefined>()
@@ -208,8 +208,34 @@ export default function App() {
 
   const logoSideOptions = [
     { value: 'left', label: t(lang, 'logoSideLeft') },
-    { value: 'right', label: t(lang, 'logoSideRight') }
+    { value: 'right', label: t(lang, 'logoSideRight') },
+    { value: 'top', label: t(lang, 'logoSideTop') },
+    { value: 'bottom', label: t(lang, 'logoSideBottom') },
+    { value: 'none', label: t(lang, 'logoSideNone') }
   ] as const
+
+  const linkImagePlacementOptions = [
+    { value: 'footer', label: t(lang, 'linkedImagePlacementFooter') },
+    { value: 'with-social', label: t(lang, 'linkedImagePlacementWithSocial') },
+    { value: 'top', label: t(lang, 'linkedImagePlacementTop') },
+    { value: 'bottom', label: t(lang, 'linkedImagePlacementBottom') }
+  ] as const
+
+  const activeLayoutPreset = detectSignatureLayoutPreset(form)
+
+  const applyLayoutPreset = (presetId: (typeof SIGNATURE_LAYOUT_PRESETS)[number]['id']) => {
+    updateForm(applySignatureLayoutPreset(presetId, form))
+  }
+
+  useEffect(() => {
+    fitToContentWidth(app.layout.signatureWidth)
+  }, [app.layout.signatureWidth, fitToContentWidth])
+
+  useEffect(() => {
+    measureAndFitScrollContent()
+  }, [app.outputHtml, measureAndFitScrollContent])
+
+  const workspaceStyle = { '--sidebar-width': `${sidebarWidth}px` } as CSSProperties
 
   const bundledFontName = getBundledFontCssFamily(form.fontFamily)
   const bundledFontDownloadUrl = googleFontDownloadUrl(form.fontFamily)
@@ -257,41 +283,77 @@ export default function App() {
         : 'ai-status'
 
   return (
-    <main className="page">
-      <div className="workspace">
+    <main className="app-shell">
+      <div className="ui-precision-only">
+        <header className="app-topbar">
+          <div className="app-topbar-brand">
+            <span className="app-topbar-title">{t(lang, 'pageHeading')}</span>
+          </div>
+          <div className="app-topbar-actions">
+            <ThemeToggle lang={lang} theme={uiTheme} onChange={setUiTheme} />
+            <LanguageToggle lang={lang} onChange={app.handleLanguageChange} />
+            <button type="button" className="btn-topbar-primary" onClick={() => app.generate()}>
+              {t(lang, 'generateSignature')}
+            </button>
+          </div>
+        </header>
+      </div>
+
+      <div className="page">
+        <div className="ui-classic-only card-header-title">
+          <div className="classic-topbar-actions">
+            <ThemeToggle lang={lang} theme={uiTheme} onChange={setUiTheme} />
+            <LanguageToggle lang={lang} onChange={app.handleLanguageChange} />
+          </div>
+          <h1>{t(lang, 'pageHeading')}</h1>
+          <p className="lead">{t(lang, 'pageLead')}</p>
+        </div>
+
+        <EditorNavBar
+          lang={lang}
+          scrollContainerRef={sidebarScrollRef}
+          usePageScroll={uiTheme === 'classic'}
+        />
+
+      <div className="workspace" style={workspaceStyle}>
+      <aside className="editor-sidebar">
+        <div className="editor-sidebar-header">
+          <h2>{t(lang, 'editorSidebarTitle')}</h2>
+          <p className="editor-sidebar-subtitle">
+            v{getAppVersion()} · {t(lang, 'editorActiveTemplate')}
+          </p>
+        </div>
+        <div className="editor-sidebar-scroll" ref={sidebarScrollRef}>
       <section className="card card-editor">
         <div className="card-header">
-          <div className="card-header-title">
-            <h1>{t(lang, 'pageHeading')}</h1>
-            <p className="lead">{t(lang, 'pageLead')}</p>
-          </div>
           <div className="form-storage-bar">
-            <div className="form-storage-group">
+            <div className="workspace-toolbar-row workspace-toolbar-row--primary">
               <div className="history-controls" role="group" aria-label={t(lang, 'undo')}>
                 <button
                   type="button"
                   className="btn-undo"
                   disabled={!app.canUndo}
                   title={t(lang, 'undoShortcut')}
+                  aria-label={t(lang, 'undo')}
                   onClick={app.undo}
                 >
-                  {t(lang, 'undo')}
+                  <span className="material-symbols-outlined panel-icon--no-flip" aria-hidden="true">
+                    undo
+                  </span>
                 </button>
                 <button
                   type="button"
                   className="btn-redo"
                   disabled={!app.canRedo}
                   title={t(lang, 'redoShortcut')}
+                  aria-label={t(lang, 'redo')}
                   onClick={app.redo}
                 >
-                  {t(lang, 'redo')}
+                  <span className="material-symbols-outlined panel-icon--no-flip" aria-hidden="true">
+                    redo
+                  </span>
                 </button>
               </div>
-            </div>
-            <div className="form-storage-group form-storage-group-save">
-              {app.cloudStorageAvailable && (
-                <span className="cloud-storage-hint">{t(lang, 'cloudStorageHint')}</span>
-              )}
               <input
                 type="text"
                 className="saved-signatures-name"
@@ -303,6 +365,11 @@ export default function App() {
               <button type="button" className="btn-save-as" onClick={app.handleSaveAs}>
                 {t(lang, 'saveAs')}
               </button>
+            </div>
+            <div className="workspace-toolbar-row workspace-toolbar-row--load">
+              {app.cloudStorageAvailable && (
+                <span className="cloud-storage-hint">{t(lang, 'cloudStorageHint')}</span>
+              )}
               <select
                 className="saved-signatures-select"
                 value={app.activeSavedId}
@@ -327,37 +394,41 @@ export default function App() {
                 {t(lang, 'savedDelete')}
               </button>
             </div>
-            <div className="form-storage-group">
-              <button type="button" className="btn-export" onClick={app.handleExportParams}>
-                {t(lang, 'exportParams')}
-              </button>
-              <button type="button" className="btn-export-style" onClick={app.handleExportStyle}>
-                {t(lang, 'exportStyle')}
-              </button>
-              <label className="params-import-label">
-                <span className="btn-import params-import-button">{t(lang, 'importParams')}</span>
-                <input
-                  type="file"
-                  accept=".json,.zip,application/json,application/zip"
-                  hidden
-                  onChange={(event) => {
-                    const file = event.target.files?.[0]
-                    app.handleImportParams(file).catch(() => undefined)
-                    event.target.value = ''
-                  }}
-                />
-              </label>
-              <button type="button" className="btn-reset" onClick={app.resetFormToDefaults}>
-                {t(lang, 'resetForm')}
-              </button>
-            </div>
+            <details className="workspace-toolbar-more">
+              <summary>{t(lang, 'toolbarMore')}</summary>
+              <div className="workspace-toolbar-more-body">
+                <button type="button" className="btn-toolbar-muted" onClick={app.handleExportParams}>
+                  {t(lang, 'exportParams')}
+                </button>
+                <button type="button" className="btn-toolbar-muted" onClick={app.handleExportStyle}>
+                  {t(lang, 'exportStyle')}
+                </button>
+                <label className="params-import-label">
+                  <span className="btn-toolbar-muted params-import-button">{t(lang, 'importParams')}</span>
+                  <input
+                    type="file"
+                    accept=".json,.zip,application/json,application/zip"
+                    hidden
+                    onChange={(event) => {
+                      const file = event.target.files?.[0]
+                      app.handleImportParams(file).catch(() => undefined)
+                      event.target.value = ''
+                    }}
+                  />
+                </label>
+                <button type="button" className="btn-toolbar-danger" onClick={app.resetFormToDefaults}>
+                  {t(lang, 'resetForm')}
+                </button>
+              </div>
+            </details>
           </div>
         </div>
 
         <div className="panels">
           <Panel
+            id="panel-ai"
             className="ai-panel"
-            defaultOpen
+            icon="auto_awesome"
             summary={t(lang, 'aiDesignAssistant')}
           >
             <p className="hint">
@@ -460,7 +531,7 @@ export default function App() {
             )}
           </Panel>
 
-          <Panel defaultOpen summary={t(lang, 'imageImport')}>
+          <Panel id="panel-image-import" icon="image" summary={t(lang, 'imageImport')}>
             <p className="hint">{t(lang, 'imageImportLead')}</p>
             <div className="image-import-actions">
               <Field label={t(lang, 'imageImportFile')}>
@@ -482,7 +553,7 @@ export default function App() {
             {app.imageImportStatus && <p className={imageImportStatusClass}>{app.imageImportStatus}</p>}
           </Panel>
 
-          <Panel id="contact-details-panel" defaultOpen summary={t(lang, 'contactDetails')}>
+          <Panel id="panel-contact" defaultOpen icon="person" summary={t(lang, 'contactDetails')}>
             <div className="grid">
               <Field label={t(lang, 'language')}>
                 <SelectInput
@@ -554,9 +625,10 @@ export default function App() {
             designerForm={form}
             lang={lang}
             onLoadDesignerForm={(loaded, options) => app.setForm(loaded, options)}
+            onPreviewContentWidth={fitToContentWidth}
           />
 
-          <Panel summary={t(lang, 'logoBanner')}>
+          <Panel id="panel-logo" icon="image" summary={t(lang, 'logoBanner')}>
             <p className="hint">{t(lang, 'logoBannerHint')}</p>
             <div className="grid">
               <Field label={t(lang, 'logoUrl')}>
@@ -574,101 +646,119 @@ export default function App() {
                 />
               </Field>
             </div>
-            <details className="sub-panel" open>
-              <summary>{t(lang, 'logoPlacement')}</summary>
-              <div className="sub-panel-body">
-                <p className="hint">{t(lang, 'logoPlacementHint')}</p>
-                <div className="placement-subsection">
-                  <h4>{t(lang, 'logoPlacementHorizontal')}</h4>
-                  <div className="grid">
-                    <Field label={t(lang, 'logoSide')}>
-                      <SelectInput
-                        value={form.logoSide}
-                        onChange={(e) =>
-                          updateForm({
-                            logoSide: e.target.value as SignatureFormState['logoSide']
-                          })
-                        }
-                      >
-                        {logoSideOptions.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </SelectInput>
-                    </Field>
-                    <Field label={t(lang, 'logoAlign')}>
-                      <SelectInput
-                        value={form.logoAlign}
-                        onChange={(e) =>
-                          updateForm({
-                            logoAlign: e.target.value as SignatureFormState['logoAlign']
-                          })
-                        }
-                      >
-                        {alignOptions.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </SelectInput>
-                    </Field>
-                    <Field label={t(lang, 'logoMaxWidth')}>
-                      <input
-                        type="number"
-                        min={60}
-                        max={400}
-                        value={form.logoMaxWidth}
-                        onChange={(e) => updateForm({ logoMaxWidth: Number(e.target.value) })}
-                      />
-                    </Field>
-                    <Field
-                      label={t(lang, 'logoHorizontalPlacement')}
-                      hint={t(lang, 'logoHorizontalPlacementHint')}
+            <SubPanel summary={t(lang, 'signatureLayout')} defaultOpen>
+              <p className="hint">{t(lang, 'signatureLayoutHint')}</p>
+              <div className="layout-preset-grid" role="radiogroup" aria-label={t(lang, 'signatureLayout')}>
+                {SIGNATURE_LAYOUT_PRESETS.map((preset) => (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={activeLayoutPreset === preset.id}
+                    className={`layout-preset${activeLayoutPreset === preset.id ? ' is-active' : ''}`}
+                    onClick={() => applyLayoutPreset(preset.id)}
+                  >
+                    <span className="layout-preset-icon" aria-hidden="true">
+                      {preset.icon}
+                    </span>
+                    <span className="layout-preset-label">{t(lang, preset.labelKey)}</span>
+                  </button>
+                ))}
+              </div>
+            </SubPanel>
+            <div className="logo-placement-block">
+              <h3 className="logo-placement-heading">{t(lang, 'logoPlacement')}</h3>
+              <p className="hint">{t(lang, 'logoPlacementHint')}</p>
+              <div className="placement-subsection">
+                <h4>{t(lang, 'logoPlacementHorizontal')}</h4>
+                <div className="grid">
+                  <Field label={t(lang, 'logoSide')}>
+                    <SelectInput
+                      value={form.logoSide}
+                      onChange={(e) =>
+                        updateForm({
+                          logoSide: e.target.value as SignatureFormState['logoSide']
+                        })
+                      }
                     >
-                      <PlacementControl
-                        min={-120}
-                        max={120}
-                        value={form.logoOffsetX}
-                        onChange={(logoOffsetX) => updateForm({ logoOffsetX })}
-                      />
-                    </Field>
-                  </div>
-                </div>
-                <div className="placement-subsection">
-                  <h4>{t(lang, 'logoPlacementVertical')}</h4>
-                  <div className="grid">
-                    <Field label={t(lang, 'verticalAlign')}>
-                      <SelectInput
-                        value={form.verticalAlign}
-                        onChange={(e) =>
-                          updateForm({
-                            verticalAlign: e.target.value as SignatureFormState['verticalAlign']
-                          })
-                        }
-                      >
-                        {verticalAlignOptions.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </SelectInput>
-                    </Field>
-                    <Field
-                      label={t(lang, 'logoVerticalPlacement')}
-                      hint={t(lang, 'logoVerticalPlacementHint')}
+                      {logoSideOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </SelectInput>
+                  </Field>
+                  <Field label={t(lang, 'logoAlign')}>
+                    <SelectInput
+                      value={form.logoAlign}
+                      onChange={(e) =>
+                        updateForm({
+                          logoAlign: e.target.value as SignatureFormState['logoAlign']
+                        })
+                      }
                     >
-                      <PlacementControl
-                        min={-120}
-                        max={120}
-                        value={form.logoOffsetY}
-                        onChange={(logoOffsetY) => updateForm({ logoOffsetY })}
-                      />
-                    </Field>
-                  </div>
+                      {alignOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </SelectInput>
+                  </Field>
+                  <Field label={t(lang, 'logoMaxWidth')}>
+                    <input
+                      type="number"
+                      min={60}
+                      max={400}
+                      value={form.logoMaxWidth}
+                      onChange={(e) => updateForm({ logoMaxWidth: Number(e.target.value) })}
+                    />
+                  </Field>
+                  <Field
+                    label={t(lang, 'logoHorizontalPlacement')}
+                    hint={t(lang, 'logoHorizontalPlacementHint')}
+                  >
+                    <PlacementControl
+                      min={-120}
+                      max={120}
+                      value={form.logoOffsetX}
+                      onChange={(logoOffsetX) => updateForm({ logoOffsetX })}
+                    />
+                  </Field>
                 </div>
               </div>
-            </details>
+              <div className="placement-subsection">
+                <h4>{t(lang, 'logoPlacementVertical')}</h4>
+                <div className="grid">
+                  <Field label={t(lang, 'verticalAlign')}>
+                    <SelectInput
+                      value={form.verticalAlign}
+                      onChange={(e) =>
+                        updateForm({
+                          verticalAlign: e.target.value as SignatureFormState['verticalAlign']
+                        })
+                      }
+                    >
+                      {verticalAlignOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </SelectInput>
+                  </Field>
+                  <Field
+                    label={t(lang, 'logoVerticalPlacement')}
+                    hint={t(lang, 'logoVerticalPlacementHint')}
+                  >
+                    <PlacementControl
+                      min={-120}
+                      max={120}
+                      value={form.logoOffsetY}
+                      onChange={(logoOffsetY) => updateForm({ logoOffsetY })}
+                    />
+                  </Field>
+                </div>
+              </div>
+            </div>
             <div className="grid">
               <Field label={t(lang, 'bannerUrl')}>
                 <TextInput
@@ -691,10 +781,19 @@ export default function App() {
                   onChange={(e) => updateForm({ bannerLink: e.target.value })}
                 />
               </Field>
+              <Field label={t(lang, 'bannerMaxWidth')}>
+                <input
+                  type="number"
+                  min={120}
+                  max={900}
+                  value={form.bannerMaxWidth}
+                  onChange={(e) => updateForm({ bannerMaxWidth: Number(e.target.value) })}
+                />
+              </Field>
             </div>
           </Panel>
 
-          <Panel defaultOpen summary={t(lang, 'socialMedia')}>
+          <Panel id="panel-social" icon="share" summary={t(lang, 'socialMedia')}>
             <p className="hint">{t(lang, 'socialMediaHint')}</p>
             <p className="hint">{t(lang, 'socialIconVariantExpandHint')}</p>
             {SOCIAL_NETWORKS.map((network) => (
@@ -749,7 +848,7 @@ export default function App() {
             ))}
           </Panel>
 
-          <Panel summary={t(lang, 'layoutTypography')}>
+          <Panel id="panel-layout" icon="palette" summary={t(lang, 'layoutTypography')}>
             <div className="grid">
               <div className="brand-preset-row">
                 <Field label={t(lang, 'brandPreset')}>
@@ -907,7 +1006,7 @@ export default function App() {
             </div>
           </Panel>
 
-          <Panel summary={t(lang, 'positionAlignment')}>
+          <Panel id="panel-position" icon="straighten" summary={t(lang, 'positionAlignment')}>
             <div className="grid">
               <Field label={t(lang, 'contactMatchNameTitle')}>
                 <label className="ai-keep-contact">
@@ -962,7 +1061,7 @@ export default function App() {
             </div>
           </Panel>
 
-          <Panel summary={t(lang, 'colors')}>
+          <Panel id="panel-colors" icon="format_color_fill" summary={t(lang, 'colors')}>
             <p className="hint">{t(lang, 'elementColorsHint')}</p>
             <div className="grid">
               {(
@@ -989,10 +1088,15 @@ export default function App() {
             </div>
           </Panel>
 
-          <Panel summary={t(lang, 'extraLinkedImages')}>
+          <Panel id="panel-linked-images" icon="link" summary={t(lang, 'extraLinkedImages')}>
             <p className="hint">{t(lang, 'extraLinkedImagesHint')}</p>
             {form.linkImages.map((row) => (
               <div key={row.id} className="link-image-row">
+                {row.imageUrl ? (
+                  <div className="link-image-preview" aria-label={t(lang, 'linkedImageAlt')}>
+                    <img src={row.imageUrl} alt={row.alt || t(lang, 'linkedImageAlt')} />
+                  </div>
+                ) : null}
                 <Field label={t(lang, 'imageUrl')}>
                   <TextInput
                     value={row.imageUrl}
@@ -1012,6 +1116,74 @@ export default function App() {
                     value={row.alt}
                     placeholder={t(lang, 'linkedImageAlt')}
                     onChange={(e) => app.updateLinkImage(row.id, { alt: e.target.value })}
+                  />
+                </Field>
+                <Field label={t(lang, 'linkedImagePlacement')}>
+                  <SelectInput
+                    value={row.placement}
+                    onChange={(e) =>
+                      app.updateLinkImage(row.id, {
+                        placement: e.target.value as LinkImagePlacement
+                      })
+                    }
+                  >
+                    {linkImagePlacementOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </SelectInput>
+                </Field>
+                <Field label={t(lang, 'linkedImageAlign')}>
+                  <SelectInput
+                    value={row.align}
+                    onChange={(e) =>
+                      app.updateLinkImage(row.id, { align: e.target.value as TextAlign })
+                    }
+                  >
+                    {alignOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </SelectInput>
+                </Field>
+                <Field label={t(lang, 'linkedImageMaxWidth')}>
+                  <input
+                    type="number"
+                    min={24}
+                    max={760}
+                    value={row.maxWidth}
+                    onChange={(e) =>
+                      app.updateLinkImage(row.id, { maxWidth: Number(e.target.value) })
+                    }
+                  />
+                </Field>
+                <Field label={t(lang, 'linkedImageMaxHeight')}>
+                  <input
+                    type="number"
+                    min={16}
+                    max={320}
+                    value={row.maxHeight}
+                    onChange={(e) =>
+                      app.updateLinkImage(row.id, { maxHeight: Number(e.target.value) })
+                    }
+                  />
+                </Field>
+                <Field label={t(lang, 'linkedImageOffsetX')}>
+                  <PlacementControl
+                    value={row.offsetX}
+                    min={-80}
+                    max={80}
+                    onChange={(offsetX) => app.updateLinkImage(row.id, { offsetX })}
+                  />
+                </Field>
+                <Field label={t(lang, 'linkedImageOffsetY')}>
+                  <PlacementControl
+                    value={row.offsetY}
+                    min={-40}
+                    max={40}
+                    onChange={(offsetY) => app.updateLinkImage(row.id, { offsetY })}
                   />
                 </Field>
                 <Field label={t(lang, 'imageFile')}>
@@ -1043,43 +1215,23 @@ export default function App() {
               {t(lang, 'addLinkedImage')}
             </button>
           </Panel>
-        </div>
 
-        <div className="actions-bar">
-          <div className="actions">
-            <button type="button" className="primary" onClick={() => app.generate()}>
-              {t(lang, 'generateSignature')}
-            </button>
-            <button
-              type="button"
-              className="secondary"
-              onClick={() => {
-                app.copyOutput().catch(() => {
-                  navigator.clipboard.writeText(app.outputHtml)
-                })
-              }}
-            >
-              {t(lang, 'copyHtml')}
-            </button>
-            <button type="button" className="secondary" onClick={app.handleDownload}>
-              {t(lang, 'downloadHtml')}
-            </button>
-            <button type="button" className="secondary" onClick={app.handleInstallOutlook}>
-              {t(lang, 'installOutlook')}
-            </button>
-            <button type="button" className="secondary" onClick={app.handleInstallNewOutlook}>
-              {t(lang, 'newOutlookSetup')}
-            </button>
-          </div>
-          <p
-            className="hint"
-            style={{ marginTop: 10 }}
-            dir={lang === 'he' ? 'rtl' : 'ltr'}
-            onClick={onOutlookHelpClick}
-            dangerouslySetInnerHTML={{ __html: outlookHelpStatusHtml(lang) }}
-          />
-          <Panel className="install-guide" style={{ marginTop: 14 }} summary={t(lang, 'installGuide')}>
+          <Panel id="panel-install" className="install-guide" icon="download" summary={t(lang, 'installGuide')}>
             <p className="hint">{t(lang, 'installGuideLead')}</p>
+            <div className="install-guide-actions">
+              <button type="button" className="primary" onClick={app.handleInstallOutlook}>
+                {t(lang, 'installOutlook')}
+              </button>
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => {
+                  app.handleInstallNewOutlook().catch(() => undefined)
+                }}
+              >
+                {t(lang, 'newOutlookSetup')}
+              </button>
+            </div>
             <div className="install-guide-media">
               <img
                 src="/images/install-outlook.gif"
@@ -1089,33 +1241,154 @@ export default function App() {
                 loading="lazy"
               />
             </div>
+            <p
+              className="hint"
+              style={{ marginTop: 10 }}
+              dir={lang === 'he' ? 'rtl' : 'ltr'}
+              onClick={onOutlookHelpClick}
+              dangerouslySetInnerHTML={{ __html: outlookHelpStatusHtml(lang) }}
+            />
+          </Panel>
+
+          <Panel icon="code" className="html-output-panel" summary={t(lang, 'generatedHtml')}>
+            <textarea
+              className="html-output-textarea"
+              value={app.outputHtml}
+              readOnly
+              spellCheck={false}
+            />
           </Panel>
         </div>
       </section>
-
-      <aside
-        ref={app.previewCardRef}
-        className={`card card-preview sidebar-preview${app.previewHighlight ? ' preview-highlight' : ''}`}
-        aria-label={t(lang, 'preview')}
-      >
-        <div className="sidebar-preview-header">
-          <h2>{t(lang, 'preview')}</h2>
-          <p className="hint">{t(lang, 'livePreviewHint')}</p>
-        </div>
-        <div className="sidebar-preview-body">
-          <OutlookPreviewPane
-            html={app.outputHtml}
-            width={app.layout.signatureWidth}
-            minHeight={app.layout.signatureHeight}
-            emailAlign={app.layout.emailAlign}
-            lang={lang}
-          />
-          <StyleSummary layout={app.layout} lang={lang} />
         </div>
       </aside>
+
+      <div
+        className="sidebar-resize-handle ui-precision-only"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label={t(lang, 'sidebarResize')}
+        onPointerDown={onResizePointerDown}
+        onPointerMove={onResizePointerMove}
+        onPointerUp={onResizePointerUp}
+        onPointerCancel={onResizePointerUp}
+      />
+
+      <section className="preview-main">
+        <div className="preview-sticky-shell">
+          <div className="preview-main-header">
+            <div>
+              <h1>{t(lang, 'previewPageHeading')}</h1>
+              <p className="lead">{t(lang, 'livePreviewHint')}</p>
+            </div>
+            <div className="preview-main-actions">
+              <button
+                type="button"
+                className="btn-preview-outline"
+                onClick={() => {
+                  app.copyOutput().catch(() => {
+                    navigator.clipboard.writeText(app.outputHtml)
+                  })
+                }}
+              >
+                {t(lang, 'copyHtml')}
+              </button>
+              <button type="button" className="btn-preview-outline" onClick={app.handleInstallOutlook}>
+                {t(lang, 'installOutlook')}
+              </button>
+              <button
+                type="button"
+                className="btn-preview-solid"
+                onClick={() => {
+                  app.handleInstallNewOutlook().catch(() => undefined)
+                }}
+              >
+                {t(lang, 'newOutlookSetup')}
+              </button>
+            </div>
+          </div>
+          <aside
+            ref={app.previewCardRef}
+            className={`card card-preview sidebar-preview preview-sticky-signature${app.previewHighlight ? ' preview-highlight' : ''}`}
+            aria-label={t(lang, 'preview')}
+          >
+            <OutlookPreviewPane
+              html={app.outputHtml}
+              width={app.layout.signatureWidth}
+              minHeight={app.layout.signatureHeight}
+              emailAlign={app.layout.emailAlign}
+              lang={lang}
+            />
+          </aside>
+        </div>
+        <div className="preview-main-scroll">
+          <StyleSummary layout={app.layout} lang={lang} />
+          <div className="preview-insights">
+            <article className="preview-insight-card preview-insight-card--primary">
+              <span className="material-symbols-outlined panel-icon--no-flip" aria-hidden="true">
+                bolt
+              </span>
+              <h4>{t(lang, 'insightOneClickTitle')}</h4>
+              <p>{t(lang, 'insightOneClickBody')}</p>
+            </article>
+            <article className="preview-insight-card preview-insight-card--wide">
+              <div className="preview-insight-icon-wrap">
+                <span className="material-symbols-outlined panel-icon--no-flip" aria-hidden="true">
+                  analytics
+                </span>
+              </div>
+              <div>
+                <h4>{t(lang, 'insightAnalyticsTitle')}</h4>
+                <p>{t(lang, 'insightAnalyticsBody')}</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
       </div>
 
-      <section className="card card-output">
+      <div className="ui-classic-only classic-actions-bar">
+        <div className="actions">
+          <button type="button" className="primary" onClick={() => app.generate()}>
+            {t(lang, 'generateSignature')}
+          </button>
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => {
+              app.copyOutput().catch(() => {
+                navigator.clipboard.writeText(app.outputHtml)
+              })
+            }}
+          >
+            {t(lang, 'copyHtml')}
+          </button>
+          <button type="button" className="secondary" onClick={app.handleDownload}>
+            {t(lang, 'downloadHtml')}
+          </button>
+          <button type="button" className="secondary" onClick={app.handleInstallOutlook}>
+            {t(lang, 'installOutlook')}
+          </button>
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => {
+              app.handleInstallNewOutlook().catch(() => undefined)
+            }}
+          >
+            {t(lang, 'newOutlookSetup')}
+          </button>
+        </div>
+        <p
+          className="hint"
+          style={{ marginTop: 10 }}
+          dir={lang === 'he' ? 'rtl' : 'ltr'}
+          onClick={onOutlookHelpClick}
+          dangerouslySetInnerHTML={{ __html: outlookHelpStatusHtml(lang) }}
+        />
+      </div>
+
+      <section className="ui-classic-only card card-output">
         <details className="panel" style={{ border: 0, background: 'transparent' }}>
           <summary>{t(lang, 'generatedHtml')}</summary>
           <div className="panel-body" style={{ borderTop: 0 }}>
@@ -1123,6 +1396,46 @@ export default function App() {
           </div>
         </details>
       </section>
+      </div>
+
+      <footer className="app-enterprise-footer ui-precision-only">
+        <div className="app-enterprise-footer-brand">
+          <span className="app-enterprise-footer-product">
+            {t(lang, 'footerProduct')} v{getAppVersion()}
+          </span>
+          <span className="app-enterprise-footer-sep" aria-hidden="true">
+            |
+          </span>
+          <span className="app-enterprise-footer-meta">
+            {t(lang, 'footerCreatedBy').replace('{name}', CREATOR_NAME)}
+          </span>
+        </div>
+        <div className="app-enterprise-footer-actions">
+          <button
+            type="button"
+            className="app-enterprise-footer-link"
+            onClick={() => setCreatorOpen(true)}
+          >
+            {CREATOR_NAME}
+          </button>
+          <button
+            type="button"
+            className="app-enterprise-footer-link"
+            onClick={() => setChangelogOpen(true)}
+          >
+            {t(lang, 'footerChangelog')}
+          </button>
+          <button
+            type="button"
+            className="app-enterprise-footer-link build-stamp build-stamp--footer"
+            title={t(lang, 'changelogTitle')}
+            aria-label={t(lang, 'changelogTitle')}
+            onClick={() => setChangelogOpen(true)}
+          >
+            {formatBuildStamp(lang)}
+          </button>
+        </div>
+      </footer>
       <Toaster toasts={app.toasts} onDismiss={app.dismissToast} />
       <InstallOutlookWizard
         open={app.installWizardOpen}
@@ -1133,6 +1446,7 @@ export default function App() {
         restartOutlook={app.installRestartOutlook}
         installFont={app.installFontOnPc}
         showFontOption={app.showInstallFontOption}
+        canSaveAs={app.canPickInstallSaveLocation}
         rasterizeNameTitle={app.form.rasterizeNameTitle}
         bundledFontName={app.installBundledFontName}
         onRestartOutlookChange={app.setInstallRestartOutlook}
@@ -1140,24 +1454,28 @@ export default function App() {
         onDownload={() => {
           app.confirmInstallDownload().catch(() => undefined)
         }}
+        onSaveAs={() => {
+          app.confirmInstallSaveAs().catch(() => undefined)
+        }}
+        onNewOutlook={() => {
+          app.handleInstallNewOutlook()
+            .catch(() => undefined)
+            .finally(() => app.closeInstallWizard())
+        }}
         onOpenDownloads={app.handleOpenInstallDownloads}
         onClose={app.closeInstallWizard}
       />
       <ChangelogModal open={changelogOpen} lang={lang} onClose={() => setChangelogOpen(false)} />
       <CreatorModal open={creatorOpen} lang={lang} onClose={() => setCreatorOpen(false)} />
       <UpdatePrompt lang={lang} />
-      <footer className="app-footer">
-        <button
-          type="button"
-          className="app-footer-creator"
-          onClick={() => setCreatorOpen(true)}
-        >
+      <footer className="ui-classic-only app-footer">
+        <button type="button" className="app-footer-creator" onClick={() => setCreatorOpen(true)}>
           {t(lang, 'creatorFooter').replace('{name}', CREATOR_NAME)}
         </button>
       </footer>
       <button
         type="button"
-        className="build-stamp"
+        className="ui-classic-only build-stamp"
         title={t(lang, 'changelogTitle')}
         aria-label={t(lang, 'changelogTitle')}
         onClick={() => setChangelogOpen(true)}

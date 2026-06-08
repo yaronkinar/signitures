@@ -254,7 +254,8 @@ export const getLayoutSettings = (form: SignatureFormState): SignatureLayoutSett
   ),
   emailAlign: parseEnumInput(form.emailAlign, ['left', 'center', 'right'] as const, 'right'),
   logoAlign: parseEnumInput(form.logoAlign, ['left', 'center', 'right'] as const, 'right'),
-  logoSide: parseEnumInput(form.logoSide, ['left', 'right'] as const, 'right'),
+  logoSide: parseEnumInput(form.logoSide, ['left', 'right', 'top', 'bottom', 'none'] as const, 'right'),
+  bannerMaxWidth: parseNumberInput(form.bannerMaxWidth, 400, 120, 900),
   verticalAlign: parseEnumInput(
     form.verticalAlign,
     ['top', 'middle', 'bottom'] as const,

@@ -64,6 +64,9 @@ const applyLayout = (
   if (layout.logoMaxWidth !== undefined) {
     next.logoMaxWidth = clamp(layout.logoMaxWidth, 60, 400)
   }
+  if (layout.bannerMaxWidth !== undefined) {
+    next.bannerMaxWidth = clamp(layout.bannerMaxWidth, 120, 900)
+  }
   if (layout.textAlign) next.textAlign = layout.textAlign as TextAlign
   if (layout.nameTitleAlign) next.nameTitleAlign = layout.nameTitleAlign as TextAlign
   if (layout.emailAlign) next.emailAlign = layout.emailAlign as TextAlign

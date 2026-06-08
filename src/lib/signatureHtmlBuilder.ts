@@ -1,5 +1,11 @@
 import { signatureStrings, type AppLanguage } from '../i18n'
-import type { SignatureFormState, SignatureLayoutSettings } from '../types/signatureForm'
+import type {
+  LinkImagePlacement,
+  SignatureFormState,
+  SignatureLayoutSettings,
+  TextAlign
+} from '../types/signatureForm'
+import { DEFAULT_LINK_IMAGE_MAX_HEIGHT, DEFAULT_LINK_IMAGE_MAX_WIDTH } from '../types/signatureForm'
 import type { SignatureTextImageSlot } from './signatureTextImages'
 import { escapeHtml, hasHebrew, normalizeUrl, outlookFontFamilyStyle, sanitizeFontFamily, sanitizeSignatureInlineHtml } from './signatureUtils'
 import { resolveSocialIconUrl } from './socialIcons'
@@ -59,6 +65,10 @@ export const buildSignatureHtml = (
   const xUrl = normalizeUrl(form.xUrl)
   const youtubeUrl = normalizeUrl(form.youtubeUrl)
   const logoUrl = normalizeUrl(form.logoUrl)
+  const bannerUrl = normalizeUrl(form.bannerUrl)
+  const bannerLink = normalizeUrl(form.bannerLink)
+  const stackedLayout = layout.logoSide === 'top' || layout.logoSide === 'bottom'
+  const textOnlyLayout = layout.logoSide === 'none'
   const accentColor = layout.accentColor
   const textColor = layout.textColor
   const dividerColor = layout.dividerColor
@@ -74,8 +84,13 @@ export const buildSignatureHtml = (
   const nameFontWeight = layout.nameFontWeight
   const titleFontWeight = layout.titleFontWeight
   const bodyFontWeight = layout.bodyFontWeight
-  const textColumnWidth = Math.min(layout.textColumnWidth, signatureWidth - 80)
-  const logoColumnWidth = Math.max(60, signatureWidth - textColumnWidth - layout.dividerThickness)
+  const textColumnWidth = stackedLayout || textOnlyLayout
+    ? Math.min(layout.textColumnWidth, signatureWidth - edgeInset * 2)
+    : Math.min(layout.textColumnWidth, signatureWidth - 80)
+  const logoColumnWidth =
+    stackedLayout || textOnlyLayout
+      ? 0
+      : Math.max(60, signatureWidth - textColumnWidth - layout.dividerThickness)
   const fontFamilyCss = escapeHtml(sanitizeFontFamily(layout.fontFamily))
   const fontFamilyStyle = outlookFontFamilyStyle(layout.fontFamily)
   const bodyFontSizePx = `${layout.bodyFontSize}px`
@@ -116,12 +131,34 @@ export const buildSignatureHtml = (
     }
   ].filter((item) => item.url && item.iconUrl)
 
+  type ParsedLinkImage = {
+    imageUrl: string
+    href: string
+    alt: string
+    placement: LinkImagePlacement
+    align: TextAlign
+    maxWidth: number
+    maxHeight: number
+    offsetX: number
+    offsetY: number
+  }
+
+  const alignToAttr = (align: TextAlign): string =>
+    align === 'left' ? 'left' : align === 'center' ? 'center' : 'right'
+
+  const linkImagesWithUrl = form.linkImages.filter((row) => row.imageUrl.trim())
+  const hasLinkFooterIcons = linkImagesWithUrl.some((row) => {
+    const placement = row.placement ?? 'footer'
+    return placement === 'footer' || placement === 'with-social'
+  })
+  const hasFooterIcons = socialLinks.length > 0 || hasLinkFooterIcons
+
   const buildContactRow = (
     labelHtml: string,
     valueHtml: string,
     valueStyle = 'unicode-bidi:plaintext;overflow-wrap:anywhere;word-break:break-word;'
   ): string => {
-    const contactBorderStyle = socialLinks.length
+    const contactBorderStyle = hasFooterIcons
       ? ''
       : `border-bottom:1px solid ${contactRowBorder};`
     return `<tr>
@@ -195,12 +232,67 @@ export const buildSignatureHtml = (
       </a>
     </td>`
 
-  const socialIconRowCells = orderedSocialLinks
-    .map((item, index) => `${index > 0 ? buildSocialIconGapCell() : ''}${buildSocialIconCell(item)}`)
-    .join('')
+  const defaultLinkImageMaxHeight = Math.max(socialIconSize + 12, DEFAULT_LINK_IMAGE_MAX_HEIGHT)
+
+  const parsedLinkImages: ParsedLinkImage[] = linkImagesWithUrl.map((row) => ({
+    imageUrl: normalizeUrl(row.imageUrl),
+    href: row.href.trim() ? normalizeUrl(row.href) : '',
+    alt: row.alt.trim() || strings.linkedImageAlt,
+    placement: row.placement ?? 'footer',
+    align: row.align ?? nameTitleAlign,
+    maxWidth: row.maxWidth > 0 ? row.maxWidth : DEFAULT_LINK_IMAGE_MAX_WIDTH,
+    maxHeight: row.maxHeight > 0 ? row.maxHeight : defaultLinkImageMaxHeight,
+    offsetX: row.offsetX ?? 0,
+    offsetY: row.offsetY ?? 0
+  }))
+
+  const footerLinkImages = parsedLinkImages.filter((item) => item.placement === 'footer')
+  const socialRowLinkImages = parsedLinkImages.filter((item) => item.placement === 'with-social')
+  const topLinkImages = parsedLinkImages.filter((item) => item.placement === 'top')
+  const bottomLinkImages = parsedLinkImages.filter((item) => item.placement === 'bottom')
+  const orderedSocialRowLinkImages = rtlContent
+    ? [...socialRowLinkImages].reverse()
+    : socialRowLinkImages
+  const orderedFooterLinkImages = rtlContent ? [...footerLinkImages].reverse() : footerLinkImages
+
+  const buildCustomLinkImageCell = (item: ParsedLinkImage): string => {
+    const img = `<img
+          src="${escapeHtml(item.imageUrl)}"
+          alt="${escapeHtml(item.alt)}"
+          border="0"
+          style="display:block;border:0;max-height:${item.maxHeight}px;max-width:${item.maxWidth}px;width:auto;height:auto;margin:${item.offsetY}px 0 0 ${item.offsetX}px;padding:0;-ms-interpolation-mode:bicubic;"
+        />`
+    const graphic = item.href
+      ? `<a href="${escapeHtml(item.href)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(item.alt)}" style="display:block;text-decoration:none;line-height:0;font-size:0;">${img}</a>`
+      : img
+    return `<td valign="middle" align="center" style="padding:${socialIconPadTopPx}px 2px ${socialIconPadBottomPx}px;vertical-align:middle;text-align:center;mso-line-height-rule:exactly;">
+      ${graphic}
+    </td>`
+  }
+
+  const buildCustomLinkImageRowCells = (images: ParsedLinkImage[]): string => {
+    const ordered = rtlContent ? [...images].reverse() : images
+    return ordered
+      .map((item, index) => `${index > 0 ? buildSocialIconGapCell() : ''}${buildCustomLinkImageCell(item)}`)
+      .join('')
+  }
+
+  const socialRowCells = [
+    ...orderedSocialLinks.map(
+      (item, index) => `${index > 0 ? buildSocialIconGapCell() : ''}${buildSocialIconCell(item)}`
+    ),
+    ...orderedSocialRowLinkImages.map((item, index) => {
+      const needsGap = orderedSocialLinks.length > 0 || index > 0
+      return `${needsGap ? buildSocialIconGapCell() : ''}${buildCustomLinkImageCell(item)}`
+    })
+  ].join('')
+
+  const footerLinkImageRowCells = buildCustomLinkImageRowCells(footerLinkImages)
 
   const buildSocialFooterRows = (): string => {
-    if (!socialLinks.length) return ''
+    if (!hasFooterIcons) return ''
+
+    const showSocialRow = socialLinks.length > 0 || socialRowLinkImages.length > 0
 
     const dividerRow = contactRows.length
       ? `<tr>
@@ -219,41 +311,64 @@ export const buildSignatureHtml = (
       <td align="${nameTitleAlignAttr}" valign="top" style="padding:0 ${socialFooterPadHorizontal} 12px;vertical-align:top;text-align:${nameTitleAlign};overflow:visible;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${nameTitleAlignAttr}" dir="${nameTitleDirection}" style="width:100%;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
           ${dividerRow}
-          <tr>
+          ${
+            showSocialRow
+              ? `<tr>
             <td align="${nameTitleAlignAttr}" valign="middle" style="padding:0;text-align:${nameTitleAlign};vertical-align:middle;overflow:visible;mso-line-height-rule:exactly;">
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${socialIconsTableAlign}" width="${socialIconsRowWidth}" style="width:${socialIconsRowWidth}px;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${socialIconsTableAlign}"${
+                socialLinks.length && !socialRowLinkImages.length
+                  ? ` width="${socialIconsRowWidth}" style="width:${socialIconsRowWidth}px;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;"`
+                  : ' style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;"'
+              }>
                 <tr valign="middle" style="vertical-align:middle;mso-line-height-rule:exactly;">
-                  ${socialIconRowCells}
+                  ${socialRowCells}
                 </tr>
               </table>
             </td>
-          </tr>
+          </tr>`
+              : ''
+          }
+          ${
+            footerLinkImages.length
+              ? `<tr>
+            <td align="${alignToAttr(orderedFooterLinkImages[0]?.align ?? nameTitleAlign)}" valign="middle" style="padding:${showSocialRow ? '6px' : '0'} 0 0;text-align:${orderedFooterLinkImages[0]?.align ?? nameTitleAlign};vertical-align:middle;overflow:visible;mso-line-height-rule:exactly;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${alignToAttr(orderedFooterLinkImages[0]?.align ?? nameTitleAlign)}" style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+                <tr valign="middle" style="vertical-align:middle;mso-line-height-rule:exactly;">
+                  ${footerLinkImageRowCells}
+                </tr>
+              </table>
+            </td>
+          </tr>`
+              : ''
+          }
         </table>
       </td>
     </tr>`
   }
 
   const logoOnLeft = layout.logoSide === 'left'
-  const textPaddingLeft = textOffsetLeft + (logoOnLeft ? dividerInset : edgeInset)
-  const textPaddingRight = textOffsetRight + (logoOnLeft ? edgeInset : dividerInset)
+  const textPaddingLeft = stackedLayout
+    ? edgeInset + textOffsetLeft
+    : textOffsetLeft + (logoOnLeft ? dividerInset : edgeInset)
+  const textPaddingRight = stackedLayout
+    ? edgeInset + textOffsetRight
+    : textOffsetRight + (logoOnLeft ? edgeInset : dividerInset)
   const logoPaddingLeft = logoOnLeft ? edgeInset : dividerInset
   const logoPaddingRight = logoOnLeft ? dividerInset : edgeInset
   const logoHorizontalShift = layout.logoOffsetX
 
   const dividerOnTextSide =
-    layout.dividerThickness > 0
-      ? logoOnLeft
-        ? `border-left:${layout.dividerThickness}px solid ${dividerColor};`
-        : `border-right:${layout.dividerThickness}px solid ${dividerColor};`
-      : ''
+    stackedLayout || textOnlyLayout
+      ? ''
+      : layout.dividerThickness > 0
+        ? logoOnLeft
+          ? `border-left:${layout.dividerThickness}px solid ${dividerColor};`
+          : `border-right:${layout.dividerThickness}px solid ${dividerColor};`
+        : ''
 
-  const textColumnVerticalAlign = socialLinks.length ? 'top' : layout.verticalAlign
-  const textCellOutlookHeight = socialLinks.length ? 'height:auto;mso-height-rule:at-least;' : ''
-  const textCell = `<td valign="${textColumnVerticalAlign}" style="${dividerOnTextSide}vertical-align:${textColumnVerticalAlign};${textCellOutlookHeight}padding-left:${textPaddingLeft}px;padding-right:${textPaddingRight}px;padding-top:${Math.max(
-    0,
-    layout.textOffsetY
-  ) + edgeInset}px;padding-bottom:${Math.max(0, -layout.textOffsetY) + edgeInset}px;width:${textColumnWidth}px;max-width:100%;text-align:${nameTitleAlign};unicode-bidi:plaintext;overflow:visible;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${nameTitleAlignAttr}" dir="${nameTitleDirection}" style="${fontFamilyStyle}text-align:${nameTitleAlign};border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+  const textColumnVerticalAlign = hasFooterIcons ? 'top' : layout.verticalAlign
+  const textCellOutlookHeight = hasFooterIcons ? 'height:auto;mso-height-rule:at-least;' : ''
+  const textInnerTable = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${nameTitleAlignAttr}" dir="${nameTitleDirection}" style="${fontFamilyStyle}text-align:${nameTitleAlign};border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
         ${
           options.textImages?.name
             ? buildTextImageRow(
@@ -278,16 +393,72 @@ export const buildSignatureHtml = (
         }
         ${contactRows.length ? `<tr><td dir="${contactDirection}" align="${contactAlignAttr}" style="padding-top:2px;padding-bottom:0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contactAlignAttr}" dir="${contactDirection}" style="text-align:${contactAlign};border-collapse:collapse;">${contactRows.join('')}</table></td></tr>` : ''}
         ${buildSocialFooterRows()}
-      </table>
+      </table>`
+  const textCell = `<td valign="${textColumnVerticalAlign}" style="${dividerOnTextSide}vertical-align:${textColumnVerticalAlign};${textCellOutlookHeight}padding-left:${textPaddingLeft}px;padding-right:${textPaddingRight}px;padding-top:${Math.max(
+    0,
+    layout.textOffsetY
+  ) + edgeInset}px;padding-bottom:${Math.max(0, -layout.textOffsetY) + edgeInset}px;width:${textColumnWidth}px;max-width:100%;text-align:${nameTitleAlign};unicode-bidi:plaintext;overflow:visible;">
+      ${textInnerTable}
     </td>`
 
-  const logoGraphic = logoUrl
-    ? `<span style="display:inline-block;line-height:0;font-size:0;margin-left:${logoHorizontalShift}px;vertical-align:top;">
-          <img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(strings.companyLogoAlt)}" width="${layout.logoMaxWidth}" style="display:block;border:0;max-width:${layout.logoMaxWidth}px;height:auto;" />
-        </span>`
-    : `<div style="display:inline-block;font-size:14px;color:${accentColor};font-weight:700;margin-left:${logoHorizontalShift}px;">${strings.companyLogoPlaceholder}</div>`
+  const logoAlignAttr =
+    layout.logoAlign === 'left' ? 'left' : layout.logoAlign === 'center' ? 'center' : 'right'
 
-  const logoVerticalAlign = socialLinks.length ? 'top' : layout.verticalAlign
+  const buildLogoGraphic = (maxWidth: number): string =>
+    logoUrl
+      ? `<span style="display:inline-block;line-height:0;font-size:0;margin-left:${logoHorizontalShift}px;vertical-align:top;">
+          <img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(strings.companyLogoAlt)}" width="${maxWidth}" style="display:block;border:0;max-width:${maxWidth}px;height:auto;" />
+        </span>`
+      : `<div style="display:inline-block;font-size:14px;color:${accentColor};font-weight:700;margin-left:${logoHorizontalShift}px;">${strings.companyLogoPlaceholder}</div>`
+
+  const buildBannerGraphic = (): string => {
+    if (!bannerUrl) return ''
+    const bannerWidth = Math.min(layout.bannerMaxWidth, signatureWidth)
+    const img = `<img src="${escapeHtml(bannerUrl)}" alt="${escapeHtml(strings.bannerAlt)}" width="${bannerWidth}" style="display:block;border:0;max-width:${bannerWidth}px;width:100%;height:auto;" />`
+    return bannerLink
+      ? `<a href="${escapeHtml(bannerLink)}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">${img}</a>`
+      : img
+  }
+
+  const buildBannerRow = (colspan: number, position: 'top' | 'bottom' = 'bottom'): string => {
+    const graphic = buildBannerGraphic()
+    if (!graphic) return ''
+    const colspanAttr = colspan > 1 ? ` colspan="${colspan}"` : ''
+    const padding =
+      position === 'top'
+        ? `${edgeInset}px ${edgeInset}px 6px`
+        : `10px ${edgeInset}px ${edgeInset}px`
+    return `<tr>
+    <td${colspanAttr} align="${layout.emailAlign}" style="padding:${padding};text-align:${layout.emailAlign};font-size:0;line-height:0;max-width:100%;">
+      ${graphic}
+    </td>
+  </tr>`
+  }
+
+  const buildLinkImagesBandRow = (
+    images: ParsedLinkImage[],
+    colspan: number,
+    edge: 'top' | 'bottom'
+  ): string => {
+    if (!images.length) return ''
+    const colspanAttr = colspan > 1 ? ` colspan="${colspan}"` : ''
+    const padding =
+      edge === 'top' ? `${edgeInset}px ${edgeInset}px 6px` : `6px ${edgeInset}px ${edgeInset}px`
+    const rowAlign = alignToAttr(images[0]?.align ?? layout.emailAlign)
+    return `<tr>
+    <td${colspanAttr} align="${rowAlign}" style="padding:${padding};text-align:${rowAlign};font-size:0;line-height:0;max-width:100%;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${rowAlign}" style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+        <tr valign="middle" style="vertical-align:middle;mso-line-height-rule:exactly;">
+          ${buildCustomLinkImageRowCells(images)}
+        </tr>
+      </table>
+    </td>
+  </tr>`
+  }
+
+  const logoGraphic = buildLogoGraphic(layout.logoMaxWidth)
+
+  const logoVerticalAlign = hasFooterIcons ? 'top' : layout.verticalAlign
   const logoCell = `<td valign="${logoVerticalAlign}" style="vertical-align:${logoVerticalAlign};padding-left:${logoPaddingLeft}px;padding-right:${logoPaddingRight}px;padding-top:${Math.max(
     0,
     layout.logoOffsetY
@@ -295,15 +466,64 @@ export const buildSignatureHtml = (
       ${logoGraphic}
     </td>`
 
-  const rowCells = logoOnLeft ? [logoCell, textCell] : [textCell, logoCell]
-  const mainRowStyle = socialLinks.length
+  const rowCells = textOnlyLayout
+    ? [textCell]
+    : logoOnLeft
+      ? [logoCell, textCell]
+      : [textCell, logoCell]
+  const mainRowStyle = hasFooterIcons
     ? 'height:auto;mso-height-rule:at-least;'
     : ''
 
-  const signatureTable = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${layout.emailAlign}" width="${signatureWidth}" style="direction:ltr;font-family:${fontFamilyCss};color:${textColor};background:${backgroundColor};width:${signatureWidth}px;max-width:100%;border-collapse:collapse;mso-line-height-rule:exactly;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+  const tableStyle = `direction:ltr;font-family:${fontFamilyCss};color:${textColor};background:${backgroundColor};width:${signatureWidth}px;max-width:100%;border-collapse:collapse;mso-line-height-rule:exactly;mso-table-lspace:0pt;mso-table-rspace:0pt;`
+
+  const buildStackedTextRow = (): string => `<tr style="${mainRowStyle}">
+    <td valign="${textColumnVerticalAlign}" style="vertical-align:${textColumnVerticalAlign};${textCellOutlookHeight}padding-left:${textPaddingLeft}px;padding-right:${textPaddingRight}px;padding-top:${Math.max(
+      0,
+      layout.textOffsetY
+    ) + edgeInset}px;padding-bottom:${Math.max(0, -layout.textOffsetY) + edgeInset}px;width:${textColumnWidth}px;max-width:100%;text-align:${nameTitleAlign};unicode-bidi:plaintext;overflow:visible;">
+      ${textInnerTable}
+    </td>
+  </tr>`
+
+  const buildStackedLogoRow = (position: 'top' | 'bottom'): string => {
+    const topPadding =
+      position === 'top'
+        ? `${Math.max(0, layout.logoOffsetY) + edgeInset}px ${edgeInset}px 6px`
+        : `6px ${edgeInset}px ${Math.max(0, -layout.logoOffsetY) + edgeInset}px`
+    return `<tr>
+    <td align="${logoAlignAttr}" style="padding:${topPadding};text-align:${layout.logoAlign};font-size:0;line-height:0;max-width:100%;">
+      ${buildLogoGraphic(Math.min(layout.logoMaxWidth, signatureWidth - edgeInset * 2))}
+    </td>
+  </tr>`
+  }
+
+  const sideBannerColspan = textOnlyLayout ? 1 : 2
+
+  const signatureTable =
+    layout.logoSide === 'top'
+      ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${layout.emailAlign}" width="${signatureWidth}" style="${tableStyle}">
+  ${buildLinkImagesBandRow(topLinkImages, 1, 'top')}
+  ${buildStackedLogoRow('top')}
+  ${buildStackedTextRow()}
+  ${buildBannerRow(1, 'bottom')}
+  ${buildLinkImagesBandRow(bottomLinkImages, 1, 'bottom')}
+</table>`
+      : layout.logoSide === 'bottom'
+        ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${layout.emailAlign}" width="${signatureWidth}" style="${tableStyle}">
+  ${buildLinkImagesBandRow(topLinkImages, 1, 'top')}
+  ${buildBannerRow(1, 'top')}
+  ${buildStackedTextRow()}
+  ${buildStackedLogoRow('bottom')}
+  ${buildLinkImagesBandRow(bottomLinkImages, 1, 'bottom')}
+</table>`
+        : `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${layout.emailAlign}" width="${signatureWidth}" style="${tableStyle}">
+  ${buildLinkImagesBandRow(topLinkImages, sideBannerColspan, 'top')}
   <tr style="${mainRowStyle}">
     ${rowCells.join('\n    ')}
   </tr>
+  ${buildBannerRow(sideBannerColspan, 'bottom')}
+  ${buildLinkImagesBandRow(bottomLinkImages, sideBannerColspan, 'bottom')}
 </table>`
 
   return `<!-- Outlook email signature -->

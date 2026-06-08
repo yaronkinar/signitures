@@ -26,13 +26,15 @@ type BulkSignaturesPanelProps = {
   designerForm: SignatureFormState
   lang: AppLanguage
   onLoadDesignerForm: (form: SignatureFormState, options?: SetFormOptions) => void
+  onPreviewContentWidth?: (contentWidth: number) => void
 }
 
 export const BulkSignaturesPanel = ({
   template,
   designerForm,
   lang,
-  onLoadDesignerForm
+  onLoadDesignerForm,
+  onPreviewContentWidth
 }: BulkSignaturesPanelProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [working, setWorking] = useState(false)
@@ -79,6 +81,8 @@ export const BulkSignaturesPanel = ({
       setRows(parsedRows)
       setPreviews(builtPreviews)
       setOverrides(parsedRows.map(() => null))
+      const maxPreviewWidth = builtPreviews.reduce((max, preview) => Math.max(max, preview.width), 0)
+      onPreviewContentWidth?.(maxPreviewWidth)
       setStatus(
         parsedRows.length === 1
           ? t(lang, 'bulkPreviewReadyOne')
@@ -179,7 +183,7 @@ export const BulkSignaturesPanel = ({
   }
 
   return (
-    <Panel summary={t(lang, 'bulkSignatures')}>
+    <Panel id="panel-bulk" summary={t(lang, 'bulkSignatures')}>
       <p className="hint">{t(lang, 'bulkSignaturesLead')}</p>
       <p className="hint">{t(lang, 'bulkSignaturesColumns')}</p>
       <div className="bulk-actions">

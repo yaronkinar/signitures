@@ -126,4 +126,124 @@ describe('buildSignatureHtml', () => {
     expect(html).toContain('href="https://acme.com"')
     expect(html).toContain('acme.com')
   })
+
+  it('renders banner row at the bottom when bannerUrl is set', () => {
+    const form = createTestForm({
+      fullName: 'Jane Doe',
+      logoUrl: 'https://example.com/logo.png',
+      bannerUrl: 'https://example.com/banner.png',
+      bannerLink: 'https://example.com/promo'
+    })
+    const layout = createTestLayout(form)
+    const html = buildSignatureHtml(form, layout)
+
+    expect(html).toContain('banner.png')
+    expect(html).toContain('href="https://example.com/promo"')
+    const logoIndex = html.indexOf('logo.png')
+    const bannerIndex = html.indexOf('banner.png')
+    expect(logoIndex).toBeGreaterThan(-1)
+    expect(bannerIndex).toBeGreaterThan(logoIndex)
+  })
+
+  it('uses stacked layout when logoSide is top', () => {
+    const form = createTestForm({
+      fullName: 'Jane Doe',
+      logoSide: 'top',
+      logoUrl: 'https://example.com/logo.png',
+      bannerUrl: 'https://example.com/banner.png'
+    })
+    const layout = createTestLayout(form)
+    const html = buildSignatureHtml(form, layout)
+
+    const logoIndex = html.indexOf('logo.png')
+    const nameIndex = html.indexOf('Jane Doe')
+    const bannerIndex = html.indexOf('banner.png')
+    expect(logoIndex).toBeLessThan(nameIndex)
+    expect(nameIndex).toBeLessThan(bannerIndex)
+    expect(html).not.toContain('border-left:')
+    expect(html).not.toContain('border-right:')
+  })
+
+  it('uses banner-top layout when logoSide is bottom', () => {
+    const form = createTestForm({
+      fullName: 'Jane Doe',
+      logoSide: 'bottom',
+      logoUrl: 'https://example.com/logo.png',
+      bannerUrl: 'https://example.com/banner.png'
+    })
+    const layout = createTestLayout(form)
+    const html = buildSignatureHtml(form, layout)
+
+    const bannerIndex = html.indexOf('banner.png')
+    const nameIndex = html.indexOf('Jane Doe')
+    const logoIndex = html.indexOf('logo.png')
+    expect(bannerIndex).toBeLessThan(nameIndex)
+    expect(nameIndex).toBeLessThan(logoIndex)
+  })
+
+  it('omits logo column when logoSide is none', () => {
+    const form = createTestForm({
+      fullName: 'Jane Doe',
+      logoSide: 'none',
+      logoUrl: 'https://example.com/logo.png'
+    })
+    const layout = createTestLayout(form)
+    const html = buildSignatureHtml(form, layout)
+
+    expect(html).toContain('Jane Doe')
+    expect(html).not.toContain('logo.png')
+  })
+
+  it('renders custom linked images with optional href', () => {
+    const form = createTestForm({
+      fullName: 'Jane Doe',
+      linkImages: [
+        {
+          id: 'badge-1',
+          imageUrl: 'https://example.com/badge.png',
+          href: 'https://example.com/promo',
+          alt: 'Promo badge',
+          placement: 'footer',
+          align: 'right',
+          maxWidth: 160,
+          maxHeight: 40,
+          offsetX: 0,
+          offsetY: 0
+        }
+      ]
+    })
+    const layout = createTestLayout(form)
+    const html = buildSignatureHtml(form, layout)
+
+    expect(html).toContain('https://example.com/badge.png')
+    expect(html).toContain('https://example.com/promo')
+    expect(html).toContain('Promo badge')
+  })
+
+  it('renders top-placed linked images before main content', () => {
+    const form = createTestForm({
+      fullName: 'Jane Doe',
+      linkImages: [
+        {
+          id: 'badge-top',
+          imageUrl: 'https://example.com/top-badge.png',
+          href: '',
+          alt: 'Top badge',
+          placement: 'top',
+          align: 'center',
+          maxWidth: 120,
+          maxHeight: 32,
+          offsetX: 0,
+          offsetY: 0
+        }
+      ]
+    })
+    const layout = createTestLayout(form)
+    const html = buildSignatureHtml(form, layout)
+
+    const topIndex = html.indexOf('top-badge.png')
+    const nameIndex = html.indexOf('Jane Doe')
+    expect(topIndex).toBeGreaterThan(-1)
+    expect(topIndex).toBeLessThan(nameIndex)
+  })
 })

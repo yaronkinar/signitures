@@ -1,12 +1,17 @@
 import JSZip from 'jszip'
-import { createDefaultFormState } from './defaultFormState'
+import { createDefaultFormState, createDefaultLinkImage } from './defaultFormState'
 import { buildExportBaseName, buildFormParamsExportZip, buildNamedExportZip } from './buildFormExportZip'
 import {
   resolveFormImageUrlsFromZip
 } from './signatureImageAssets'
 import { getLayoutSettings } from './signatureUtils'
 import type { AppLanguage } from '../i18n'
-import type { LinkImage, SignatureFormState } from '../types/signatureForm'
+import {
+  DEFAULT_LINK_IMAGE_MAX_HEIGHT,
+  DEFAULT_LINK_IMAGE_MAX_WIDTH,
+  type LinkImage,
+  type SignatureFormState
+} from '../types/signatureForm'
 
 const STORAGE_KEY = 'signitures-form-state'
 const STYLE_EXPORT_TYPE = 'style'
@@ -40,11 +45,13 @@ const STYLE_FIELD_KEYS = [
   'signatureHeight',
   'textColumnWidth',
   'logoMaxWidth',
+  'bannerMaxWidth',
   'textAlign',
   'nameTitleAlign',
   'emailAlign',
   'logoAlign',
   'logoSide',
+  'layoutPreset',
   'verticalAlign',
   'textOffsetX',
   'textOffsetY',
@@ -75,21 +82,41 @@ export type ParsedFormImport =
   | { kind: 'full'; form: SignatureFormState }
   | { kind: 'style'; style: Partial<SignatureStyleExport> }
 
+const parseLinkImagePlacement = (
+  value: unknown
+): LinkImage['placement'] => {
+  if (value === 'footer' || value === 'with-social' || value === 'top' || value === 'bottom') {
+    return value
+  }
+  return 'footer'
+}
+
+const parseLinkImageAlign = (value: unknown): LinkImage['align'] => {
+  if (value === 'left' || value === 'center' || value === 'right') return value
+  return 'right'
+}
+
 const parseLinkImages = (value: unknown, fallback: LinkImage[]): LinkImage[] => {
   if (!Array.isArray(value) || value.length === 0) return fallback
 
   return value.map((item) => {
     if (!item || typeof item !== 'object') {
-      return { id: crypto.randomUUID(), imageUrl: '', href: '', alt: '' }
+      return createDefaultLinkImage()
     }
 
     const row = item as Partial<LinkImage>
-    return {
+    return createDefaultLinkImage({
       id: typeof row.id === 'string' && row.id.trim() ? row.id : crypto.randomUUID(),
       imageUrl: typeof row.imageUrl === 'string' ? row.imageUrl : '',
       href: typeof row.href === 'string' ? row.href : '',
-      alt: typeof row.alt === 'string' ? row.alt : ''
-    }
+      alt: typeof row.alt === 'string' ? row.alt : '',
+      placement: parseLinkImagePlacement(row.placement),
+      align: parseLinkImageAlign(row.align),
+      maxWidth: typeof row.maxWidth === 'number' ? row.maxWidth : DEFAULT_LINK_IMAGE_MAX_WIDTH,
+      maxHeight: typeof row.maxHeight === 'number' ? row.maxHeight : DEFAULT_LINK_IMAGE_MAX_HEIGHT,
+      offsetX: typeof row.offsetX === 'number' ? row.offsetX : 0,
+      offsetY: typeof row.offsetY === 'number' ? row.offsetY : 0
+    })
   })
 }
 

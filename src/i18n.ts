@@ -8,12 +8,29 @@ export type SignatureStrings = {
   jobTitlePlaceholder: string
   companyLogoPlaceholder: string
   companyLogoAlt: string
+  bannerAlt: string
+  linkedImageAlt: string
 }
 
 const translations = {
   en: {
     pageTitle: 'Outlook Signature Generator',
     pageHeading: 'Outlook Signature Generator',
+    editorSidebarTitle: 'Signature Editor',
+    editorActiveTemplate: 'Active template',
+    previewPageHeading: 'Live Signature Preview',
+    navPreview: 'Preview',
+    navSectionsLabel: 'Jump to section',
+    insightOneClickTitle: 'One-Click Setup',
+    insightOneClickBody:
+      'Integrate directly with Outlook Desktop, Web, and mobile apps instantly.',
+    insightAnalyticsTitle: 'Analytics Ready',
+    insightAnalyticsBody:
+      'Enable link tracking to see how many people click your signature links.',
+    footerProduct: 'Outlook Signature Generator',
+    footerCreatedBy: 'Created by {name}',
+    toolbarMore: 'Import / export',
+    footerChangelog: 'Changelog',
     pageLead:
       'Fill in your details and generate copy-ready HTML for Outlook. Expand each section as needed.',
     formSaving: 'Saving…',
@@ -79,6 +96,10 @@ const translations = {
     aiSignaturePreview: 'Your signature preview',
     contactDetails: 'Contact details',
     language: 'Language',
+    languageToggleLabel: 'App language',
+    uiThemeToggleLabel: 'Interface theme',
+    uiThemeClassic: 'Classic',
+    uiThemePrecision: 'Precision',
     langEnglish: 'English',
     langHebrew: 'Hebrew (עברית)',
     fullName: 'Full name',
@@ -113,6 +134,22 @@ const translations = {
     logoVerticalPlacementHint: 'Negative moves up; positive moves down.',
     logoSideLeft: 'Left',
     logoSideRight: 'Right',
+    logoSideTop: 'Top',
+    logoSideBottom: 'Bottom',
+    logoSideNone: 'Hidden',
+    signatureLayout: 'Layout style',
+    signatureLayoutHint:
+      'Choose how the logo and banner are arranged — matching the templates from the signature examples document.',
+    layoutSideRight: 'Logo beside text (right)',
+    layoutSideLeft: 'Logo beside text (left)',
+    layoutSideRightBanner: 'Logo right + banner bottom',
+    layoutSideLeftBanner: 'Logo left + banner bottom',
+    layoutStackedBanner: 'Logo top + banner bottom',
+    layoutBannerTopLogoBottom: 'Banner top + logo bottom',
+    layoutTextOnly: 'Text only (no logo)',
+    layoutTextOnlyBanner: 'Text only + banner bottom',
+    bannerMaxWidth: 'Banner max width',
+    sidebarResize: 'Resize sidebar',
     bannerUrl: 'Banner URL',
     bannerFile: 'Banner file',
     bannerLink: 'Banner link',
@@ -209,6 +246,16 @@ const translations = {
     background: 'Background',
     extraLinkedImages: 'Extra linked images',
     extraLinkedImagesHint: 'Optional icons or buttons with their own link targets.',
+    linkedImagePlacement: 'Position',
+    linkedImagePlacementFooter: 'Below contact info',
+    linkedImagePlacementWithSocial: 'With social icons',
+    linkedImagePlacementTop: 'Top of signature',
+    linkedImagePlacementBottom: 'Bottom of signature',
+    linkedImageAlign: 'Image align',
+    linkedImageMaxWidth: 'Max width (px)',
+    linkedImageMaxHeight: 'Max height (px)',
+    linkedImageOffsetX: 'Horizontal offset',
+    linkedImageOffsetY: 'Vertical offset',
     addLinkedImage: 'Add linked image',
     generateSignature: 'Generate signature',
     copyHtml: 'Copy HTML',
@@ -226,6 +273,8 @@ const translations = {
     installWizardFontSkippedHint:
       'Name and title are rendered as images, so the font install is optional. Recipients still see the correct look without {font} on their device.',
     installWizardInstallNow: 'Install now',
+    installWizardSaveAs: 'Save as…',
+    installWizardSaveAsHint: 'Save as… lets you pick the folder for the installer file, then run it yourself.',
     installWizardDownloading: 'Preparing installer…',
     installWizardRunning:
       'Preparing installer… Check the browser download bar — click Open on install-outlook-signature.bat when it appears.',
@@ -362,6 +411,19 @@ const translations = {
   he: {
     pageTitle: 'מחולל חתימות Outlook',
     pageHeading: 'מחולל חתימות Outlook',
+    editorSidebarTitle: 'עורך חתימות',
+    editorActiveTemplate: 'תבנית פעילה',
+    previewPageHeading: 'תצוגה מקדימה חיה',
+    navPreview: 'תצוגה',
+    navSectionsLabel: 'מעבר לסעיף',
+    insightOneClickTitle: 'התקנה בלחיצה',
+    insightOneClickBody: 'התקנה ישירה ב-Outlook Desktop, Web ואפליקציות ניידות.',
+    insightAnalyticsTitle: 'מוכן לאנליטיקה',
+    insightAnalyticsBody: 'עקבו אחרי קליקים על קישורים בחתימה.',
+    footerProduct: 'מחולל חתימות Outlook',
+    footerCreatedBy: 'נוצר על ידי {name}',
+    toolbarMore: 'ייבוא / ייצוא',
+    footerChangelog: 'יומן שינויים',
     pageLead: 'מלאו את הפרטים ויצרו HTML מוכן להעתקה ל-Outlook. הרחיבו כל מקטע לפי הצורך.',
     formSaving: 'שומר…',
     formSaved: 'נשמר מקומית',
@@ -426,6 +488,10 @@ const translations = {
     aiSignaturePreview: 'תצוגה מקדימה של החתימה',
     contactDetails: 'פרטי קשר',
     language: 'שפה',
+    languageToggleLabel: 'שפת הממשק',
+    uiThemeToggleLabel: 'ערכת עיצוב',
+    uiThemeClassic: 'קלאסי',
+    uiThemePrecision: 'חדש',
     langEnglish: 'English',
     langHebrew: 'עברית',
     fullName: 'שם מלא',
@@ -460,6 +526,22 @@ const translations = {
     logoVerticalPlacementHint: 'ערך שלילי — למעלה; חיובי — למטה.',
     logoSideLeft: 'שמאל',
     logoSideRight: 'ימין',
+    logoSideTop: 'למעלה',
+    logoSideBottom: 'למטה',
+    logoSideNone: 'ללא לוגו',
+    signatureLayout: 'סגנון פריסה',
+    signatureLayoutHint:
+      'בחרו כיצד הלוגו והבאנר מסודרים. «לוגו למעלה + באנר למטה» מתאים לתבניות משרדיות וארגוניות נפוצות.',
+    layoutSideRight: 'לוגו לצד הטקסט (ימין)',
+    layoutSideLeft: 'לוגו לצד הטקסט (שמאל)',
+    layoutSideRightBanner: 'לוגו ימין + באנר למטה',
+    layoutSideLeftBanner: 'לוגו שמאל + באנר למטה',
+    layoutStackedBanner: 'לוגו למעלה + באנר למטה',
+    layoutBannerTopLogoBottom: 'באנר למעלה + לוגו למטה',
+    layoutTextOnly: 'טקסט בלבד (ללא לוגו)',
+    layoutTextOnlyBanner: 'טקסט בלבד + באנר למטה',
+    bannerMaxWidth: 'רוחב מקסימלי לבאנר',
+    sidebarResize: 'שינוי גודל סרגל צד',
     bannerUrl: 'כתובת באנר',
     bannerFile: 'קובץ באנר',
     bannerLink: 'קישור באנר',
@@ -556,6 +638,16 @@ const translations = {
     background: 'רקע',
     extraLinkedImages: 'תמונות מקושרות נוספות',
     extraLinkedImagesHint: 'אייקונים או כפתורים אופציונליים עם יעדי קישור משלהם.',
+    linkedImagePlacement: 'מיקום',
+    linkedImagePlacementFooter: 'מתחת לפרטי קשר',
+    linkedImagePlacementWithSocial: 'ליד אייקוני רשתות',
+    linkedImagePlacementTop: 'ראש החתימה',
+    linkedImagePlacementBottom: 'תחתית החתימה',
+    linkedImageAlign: 'יישור תמונה',
+    linkedImageMaxWidth: 'רוחב מקסימלי (px)',
+    linkedImageMaxHeight: 'גובה מקסימלי (px)',
+    linkedImageOffsetX: 'הזזה אופקית',
+    linkedImageOffsetY: 'הזזה אנכית',
     addLinkedImage: 'הוספת תמונה מקושרת',
     generateSignature: 'יצירת חתימה',
     copyHtml: 'העתקת HTML',
@@ -573,6 +665,8 @@ const translations = {
     installWizardFontSkippedHint:
       'השם והתפקיד מוצגים כתמונה, ולכן התקנת הגופן אופציונלית. נמענים עדיין יראו את המראה הנכון גם בלי {font} במכשיר שלהם.',
     installWizardInstallNow: 'התקנה עכשיו',
+    installWizardSaveAs: 'שמירה בשם…',
+    installWizardSaveAsHint: '«שמירה בשם…» מאפשר לבחור תיקייה לקובץ המתקין, ואז להריץ אותו ידנית.',
     installWizardDownloading: 'מכין מתקין…',
     installWizardRunning:
       'מכין מתקין… בדקו את שורת ההורדות של הדפדפן — לחצו «פתח» על install-outlook-signature.bat כשמופיע.',
@@ -718,7 +812,9 @@ export const signatureStrings: Record<AppLanguage, SignatureStrings> = {
     fullNamePlaceholder: 'Full name',
     jobTitlePlaceholder: 'Job title',
     companyLogoPlaceholder: 'Company logo',
-    companyLogoAlt: 'Company logo'
+    companyLogoAlt: 'Company logo',
+    bannerAlt: 'Signature banner',
+    linkedImageAlt: 'Linked image'
   },
   he: {
     phoneLabel: 'נייד:',
@@ -727,7 +823,9 @@ export const signatureStrings: Record<AppLanguage, SignatureStrings> = {
     fullNamePlaceholder: 'שם מלא',
     jobTitlePlaceholder: 'תפקיד',
     companyLogoPlaceholder: 'לוגו חברה',
-    companyLogoAlt: 'לוגו חברה'
+    companyLogoAlt: 'לוגו חברה',
+    bannerAlt: 'באנר חתימה',
+    linkedImageAlt: 'תמונה מקושרת'
   }
 }
 

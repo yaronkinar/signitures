@@ -24,13 +24,15 @@ import {
   parseFormImportFile,
   storeFormState
 } from '../lib/formStorage'
-import { createDefaultFormState } from '../lib/defaultFormState'
+import { createDefaultFormState, createDefaultLinkImage } from '../lib/defaultFormState'
 import {
   downloadHtmlOutput,
   downloadExportSignaturesFolderBat,
   downloadOpenDownloadsFolderBat,
   downloadOpenSignaturesFolderBat,
+  canPickOutlookInstallerSaveLocation,
   installForNewOutlook,
+  pickOutlookInstallerSaveLocation,
   saveOutlookInstaller,
   type OutlookInstallerSaveResult
 } from '../lib/outlookInstall'
@@ -206,18 +208,16 @@ export const useSignatureApp = () => {
 
   const addLinkImage = useCallback(
     (seed?: Partial<LinkImage>) => {
-      const id = crypto.randomUUID()
       setForm(
         (prev) => ({
           ...prev,
           linkImages: [
             ...prev.linkImages,
-            {
-              id,
-              imageUrl: seed?.imageUrl ?? '',
-              href: seed?.href ?? '',
-              alt: seed?.alt ?? t(prev.signatureLanguage, 'linkedImageAlt')
-            }
+            createDefaultLinkImage({
+              ...seed,
+              alt: seed?.alt ?? t(prev.signatureLanguage, 'linkedImageAlt'),
+              align: seed?.align ?? prev.nameTitleAlign
+            })
           ]
         }),
         { immediate: true }
@@ -474,6 +474,42 @@ export const useSignatureApp = () => {
         restartOutlook: installRestartOutlook,
         installFont: installFontOnPc && isBundledWebFont(form.fontFamily),
         autoRun: true
+      })
+      setInstallWizardSave(result)
+      setInstallWizardPhase('done')
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        setInstallWizardPhase('options')
+        return
+      }
+      setInstallWizardPhase('options')
+      window.alert(t(lang, 'alertOutlookInstallFailed'))
+    } finally {
+      setInstallWizardWorking(false)
+    }
+  }, [form, generate, installFontOnPc, installRestartOutlook, lang])
+
+  const confirmInstallSaveAs = useCallback(async () => {
+    setInstallWizardWorking(true)
+    setInstallWizardPhase('running')
+    try {
+      let fileHandle: FileSystemFileHandle | undefined
+      if (canPickOutlookInstallerSaveLocation()) {
+        try {
+          fileHandle = await pickOutlookInstallerSaveLocation()
+        } catch (error) {
+          if (error instanceof DOMException && error.name === 'AbortError') {
+            setInstallWizardPhase('options')
+            return
+          }
+        }
+      }
+      const html = await generate()
+      const result = await saveOutlookInstaller(html, form, {
+        restartOutlook: installRestartOutlook,
+        installFont: installFontOnPc && isBundledWebFont(form.fontFamily),
+        autoRun: false,
+        fileHandle
       })
       setInstallWizardSave(result)
       setInstallWizardPhase('done')
@@ -774,6 +810,8 @@ export const useSignatureApp = () => {
     setInstallFontOnPc,
     closeInstallWizard,
     confirmInstallDownload,
+    confirmInstallSaveAs,
+    canPickInstallSaveLocation: canPickOutlookInstallerSaveLocation(),
     handleOpenInstallDownloads,
     installBundledFontName: getBundledFontCssFamily(form.fontFamily),
     showInstallFontOption: isBundledWebFont(form.fontFamily),

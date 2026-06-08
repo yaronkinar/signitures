@@ -1,14 +1,34 @@
 import type { AppLanguage } from '../i18n'
 
+export type SignatureLayoutPresetId =
+  | 'side-right'
+  | 'side-left'
+  | 'side-right-banner'
+  | 'side-left-banner'
+  | 'logo-top-banner-bottom'
+  | 'banner-top-logo-bottom'
+  | 'text-only'
+  | 'text-only-banner'
+
 export type TextAlign = 'left' | 'center' | 'right'
 export type VerticalAlign = 'top' | 'middle' | 'bottom'
-export type LogoSide = 'left' | 'right'
+export type LogoSide = 'left' | 'right' | 'top' | 'bottom' | 'none'
+export type LinkImagePlacement = 'footer' | 'with-social' | 'top' | 'bottom'
+
+export const DEFAULT_LINK_IMAGE_MAX_WIDTH = 160
+export const DEFAULT_LINK_IMAGE_MAX_HEIGHT = 40
 
 export type LinkImage = {
   id: string
   imageUrl: string
   href: string
   alt: string
+  placement: LinkImagePlacement
+  align: TextAlign
+  maxWidth: number
+  maxHeight: number
+  offsetX: number
+  offsetY: number
 }
 
 export type SignatureLayoutSettings = {
@@ -24,6 +44,7 @@ export type SignatureLayoutSettings = {
   signatureHeight: number
   textColumnWidth: number
   logoMaxWidth: number
+  bannerMaxWidth: number
   textAlign: TextAlign
   nameTitleAlign: TextAlign
   emailAlign: TextAlign
@@ -80,6 +101,8 @@ export type SignatureFormState = {
   youtubeUrl: string
   youtubeIconUrl: string
   youtubeIconVariant: string
+  /** Last selected layout preset from the Logo & banner panel. */
+  layoutPreset: SignatureLayoutPresetId
   logoUrl: string
   bannerUrl: string
   bannerLink: string

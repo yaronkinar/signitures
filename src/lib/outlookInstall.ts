@@ -131,6 +131,27 @@ export type OutlookInstallOptions = {
   installFont?: boolean
   /** After save, attempt to launch the installer on Windows (default true). */
   autoRun?: boolean
+  /** When set, write here instead of opening a picker or downloading. */
+  fileHandle?: FileSystemFileHandle
+}
+
+const OUTLOOK_INSTALLER_SAVE_TYPES = [
+  { description: 'Batch file', accept: { 'application/x-bat': ['.bat'] } }
+] as const
+
+export const canPickOutlookInstallerSaveLocation = (): boolean =>
+  typeof window !== 'undefined' && typeof window.showSaveFilePicker === 'function'
+
+/** Open a save dialog during a user gesture (call before slow async work). */
+export const pickOutlookInstallerSaveLocation = async (): Promise<FileSystemFileHandle> => {
+  const savePicker = window.showSaveFilePicker
+  if (!savePicker) {
+    throw new DOMException('Save picker is not available', 'NotSupportedError')
+  }
+  return savePicker({
+    suggestedName: INSTALLER_FILE_NAME,
+    types: [...OUTLOOK_INSTALLER_SAVE_TYPES]
+  })
 }
 
 export type OutlookInstallerSaveResult = {
@@ -170,7 +191,7 @@ const buildOutlookInstallScriptContent = async (
   const lang = form.signatureLanguage
   const restartOutlook = options.restartOutlook !== false
   const installFont = options.installFont === true
-  const logoSide = form.logoSide === 'left' ? 'left' : 'right'
+  const logoSide = form.logoSide === 'left' ? 'left' : form.logoSide === 'top' ? 'top' : form.logoSide === 'bottom' ? 'bottom' : form.logoSide === 'none' ? 'none' : 'right'
   const pkg = await buildOutlookSignaturePackage(htmlBody, form)
   const signatureName = pkg.fileBase
   const htmlBase64 = toBase64Utf8(pkg.htm)
@@ -365,13 +386,53 @@ if (Test-Path -LiteralPath $bat) {
   )
 }
 
+const writeOutlookInstallerBytes = async (
+  bytes: Uint8Array,
+  batContent: string,
+  fileName: string,
+  fileHandle?: FileSystemFileHandle
+): Promise<OutlookInstallerSaveResult> => {
+  if (fileHandle) {
+    const writable = await fileHandle.createWritable()
+    await writable.write(bytes)
+    await writable.close()
+    return {
+      fileName: fileHandle.name || fileName,
+      locationHint: fileHandle.name || fileName,
+      usedSavePicker: true
+    }
+  }
+
+  const savePicker = window.showSaveFilePicker
+  if (savePicker) {
+    try {
+      const handle = await savePicker({
+        suggestedName: fileName,
+        types: [...OUTLOOK_INSTALLER_SAVE_TYPES]
+      })
+      return writeOutlookInstallerBytes(bytes, batContent, fileName, handle)
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw error
+      }
+    }
+  }
+
+  downloadBatFile(fileName, batContent)
+  return {
+    fileName,
+    locationHint: 'Downloads',
+    usedSavePicker: false
+  }
+}
+
 export const saveOutlookInstaller = async (
   htmlBody: string,
   form: SignatureFormState,
   options: OutlookInstallOptions = {}
 ): Promise<OutlookInstallerSaveResult> => {
   const lang = form.signatureLanguage
-  const autoRun = options.autoRun !== false && isWindowsPlatform()
+  const autoRun = options.autoRun !== false && isWindowsPlatform() && !options.fileHandle
   const scriptContent = await buildOutlookInstallScriptContent(htmlBody, form, options)
   const batContent = buildSelfContainedInstallBat(scriptContent, lang)
   const fileName = INSTALLER_FILE_NAME
@@ -387,42 +448,7 @@ export const saveOutlookInstaller = async (
     }
   }
 
-  const savePicker = (
-    window as typeof window & {
-      showSaveFilePicker?: (options: {
-        suggestedName?: string
-        types?: { description: string; accept: Record<string, string[]> }[]
-      }) => Promise<FileSystemFileHandle>
-    }
-  ).showSaveFilePicker
-
-  if (savePicker) {
-    try {
-      const handle = await savePicker({
-        suggestedName: fileName,
-        types: [{ description: 'Batch file', accept: { 'application/x-bat': ['.bat'] } }]
-      })
-      const writable = await handle.createWritable()
-      await writable.write(bytes)
-      await writable.close()
-      return {
-        fileName: handle.name || fileName,
-        locationHint: handle.name || fileName,
-        usedSavePicker: true
-      }
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        throw error
-      }
-    }
-  }
-
-  downloadBatFile(fileName, batContent)
-  return {
-    fileName,
-    locationHint: 'Downloads',
-    usedSavePicker: false
-  }
+  return writeOutlookInstallerBytes(bytes, batContent, fileName, options.fileHandle)
 }
 
 /** @deprecated Prefer saveOutlookInstaller with OutlookInstallOptions. */

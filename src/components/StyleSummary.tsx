@@ -90,7 +90,15 @@ const SummaryRow = ({ label, value }: { label: string; value: ReactNode }) => (
 
 export const StyleSummary = ({ layout, lang }: StyleSummaryProps) => {
   const logoSide =
-    layout.logoSide === 'left' ? t(lang, 'logoSideLeft') : t(lang, 'logoSideRight')
+    layout.logoSide === 'left'
+      ? t(lang, 'logoSideLeft')
+      : layout.logoSide === 'top'
+        ? t(lang, 'logoSideTop')
+        : layout.logoSide === 'bottom'
+          ? t(lang, 'logoSideBottom')
+          : layout.logoSide === 'none'
+            ? t(lang, 'logoSideNone')
+            : t(lang, 'logoSideRight')
 
   return (
     <details className="style-summary-panel" open>

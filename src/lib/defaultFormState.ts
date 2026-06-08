@@ -1,7 +1,25 @@
 import { DEFAULT_LOGO_DATA_URL } from '../defaultLogoDataUrl'
 import { SBA_BRAND_PRESETS } from '../brandPresets'
 import { DEFAULT_SOCIAL_ICON_VARIANT } from './socialIconCatalog'
-import type { SignatureFormState } from '../types/signatureForm'
+import type { LinkImage, SignatureFormState } from '../types/signatureForm'
+import {
+  DEFAULT_LINK_IMAGE_MAX_HEIGHT,
+  DEFAULT_LINK_IMAGE_MAX_WIDTH
+} from '../types/signatureForm'
+
+export const createDefaultLinkImage = (overrides: Partial<LinkImage> = {}): LinkImage => ({
+  id: crypto.randomUUID(),
+  imageUrl: '',
+  href: '',
+  alt: '',
+  placement: 'footer',
+  align: 'right',
+  maxWidth: DEFAULT_LINK_IMAGE_MAX_WIDTH,
+  maxHeight: DEFAULT_LINK_IMAGE_MAX_HEIGHT,
+  offsetX: 0,
+  offsetY: 0,
+  ...overrides
+})
 
 const DEFAULT_BRAND_PRESET = SBA_BRAND_PRESETS[0].values
 
@@ -32,7 +50,7 @@ export const createDefaultFormState = (): SignatureFormState => ({
   logoUrl: DEFAULT_LOGO_DATA_URL,
   bannerUrl: '',
   bannerLink: '',
-  linkImages: [{ id: 'initial-link-image', imageUrl: '', href: '', alt: '' }],
+  linkImages: [createDefaultLinkImage({ id: 'initial-link-image' })],
   rasterizeNameTitle: true,
   contactMatchNameTitle: true,
   fontFamily: DEFAULT_BRAND_PRESET.fontFamily,
@@ -47,11 +65,13 @@ export const createDefaultFormState = (): SignatureFormState => ({
   signatureHeight: 200,
   textColumnWidth: 252,
   logoMaxWidth: 122,
+  bannerMaxWidth: 400,
   textAlign: 'right',
   nameTitleAlign: 'right',
   emailAlign: 'right',
   logoAlign: 'right',
   logoSide: 'right',
+  layoutPreset: 'side-right',
   verticalAlign: 'top',
   textOffsetX: 0,
   textOffsetY: 0,

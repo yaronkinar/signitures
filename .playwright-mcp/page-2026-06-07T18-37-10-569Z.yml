@@ -1,0 +1,307 @@
+- main [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]: מחולל חתימות Outlook
+    - generic [ref=e6]:
+      - group "שפת הממשק" [ref=e7]:
+        - button "EN" [ref=e8] [cursor=pointer]
+        - button "עב" [pressed] [ref=e9] [cursor=pointer]
+      - button "יצירת חתימה" [ref=e10] [cursor=pointer]
+  - navigation "מעבר לסעיף" [ref=e11]:
+    - generic [ref=e12]:
+      - button "תצוגה" [ref=e13] [cursor=pointer]
+      - button "עוזר עיצוב AI" [ref=e14] [cursor=pointer]
+      - button "פרטי קשר" [ref=e15] [cursor=pointer]
+      - button "חתימות בכמות (Excel)" [ref=e16] [cursor=pointer]
+      - button "לוגו ובאנר" [ref=e17] [cursor=pointer]
+      - button "רשתות חברתיות" [ref=e18] [cursor=pointer]
+      - button "פריסה וטיפוגרפיה" [ref=e19] [cursor=pointer]
+      - button "מיקום ויישור" [ref=e20] [cursor=pointer]
+      - button "צבעים" [ref=e21] [cursor=pointer]
+      - button "איך מתקינים ב-Outlook" [ref=e22] [cursor=pointer]
+  - generic [ref=e24]:
+    - complementary [ref=e25]:
+      - generic [ref=e26]:
+        - heading "עורך חתימות" [level=2] [ref=e27]
+        - paragraph [ref=e28]: v1.0.19 · תבנית פעילה
+      - generic [ref=e30]:
+        - generic [ref=e32]:
+          - generic [ref=e33]:
+            - group "בטל" [ref=e34]:
+              - button "בטל" [disabled] [ref=e35]:
+                - generic [ref=e36]: undo
+              - button "בצע שוב" [disabled] [ref=e37]:
+                - generic [ref=e38]: redo
+            - textbox "שם לחתימה זו" [ref=e39]:
+              - /placeholder: signature
+            - button "שמור" [ref=e40] [cursor=pointer]
+          - generic [ref=e41]:
+            - combobox "פתיחת שמור…" [ref=e42]:
+              - option "פתיחת שמור…" [selected]
+            - button "מחק" [disabled] [ref=e43]
+          - group [ref=e44]:
+            - generic "ייבוא / ייצוא ▾" [ref=e45] [cursor=pointer]
+        - generic [ref=e46]:
+          - group [ref=e47]:
+            - generic "עוזר עיצוב AI" [ref=e48] [cursor=pointer]:
+              - generic [ref=e49]:
+                - generic [ref=e50]: auto_awesome
+                - generic [ref=e51]: עוזר עיצוב AI
+            - option "בחרו תבנית…" [selected]
+            - option "ליטוש העיצוב הנוכחי"
+            - option "מינימלי וקומפקטי יותר"
+            - option "בולט וחזק יותר"
+            - option "שפר ניגודיות וקריאות"
+            - option "הקטן גובה חתימה"
+            - option "מרווח ואוורירי יותר"
+            - option "מינימלי להנהלה בכירה"
+            - option "יצירתי ומודרני"
+            - option "סטארטאפ / הייטק"
+            - option "משפטי / פיננסי שמרני"
+            - option "מכירות ושיווק אנרגטי"
+            - option "בריאות — רגוע ואמין"
+            - option "מונוכרום מקצועי"
+            - option "פלטת פסטל רכה"
+            - option "רענון פלטת צבעים"
+            - option "מראה תאגידי רשמי"
+            - option "מרכז שם ותפקיד"
+            - option "הדגש תפקיד"
+            - option "הדגש בלוק קשר"
+            - option "קו מפריד בולט יותר"
+            - option "אחד יישור"
+            - option "מותאם מובייל"
+            - option "הרחב את הפריסה"
+            - option "הגדל ריווח שורות"
+            - option "אופטימיזציה לעברית (RTL)"
+            - option "התאם לאנגלית (LTR)"
+            - option "הדגש לוגו"
+            - option "לוגו גדול יותר"
+            - option "העבר לוגו לצד השני"
+            - option "אייקונים חברתיים בולטים"
+            - option "אייקונים חברתיים עדינים"
+          - group [ref=e52]:
+            - generic "יצירה מתמונה" [ref=e53] [cursor=pointer]:
+              - generic [ref=e54]:
+                - generic [ref=e55]: image
+                - generic [ref=e56]: יצירה מתמונה
+          - group [ref=e57]:
+            - generic "פרטי קשר" [ref=e58] [cursor=pointer]:
+              - generic [ref=e59]:
+                - generic [ref=e60]: person
+                - generic [ref=e61]: פרטי קשר
+            - generic [ref=e63]:
+              - generic [ref=e64]:
+                - generic [ref=e65]: שפה
+                - combobox "שפה" [ref=e66]:
+                  - option "English"
+                  - option "עברית" [selected]
+              - generic [ref=e67]:
+                - generic [ref=e68]: שם מלא
+                - textbox "שם מלא" [ref=e69]:
+                  - /placeholder: ישראל ישראלי
+              - generic [ref=e70]:
+                - generic [ref=e71]: שם חתימה ב-Outlook (באנגלית)
+                - textbox "שם חתימה ב-Outlook (באנגלית) שם שמופיע ברשימת החתימות ב-Outlook הקלאסי. מומלץ באנגלית כשהשם המלא בעברית." [ref=e72]:
+                  - /placeholder: Hila Melinovsky
+                - paragraph [ref=e73]: שם שמופיע ברשימת החתימות ב-Outlook הקלאסי. מומלץ באנגלית כשהשם המלא בעברית.
+              - generic [ref=e74]:
+                - generic [ref=e75]: תפקיד
+                - textbox "תפקיד" [ref=e76]:
+                  - /placeholder: מנהל מכירות
+              - generic [ref=e77]:
+                - generic [ref=e78]: חברה
+                - textbox "חברה" [ref=e79]:
+                  - /placeholder: חברה בע"מ
+              - generic [ref=e80]:
+                - generic [ref=e81]: טלפון
+                - textbox "טלפון" [ref=e82]:
+                  - /placeholder: 050-1234567
+              - generic [ref=e83]:
+                - generic [ref=e84]: דוא"ל
+                - textbox "דוא\"ל" [ref=e85]:
+                  - /placeholder: name@company.co.il
+              - generic [ref=e86]:
+                - generic [ref=e87]: אתר
+                - textbox "אתר" [ref=e88]:
+                  - /placeholder: https://company.co.il
+          - group [ref=e89]:
+            - generic "חתימות בכמות (Excel)" [ref=e90] [cursor=pointer]
+          - group [ref=e91]:
+            - generic "לוגו ובאנר" [ref=e92] [cursor=pointer]:
+              - generic [ref=e93]:
+                - generic [ref=e94]: image
+                - generic [ref=e95]: לוגו ובאנר
+            - option "שמאל"
+            - option "ימין" [selected]
+            - option "למעלה"
+            - option "למטה"
+            - option "ללא לוגו"
+            - option "שמאל"
+            - option "מרכז"
+            - option "ימין" [selected]
+            - option "למעלה" [selected]
+            - option "אמצע"
+            - option "למטה"
+          - group [ref=e96]:
+            - generic "רשתות חברתיות" [ref=e97] [cursor=pointer]:
+              - generic [ref=e98]:
+                - generic [ref=e99]: share
+                - generic [ref=e100]: רשתות חברתיות
+          - group [ref=e101]:
+            - generic "פריסה וטיפוגרפיה" [ref=e102] [cursor=pointer]:
+              - generic [ref=e103]:
+                - generic [ref=e104]: palette
+                - generic [ref=e105]: פריסה וטיפוגרפיה
+            - option "החלת תבנית מותג..." [selected]
+            - option "מעוף - Rubik"
+            - option "מעוף - Cairo"
+            - option "Rubik" [selected]
+            - option "Cairo"
+            - option "Arial"
+            - option "Comeback SemiBold"
+            - option "Calibri"
+            - option "Segoe UI"
+            - option "Tahoma"
+            - option "Verdana"
+            - option "Trebuchet MS"
+            - option "Times New Roman"
+            - option "Georgia"
+            - option "Light 300"
+            - option "Regular 400"
+            - option "Medium 500"
+            - option "SemiBold 600"
+            - option "Bold 700" [selected]
+            - option "ExtraBold 800"
+            - option "Light 300"
+            - option "Regular 400"
+            - option "Medium 500"
+            - option "SemiBold 600" [selected]
+            - option "Bold 700"
+            - option "ExtraBold 800"
+            - option "Light 300"
+            - option "Regular 400" [selected]
+            - option "Medium 500"
+            - option "SemiBold 600"
+            - option "Bold 700"
+            - option "ExtraBold 800"
+          - group [ref=e106]:
+            - generic "מיקום ויישור" [ref=e107] [cursor=pointer]:
+              - generic [ref=e108]:
+                - generic [ref=e109]: straighten
+                - generic [ref=e110]: מיקום ויישור
+            - option "שמאל"
+            - option "מרכז"
+            - option "ימין" [selected]
+            - option "שמאל"
+            - option "מרכז"
+            - option "ימין" [selected]
+            - option "שמאל"
+            - option "מרכז"
+            - option "ימין" [selected]
+          - group [ref=e111]:
+            - generic "צבעים" [ref=e112] [cursor=pointer]:
+              - generic [ref=e113]:
+                - generic [ref=e114]: format_color_fill
+                - generic [ref=e115]: צבעים
+          - group [ref=e116]:
+            - generic "תמונות מקושרות נוספות" [ref=e117] [cursor=pointer]:
+              - generic [ref=e118]:
+                - generic [ref=e119]: link
+                - generic [ref=e120]: תמונות מקושרות נוספות
+          - group [ref=e121]:
+            - generic "איך מתקינים ב-Outlook" [ref=e122] [cursor=pointer]:
+              - generic [ref=e123]:
+                - generic [ref=e124]: download
+                - generic [ref=e125]: איך מתקינים ב-Outlook
+          - group [ref=e126]:
+            - generic "HTML שנוצר" [ref=e127] [cursor=pointer]:
+              - generic [ref=e128]:
+                - generic [ref=e129]: code
+                - generic [ref=e130]: HTML שנוצר
+    - separator "שינוי גודל סרגל צד" [ref=e131]
+    - generic [ref=e132]:
+      - generic [ref=e133]:
+        - generic [ref=e134]:
+          - generic [ref=e135]:
+            - heading "תצוגה מקדימה חיה" [level=1] [ref=e136]
+            - paragraph [ref=e137]: בגודל אמיתי כמו בגוף הודעה ב-Outlook. מתעדכנת בזמן עריכה.
+          - generic [ref=e138]:
+            - button "העתקת HTML" [ref=e139] [cursor=pointer]
+            - button "התקנה ב-Outlook" [ref=e140] [cursor=pointer]
+            - button "הגדרת Outlook החדש" [ref=e141] [cursor=pointer]
+        - complementary "תצוגה מקדימה" [ref=e142]:
+          - generic "תצוגה מקדימה" [ref=e143]:
+            - generic [ref=e144]:
+              - generic [ref=e149]: הודעה חדשה
+              - generic [ref=e150]:
+                - generic [ref=e152]: אל
+                - paragraph [ref=e154]: כתבו את ההודעה כאן…
+      - generic [ref=e157]:
+        - group [ref=e158]:
+          - generic "סיכום סגנון" [ref=e159] [cursor=pointer]
+          - generic [ref=e160]:
+            - generic [ref=e161]:
+              - heading "פריסה וטיפוגרפיה" [level=4] [ref=e162]
+              - generic [ref=e163]:
+                - generic [ref=e164]:
+                  - generic [ref=e165]: גופן
+                  - generic [ref=e166]: Rubik
+                - generic [ref=e167]:
+                  - generic [ref=e168]: סולם טיפוגרפי
+                  - generic [ref=e170]: 28/19/12 px · w700/600/400
+                - generic [ref=e171]:
+                  - generic [ref=e172]: ריווח שורות
+                  - generic [ref=e173]: "1.1"
+            - generic [ref=e174]:
+              - heading "מיקום ויישור" [level=4] [ref=e175]
+              - generic [ref=e176]:
+                - generic [ref=e177]:
+                  - generic [ref=e178]: גודל קנבס
+                  - generic [ref=e180]: 400 × 200 px
+                - generic [ref=e181]:
+                  - generic [ref=e182]: צד לוגו
+                  - generic [ref=e184]: ימין · 122px
+                - generic [ref=e185]:
+                  - generic [ref=e186]: יישור טקסט ראשי
+                  - generic [ref=e187]: ימין
+            - generic [ref=e188]:
+              - heading "צבעים" [level=4] [ref=e189]
+              - list "צבעים" [ref=e191]:
+                - 'listitem "רקע: #ffffff" [ref=e192]':
+                  - generic [ref=e194]: רקע
+                - 'listitem "מפריד: #30bbed" [ref=e195]':
+                  - generic [ref=e197]: מפריד
+                - 'listitem "טקסט ראשי: #4c4c4e" [ref=e198]':
+                  - generic [ref=e200]: טקסט ראשי
+                - 'listitem "שם מלא: #88236f" [ref=e201]':
+                  - generic [ref=e203]: שם מלא
+                - 'listitem "תפקיד: #4d4c4f" [ref=e204]':
+                  - generic [ref=e206]: תפקיד
+                - 'listitem "חברה: #4d4c4f" [ref=e207]':
+                  - generic [ref=e209]: חברה
+                - 'listitem "תוויות פרטי קשר: #4d4c4f" [ref=e210]':
+                  - generic [ref=e212]: תוויות פרטי קשר
+                - 'listitem "טלפון: #88236f" [ref=e213]':
+                  - generic [ref=e215]: טלפון
+                - 'listitem "דוא\"ל: #88236f" [ref=e216]':
+                  - generic [ref=e218]: דוא"ל
+                - 'listitem "אתר: #33ccff" [ref=e219]':
+                  - generic [ref=e221]: אתר
+        - generic [ref=e222]:
+          - article [ref=e223]:
+            - generic [ref=e224]: bolt
+            - heading "התקנה בלחיצה" [level=4] [ref=e225]
+            - paragraph [ref=e226]: התקנה ישירה ב-Outlook Desktop, Web ואפליקציות ניידות.
+          - article [ref=e227]:
+            - generic [ref=e229]: analytics
+            - generic [ref=e230]:
+              - heading "מוכן לאנליטיקה" [level=4] [ref=e231]
+              - paragraph [ref=e232]: עקבו אחרי קליקים על קישורים בחתימה.
+  - generic [ref=e233]:
+    - generic [ref=e234]:
+      - generic [ref=e235]: מחולל חתימות Outlook v1.0.19
+      - generic [ref=e236]: "|"
+      - generic [ref=e237]: נוצר על ידי Yaron Kinar
+    - generic [ref=e238]:
+      - button "Yaron Kinar" [ref=e239] [cursor=pointer]
+      - button "יומן שינויים" [ref=e240] [cursor=pointer]
+      - button "יומן שינויים" [ref=e241] [cursor=pointer]: v1.0.19 · 7.6.2026, 21:34
