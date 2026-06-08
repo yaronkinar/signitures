@@ -254,16 +254,6 @@ html[data-ui-theme=classic] .workspace-toolbar-more-body {
 padding: 0 12px 10px;
 }
 
-@media (max-width: 640px) {
-html[data-ui-theme=classic] .workspace-toolbar-row--primary {
-flex-wrap: wrap;
-}
-
-html[data-ui-theme=classic] .saved-signatures-name {
-flex: 1 1 100%;
-}
-}
-
 /* Classic editor — Precision field look & feel */
 html[data-ui-theme=classic] .card-editor.card {
 border: 1px solid var(--field-border);
@@ -527,8 +517,114 @@ color: var(--on-surface-variant);
 }
 
 @media (max-width: 960px) {
+html[data-ui-theme=classic] .workspace {
+grid-template-columns: 1fr !important;
+gap: 12px !important;
+padding-top: 0 !important;
+}
+
+html[data-ui-theme=classic] .editor-sidebar,
+html[data-ui-theme=classic] .preview-main {
+width: 100% !important;
+min-width: 0 !important;
+}
+
 html[data-ui-theme=classic] .preview-sticky-shell {
 position: static !important;
 max-height: none;
+overflow: visible !important;
+}
+
+html[data-ui-theme=classic] .preview-sticky-signature {
+padding: 0;
+}
+
+html[data-ui-theme=classic] .sidebar-preview {
+position: static !important;
+top: auto !important;
+max-height: none !important;
+overflow: visible !important;
+padding: 12px !important;
+}
+
+html[data-ui-theme=classic] .sidebar-preview-body {
+overflow: visible !important;
+max-height: none !important;
+}
+
+html[data-ui-theme=classic] .outlook-preview-window,
+html[data-ui-theme=classic] .outlook-preview-compose {
+min-width: 0;
+}
+
+html[data-ui-theme=classic] .outlook-preview-signature-wrap {
+overflow-x: auto;
+-webkit-overflow-scrolling: touch;
+}
+
+html[data-ui-theme=classic] .outlook-preview-signature-scale {
+overflow: hidden;
+}
+
+html[data-ui-theme=classic] .workspace-toolbar-row--primary {
+flex-wrap: wrap !important;
+}
+
+html[data-ui-theme=classic] .workspace-toolbar-row--primary .saved-signatures-name {
+flex: 1 1 100%;
+}
+
+html[data-ui-theme=classic] .classic-actions-bar .actions {
+display: flex;
+flex-wrap: wrap;
+gap: 8px;
+}
+
+html[data-ui-theme=classic] .classic-actions-bar .actions button {
+flex: 1 1 auto;
+min-width: calc(50% - 4px);
+}
+
+html[data-ui-theme=classic] .install-guide-media img {
+max-width: 100%;
+height: auto;
+}
+
+html[data-ui-theme=classic] .app-navbar {
+margin: 0 0 10px;
+border-radius: 8px;
+}
+
+html[data-ui-theme=classic] .card-header-title h1 {
+font-size: clamp(1.25rem, 5vw, 1.75rem);
+line-height: 1.25;
+}
+
+html[data-ui-theme=classic] .card-header-title .lead {
+font-size: 0.95rem;
+}
+}
+
+@media (max-width: 640px) {
+html[data-ui-theme=classic] .page {
+padding: 16px 12px 32px !important;
+}
+
+html[data-ui-theme=classic] .app-navbar-scroll {
+padding: 0 10px;
+}
+
+html[data-ui-theme=classic] .classic-topbar-actions {
+flex-wrap: wrap;
+justify-content: flex-end;
+}
+
+html[data-ui-theme=classic] .preview-insights {
+grid-template-columns: 1fr;
+}
+
+html[data-ui-theme=classic] .preview-insight-card--wide {
+flex-direction: column;
+align-items: flex-start;
 }
 }

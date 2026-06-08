@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type CSSProperties } from 'react'
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { SBA_BRAND_COLORS, SBA_BRAND_PRESETS } from './brandPresets'
 import { BulkSignaturesPanel } from './components/BulkSignaturesPanel'
 import { Field, SelectInput, TextAreaInput, TextInput } from './components/Field'
@@ -139,41 +139,91 @@ const OutlookPreviewPane = ({
   minHeight: number
   emailAlign: TextAlign
   lang: AppLanguage
-}) => (
-  <div className="outlook-preview" aria-label={t(lang, 'preview')}>
-    <div className="outlook-preview-window">
-      <div className="outlook-preview-chrome">
-        <span className="outlook-preview-dot outlook-preview-dot--close" aria-hidden="true" />
-        <span className="outlook-preview-dot outlook-preview-dot--minimize" aria-hidden="true" />
-        <span className="outlook-preview-dot outlook-preview-dot--maximize" aria-hidden="true" />
-        <span className="outlook-preview-chrome-title">{t(lang, 'outlookPreviewTitle')}</span>
-      </div>
-      <div className="outlook-preview-compose">
-        <div className="outlook-preview-field">
-          <span className="outlook-preview-field-label">{t(lang, 'outlookPreviewTo')}</span>
+}) => {
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const signatureRef = useRef<HTMLDivElement>(null)
+  const [previewScale, setPreviewScale] = useState(1)
+  const [contentHeight, setContentHeight] = useState(minHeight)
+
+  useEffect(() => {
+    const wrap = wrapRef.current
+    if (!wrap) return
+
+    const updateScale = () => {
+      const available = wrap.clientWidth
+      if (!available || width <= 0) {
+        setPreviewScale(1)
+        return
+      }
+      setPreviewScale(available < width ? Math.max(0.35, available / width) : 1)
+    }
+
+    updateScale()
+    const observer = new ResizeObserver(updateScale)
+    observer.observe(wrap)
+    return () => observer.disconnect()
+  }, [width])
+
+  useEffect(() => {
+    const signature = signatureRef.current
+    if (!signature) return
+
+    const measureHeight = () => {
+      setContentHeight(Math.max(signature.offsetHeight, signature.scrollHeight, minHeight))
+    }
+
+    measureHeight()
+    const observer = new ResizeObserver(measureHeight)
+    observer.observe(signature)
+    return () => observer.disconnect()
+  }, [html, minHeight])
+
+  const scaledHeight = Math.max(48, Math.round(contentHeight * previewScale))
+
+  return (
+    <div className="outlook-preview" aria-label={t(lang, 'preview')}>
+      <div className="outlook-preview-window">
+        <div className="outlook-preview-chrome">
+          <span className="outlook-preview-dot outlook-preview-dot--close" aria-hidden="true" />
+          <span className="outlook-preview-dot outlook-preview-dot--minimize" aria-hidden="true" />
+          <span className="outlook-preview-dot outlook-preview-dot--maximize" aria-hidden="true" />
+          <span className="outlook-preview-chrome-title">{t(lang, 'outlookPreviewTitle')}</span>
         </div>
-        <div
-          className="outlook-preview-body"
-          style={{ textAlign: emailAlign }}
-          dir="ltr"
-        >
-          <p className="outlook-preview-placeholder">{t(lang, 'outlookPreviewPlaceholder')}</p>
-          <div className="outlook-preview-signature-wrap">
-            <div
-              className="preview outlook-preview-signature"
-              style={{
-                width: `${width}px`,
-                minHeight: `${minHeight}px`,
-                height: 'auto'
-              }}
-              dangerouslySetInnerHTML={{ __html: html }}
-            />
+        <div className="outlook-preview-compose">
+          <div className="outlook-preview-field">
+            <span className="outlook-preview-field-label">{t(lang, 'outlookPreviewTo')}</span>
+          </div>
+          <div
+            className="outlook-preview-body"
+            style={{ textAlign: emailAlign }}
+            dir="ltr"
+          >
+            <p className="outlook-preview-placeholder">{t(lang, 'outlookPreviewPlaceholder')}</p>
+            <div ref={wrapRef} className="outlook-preview-signature-wrap">
+              <div
+                className="outlook-preview-signature-scale"
+                style={{ height: previewScale < 1 ? `${scaledHeight}px` : undefined }}
+              >
+                <div
+                  ref={signatureRef}
+                  className="preview outlook-preview-signature"
+                  style={{
+                    width: `${width}px`,
+                    minHeight: `${minHeight}px`,
+                    height: 'auto',
+                    transform: previewScale < 1 ? `scale(${previewScale})` : undefined,
+                    transformOrigin: lang === 'he' ? 'top right' : 'top left'
+                  }}
+                  dangerouslySetInnerHTML={{ __html: html }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-)
+  )
+}
 
 export default function App() {
   const app = useSignatureApp()

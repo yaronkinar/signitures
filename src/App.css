@@ -2667,25 +2667,33 @@ margin: 0;
 }
 
 @media (max-width: 960px) {
-.workspace {
+html[data-ui-theme=precision] {
+--preview-dock-height: min(38vh, 300px);
+--topbar-height: 56px;
+--nav-height: 40px;
+}
+
+html[data-ui-theme=precision] .workspace {
 display: flex;
 flex-direction: column;
 grid-template-columns: none;
 flex: 1 1 auto;
 min-height: 0;
+min-width: 0;
 height: auto;
 max-height: none;
-padding-top: var(--preview-dock-height);
+padding-top: 0;
 overflow: hidden;
 }
 
-.sidebar-resize-handle {
+html[data-ui-theme=precision] .sidebar-resize-handle {
 display: none;
 }
 
-.editor-sidebar {
+html[data-ui-theme=precision] .editor-sidebar {
 flex: 1 1 auto;
 min-height: 0;
+min-width: 0;
 width: 100%;
 max-height: none;
 margin-top: 0;
@@ -2694,7 +2702,11 @@ border-bottom: 0;
 overflow: hidden;
 }
 
-.editor-sidebar-scroll {
+html[data-ui-theme=precision] .editor-sidebar-header {
+display: none;
+}
+
+html[data-ui-theme=precision] .editor-sidebar-scroll {
 flex: 1 1 auto;
 min-height: 0;
 max-height: none;
@@ -2702,91 +2714,240 @@ overflow-x: hidden;
 overflow-y: auto;
 overscroll-behavior: contain;
 -webkit-overflow-scrolling: touch;
-scroll-padding-block: 16px 80px;
-padding: 8px 14px 80px;
+scroll-padding-block: 16px 24px;
+padding: 8px 14px 24px;
 }
 
-.preview-main {
-position: fixed;
-top: var(--header-height);
-inset-inline: 0;
-bottom: auto;
+html[data-ui-theme=precision] .preview-main {
+position: relative;
+top: auto;
+inset: auto;
+order: -1;
+flex-shrink: 0;
 width: 100%;
 min-width: 0;
 height: var(--preview-dock-height);
 max-height: var(--preview-dock-height);
-z-index: 30;
+z-index: auto;
+display: flex;
+flex-direction: column;
 border-bottom: 1px solid var(--border-subtle);
 box-shadow: 0 4px 16px rgb(0 0 0 / 0.08);
+background: var(--background);
 }
 
-.preview-main-header {
-padding: 10px 16px 0;
-gap: 8px;
+html[data-ui-theme=precision] .app-navbar {
+position: static;
+top: auto;
+z-index: auto;
+flex-shrink: 0;
 }
 
-.preview-main-header h1 {
-font-size: 17px;
-margin-bottom: 0;
-}
-
-.preview-main-header .lead {
+html[data-ui-theme=precision] .preview-main-header {
 display: none;
 }
 
-.preview-main-actions {
-gap: 6px;
+html[data-ui-theme=precision] .preview-main-actions {
+display: none;
 }
 
-.btn-preview-outline,
-.btn-preview-solid {
-padding: 6px 14px;
-font-size: 12px;
-}
-
-.preview-sticky-shell {
-gap: 8px;
+html[data-ui-theme=precision] .preview-sticky-shell {
+flex: 1 1 auto;
+min-height: 0;
+gap: 0;
 padding-bottom: 0;
+overflow: hidden;
 }
 
-.preview-sticky-signature {
-padding: 0 16px 10px;
+html[data-ui-theme=precision] .preview-sticky-signature {
+flex: 1 1 auto;
+min-height: 0;
+padding: 8px 10px 10px;
+overflow: auto;
+-webkit-overflow-scrolling: touch;
 }
 
-.preview-main-scroll {
+html[data-ui-theme=precision] .card-preview.sidebar-preview {
+flex: 1 1 auto;
+min-height: 0;
+display: flex;
+flex-direction: column;
+}
+
+html[data-ui-theme=precision] .outlook-preview {
+flex: 1 1 auto;
+min-height: 0;
+display: flex;
+flex-direction: column;
+}
+
+html[data-ui-theme=precision] .preview-main-scroll {
 display: none;
 }
 
-.outlook-preview-signature-wrap {
-min-height: 100px;
-padding: 12px 16px;
+html[data-ui-theme=precision] .outlook-preview-window {
+min-width: 0;
 }
 
-.outlook-preview-body {
-padding: 16px;
+html[data-ui-theme=precision] .outlook-preview-compose {
+min-width: 0;
 }
 
-.sidebar-preview {
+html[data-ui-theme=precision] .outlook-preview-field,
+html[data-ui-theme=precision] .outlook-preview-placeholder,
+html[data-ui-theme=precision] .outlook-preview-chrome {
+display: none;
+}
+
+html[data-ui-theme=precision] .outlook-preview-window {
+flex: 1 1 auto;
+min-height: 0;
+display: flex;
+flex-direction: column;
+box-shadow: var(--shadow-sm);
+}
+
+html[data-ui-theme=precision] .outlook-preview-compose {
+flex: 1 1 auto;
+min-height: 0;
+display: flex;
+flex-direction: column;
+}
+
+html[data-ui-theme=precision] .outlook-preview-body {
+flex: 1 1 auto;
+min-height: 0;
+padding: 0;
+overflow: auto;
+-webkit-overflow-scrolling: touch;
+}
+
+html[data-ui-theme=precision] .outlook-preview-signature-wrap {
+display: block;
+min-height: 0;
+padding: 8px;
+overflow: visible;
+border-width: 1px;
+}
+
+html[data-ui-theme=precision] .outlook-preview-signature-scale {
+overflow: hidden;
+}
+
+html[data-ui-theme=precision] .outlook-preview-signature {
+display: block;
+max-width: none;
+}
+
+html[data-ui-theme=precision] .sidebar-preview {
 position: static;
 max-height: none;
 overflow: visible;
+min-width: 0;
 }
 
-.sidebar-preview-body {
+html[data-ui-theme=precision] .sidebar-preview-body {
 overflow: visible;
 max-height: none;
+}
+
+.app-navbar {
+min-width: 0;
+}
+
+html[data-ui-theme=precision] .app-enterprise-footer {
+padding: 12px 14px;
+gap: 8px 12px;
 }
 }
 
 @media (max-width: 640px) {
-.app-topbar {
-padding: 0 16px;
+html[data-ui-theme=precision] {
+--preview-dock-height: min(36vh, 280px);
+--topbar-height: 52px;
 }
 
-.preview-main-header,
-.preview-main-scroll,
-.preview-sticky-signature {
-padding-inline: 16px;
+.app-topbar {
+height: var(--topbar-height);
+padding: 0 12px;
+gap: 8px;
+}
+
+.app-topbar-brand {
+flex: 1 1 auto;
+min-width: 0;
+}
+
+.app-topbar-title {
+font-size: 15px;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+
+.app-topbar-actions {
+flex-shrink: 0;
+gap: 6px;
+}
+
+.btn-topbar-primary {
+padding: 8px 12px;
+font-size: 13px;
+}
+
+.theme-toggle-btn {
+padding: 5px 8px;
+font-size: 11px;
+}
+
+.language-toggle-btn {
+min-width: 38px;
+padding: 5px 8px;
+font-size: 11px;
+}
+
+.app-navbar {
+height: auto;
+min-height: var(--nav-height);
+}
+
+.app-navbar-scroll {
+flex-wrap: wrap;
+align-content: flex-start;
+height: auto;
+padding: 6px 8px;
+gap: 4px;
+overflow-x: visible;
+overflow-y: visible;
+}
+
+.app-nav-link {
+padding: 5px 9px;
+font-size: 11px;
+line-height: 1.25;
+border-radius: 6px;
+}
+
+html[data-ui-theme=precision] .app-navbar-scroll {
+padding: 6px 8px;
+}
+
+html[data-ui-theme=classic] .app-navbar {
+height: auto;
+min-height: 44px;
+}
+
+html[data-ui-theme=classic] .app-navbar-scroll {
+padding: 6px 8px;
+}
+
+html[data-ui-theme=precision] .preview-main-header,
+html[data-ui-theme=precision] .preview-sticky-signature {
+padding-inline: 12px;
+}
+
+.workspace-toolbar-row--primary {
+flex-wrap: wrap;
 }
 
 .form-storage-group,
@@ -2800,6 +2961,10 @@ max-width: none;
 flex: 1 1 140px;
 }
 
+.workspace-toolbar-row--primary .saved-signatures-name {
+flex: 1 1 100%;
+}
+
 .actions button {
 flex: 1 1 auto;
 min-width: calc(50% - 4px);
@@ -2809,13 +2974,24 @@ min-width: calc(50% - 4px);
 grid-template-columns: 1fr;
 }
 
-.preview-main-actions {
-width: 100%;
+html[data-ui-theme=precision] .app-enterprise-footer {
+flex-direction: column;
+align-items: stretch;
+padding: 10px 12px;
+font-size: 10px;
 }
 
-.btn-preview-outline,
-.btn-preview-solid {
-flex: 1 1 auto;
-text-align: center;
+html[data-ui-theme=precision] .app-enterprise-footer-brand {
+flex-direction: column;
+align-items: flex-start;
+gap: 2px;
+}
+
+html[data-ui-theme=precision] .app-enterprise-footer-sep {
+display: none;
+}
+
+html[data-ui-theme=precision] .app-enterprise-footer-actions {
+gap: 10px;
 }
 }

@@ -1,25 +1,28 @@
-import { type RefObject } from 'react'
+import { type RefObject, useEffect, useState } from 'react'
 import { scrollToPanel } from '../lib/scrollToPanel'
 import { t, type AppLanguage, type I18nKey } from '../i18n'
 
 type NavItem = {
   id: string
   labelKey: I18nKey
+  shortLabelKey: I18nKey
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'panel-preview', labelKey: 'navPreview' },
-  { id: 'panel-ai', labelKey: 'aiDesignAssistant' },
-  { id: 'panel-contact', labelKey: 'contactDetails' },
-  { id: 'panel-bulk', labelKey: 'bulkSignatures' },
-  { id: 'panel-logo', labelKey: 'logoBanner' },
-  { id: 'panel-social', labelKey: 'socialMedia' },
-  { id: 'panel-layout', labelKey: 'layoutTypography' },
-  { id: 'panel-position', labelKey: 'positionAlignment' },
-  { id: 'panel-colors', labelKey: 'colors' },
-  { id: 'panel-linked-images', labelKey: 'extraLinkedImages' },
-  { id: 'panel-install', labelKey: 'installGuide' }
+  { id: 'panel-preview', labelKey: 'navPreview', shortLabelKey: 'navPreviewShort' },
+  { id: 'panel-ai', labelKey: 'aiDesignAssistant', shortLabelKey: 'navAiShort' },
+  { id: 'panel-contact', labelKey: 'contactDetails', shortLabelKey: 'navContactShort' },
+  { id: 'panel-bulk', labelKey: 'bulkSignatures', shortLabelKey: 'navBulkShort' },
+  { id: 'panel-logo', labelKey: 'logoBanner', shortLabelKey: 'navLogoShort' },
+  { id: 'panel-social', labelKey: 'socialMedia', shortLabelKey: 'navSocialShort' },
+  { id: 'panel-layout', labelKey: 'layoutTypography', shortLabelKey: 'navLayoutShort' },
+  { id: 'panel-position', labelKey: 'positionAlignment', shortLabelKey: 'navPositionShort' },
+  { id: 'panel-colors', labelKey: 'colors', shortLabelKey: 'navColorsShort' },
+  { id: 'panel-linked-images', labelKey: 'extraLinkedImages', shortLabelKey: 'navImagesShort' },
+  { id: 'panel-install', labelKey: 'installGuide', shortLabelKey: 'navInstallShort' }
 ]
+
+const COMPACT_NAV_QUERY = '(max-width: 640px)'
 
 type EditorNavBarProps = {
   lang: AppLanguage
@@ -32,6 +35,18 @@ export const EditorNavBar = ({
   scrollContainerRef,
   usePageScroll = false
 }: EditorNavBarProps) => {
+  const [compactNav, setCompactNav] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(COMPACT_NAV_QUERY).matches
+  )
+
+  useEffect(() => {
+    const media = window.matchMedia(COMPACT_NAV_QUERY)
+    const onChange = () => setCompactNav(media.matches)
+    onChange()
+    media.addEventListener('change', onChange)
+    return () => media.removeEventListener('change', onChange)
+  }, [])
+
   const scrollOptions = { usePageScroll, scrollPadding: usePageScroll ? 56 : 12 }
 
   const handleNavClick = (item: NavItem) => {
@@ -56,9 +71,10 @@ export const EditorNavBar = ({
             key={item.id}
             type="button"
             className="app-nav-link"
+            aria-label={compactNav ? t(lang, item.labelKey) : undefined}
             onClick={() => handleNavClick(item)}
           >
-            {t(lang, item.labelKey)}
+            {t(lang, compactNav ? item.shortLabelKey : item.labelKey)}
           </button>
         ))}
       </div>
