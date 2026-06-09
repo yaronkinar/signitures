@@ -175,9 +175,13 @@ export const buildSignatureHtml = (
     const contactBorderStyle = hasFooterIcons
       ? ''
       : `border-bottom:1px solid ${contactRowBorder};`
+    const labelDir = contactDirection === 'rtl' ? 'rtl' : 'ltr'
+    const labelBidiStyle =
+      labelDir === 'rtl' ? 'direction:rtl;unicode-bidi:embed;' : 'direction:ltr;unicode-bidi:embed;'
+
     return `<tr>
       <td dir="${contactDirection}" align="${contactAlignAttr}" style="padding:3px 0 6px;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};text-align:${contactAlign};${contactBorderStyle}">
-        <span style="display:inline-block;white-space:nowrap;font-weight:${titleFontWeight};color:${contactLabelColor};vertical-align:top;mso-line-height-rule:exactly;">${labelHtml}</span>&nbsp;<span style="display:inline-block;font-weight:${bodyFontWeight};vertical-align:top;${valueStyle}">${valueHtml}</span>
+        <span dir="${labelDir}" style="display:inline-block;${labelBidiStyle}white-space:nowrap;font-weight:${titleFontWeight};color:${contactLabelColor};vertical-align:top;mso-line-height-rule:exactly;">${labelHtml}</span>&nbsp;<span dir="ltr" style="display:inline-block;direction:ltr;unicode-bidi:isolate;font-weight:${bodyFontWeight};vertical-align:top;${valueStyle}">${valueHtml}</span>
       </td>
     </tr>`
   }
