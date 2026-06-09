@@ -53,7 +53,7 @@ describe('buildSignatureHtml', () => {
     expect(html).toContain('white-space:nowrap')
     expect(html).toContain('דוא"ל:')
     expect(html).toMatch(
-      /<td[^>]*white-space:nowrap;[^>]*>דוא"ל:<\/td>/
+      /<td dir="ltr"[^>]*>[\s\S]*<span[^>]*white-space:nowrap;[^>]*>דוא"ל:<\/span>&nbsp;<span[^>]*>[\s\S]*www\.sba\.org\.il/
     )
   })
 
