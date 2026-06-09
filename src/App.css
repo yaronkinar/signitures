@@ -2650,6 +2650,33 @@ background: #e0f2fe;
 color: #0369a1;
 }
 
+.bulk-design-banner {
+display: flex;
+flex-wrap: wrap;
+align-items: center;
+justify-content: space-between;
+gap: 10px;
+margin-top: 12px;
+padding: 12px 14px;
+border: 1px solid #fcd34d;
+border-radius: 10px;
+background: #fffbeb;
+}
+
+.bulk-design-banner-text {
+margin: 0;
+flex: 1 1 220px;
+font-size: 13px;
+line-height: 1.45;
+color: #92400e;
+}
+
+.bulk-design-banner-actions {
+display: flex;
+flex-wrap: wrap;
+gap: 8px;
+}
+
 .bulk-preview-card.is-editing {
 border-color: #3b82f6;
 box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);

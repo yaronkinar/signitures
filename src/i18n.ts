@@ -399,6 +399,11 @@ const translations = {
     bulkEditingHint: 'Editing “{name}” in the form above. Adjust contact details or design, then save to batch.',
     bulkAppliedRow: 'Updated “{name}” in the batch.',
     bulkRowCustomized: 'Customized',
+    bulkDesignChanged:
+      'You changed the design since these previews were built. Apply it to all {count} records?',
+    bulkApplyDesignAll: 'Apply to all',
+    bulkDismissDesignChange: 'Dismiss',
+    bulkDesignAppliedAll: 'Applied the current design to {count} records.',
     bulkItHint:
       'ZIP for IT uses Outlook Signatures layout (.htm, .txt, .rtf, and *_files per person). Send outlook-signatures-for-it.zip to IT. The “ZIP for IT” link under Install only exports signatures already on this PC.',
     bulkWorking: 'Generating signatures…',
@@ -807,6 +812,11 @@ const translations = {
     bulkEditRow: 'עריכה במעצב',
     bulkApplyRow: 'שמירה לקבוצה',
     bulkEditingHint: 'עריכת «{name}» בטופס למעלה. עדכנו פרטים או עיצוב, ואז שמרו לקבוצה.',
+    bulkDesignChanged:
+      'שיניתם את העיצוב מאז שנבנו התצוגות המקדימות. להחיל אותו על כל {count} הרשומות?',
+    bulkApplyDesignAll: 'החל על הכול',
+    bulkDismissDesignChange: 'התעלם',
+    bulkDesignAppliedAll: 'העיצוב הנוכחי הוחל על {count} רשומות.',
     bulkAppliedRow: '«{name}» עודכן בקבוצה.',
     bulkRowCustomized: 'מותאם',
     bulkItHint:

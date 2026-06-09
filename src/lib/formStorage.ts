@@ -191,6 +191,15 @@ export const extractStyleExport = (form: SignatureFormState): SignatureStyleExpo
   ...pickStyleFields(form as unknown as Record<string, unknown>)
 })
 
+/** Only the design/style fields of a form (no contact data), in a stable key order. */
+export const extractStyleFields = (
+  form: SignatureFormState
+): Partial<SignatureStyleExport> => pickStyleFields(form as unknown as Record<string, unknown>)
+
+/** Stable signature of a form's style fields for change detection. */
+export const styleFieldsSignature = (form: SignatureFormState): string =>
+  JSON.stringify(extractStyleFields(form))
+
 export const applyStyleImport = (
   current: SignatureFormState,
   style: Partial<SignatureStyleExport>

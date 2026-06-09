@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Panel } from './Panel'
 import { t, type AppLanguage } from '../i18n'
 import {
@@ -19,6 +19,13 @@ import {
   type BulkRowFormOverrides,
   type BulkSignaturePreview
 } from '../lib/bulkSignatures'
+import {
+  applyStyleImport,
+  extractStyleFields,
+  styleFieldsSignature,
+  type SignatureStyleExport
+} from '../lib/formStorage'
+import { clearBulkState, loadBulkState, storeBulkState } from '../lib/bulkStorage'
 import type { SignatureFormState } from '../types/signatureForm'
 import type { SetFormOptions } from '../hooks/useFormHistory'
 
@@ -45,9 +52,57 @@ export const BulkSignaturesPanel = ({
   const [previews, setPreviews] = useState<BulkSignaturePreview[] | null>(null)
   const [overrides, setOverrides] = useState<BulkRowFormOverrides>([])
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  /** Style fields the current previews were built with (for design-change detection). */
+  const [designStyle, setDesignStyle] = useState<Partial<SignatureStyleExport> | null>(null)
+  /** Style signature the user dismissed, so the banner stays hidden until the next change. */
+  const [dismissedSignature, setDismissedSignature] = useState<string | null>(null)
+  const restoredRef = useRef(false)
 
   const statusClass =
     statusTone === 'success' ? 'ai-status is-success' : statusTone === 'error' ? 'ai-status is-error' : 'ai-status'
+
+  const liveSignature = styleFieldsSignature(designerForm)
+  const snapshotSignature = designStyle ? JSON.stringify(designStyle) : null
+  const hasPreviews = Boolean(previews && previews.length > 0)
+  const designChanged =
+    hasPreviews && snapshotSignature !== null && liveSignature !== snapshotSignature
+  const showDesignBanner =
+    designChanged && editingIndex === null && !working && liveSignature !== dismissedSignature
+
+  // Restore persisted bulk state on mount and rebuild previews from the snapshot design.
+  useEffect(() => {
+    if (restoredRef.current) return
+    restoredRef.current = true
+    const stored = loadBulkState()
+    if (!stored) return
+
+    setRows(stored.rows)
+    setOverrides(stored.overrides)
+    setDesignStyle(stored.designStyle)
+    setDismissedSignature(stored.dismissedSignature)
+
+    const previewTemplate = applyStyleImport(template, stored.designStyle)
+    setWorking(true)
+    buildBulkSignaturePreviews(previewTemplate, stored.rows, stored.overrides)
+      .then((built) => {
+        setPreviews(built)
+        const maxPreviewWidth = built.reduce((max, preview) => Math.max(max, preview.width), 0)
+        onPreviewContentWidth?.(maxPreviewWidth)
+      })
+      .catch(() => undefined)
+      .finally(() => setWorking(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Persist bulk state whenever it changes (skip until the restore pass has run).
+  useEffect(() => {
+    if (!restoredRef.current) return
+    if (!rows || rows.length === 0 || !designStyle) {
+      clearBulkState()
+      return
+    }
+    storeBulkState({ rows, overrides, designStyle, dismissedSignature })
+  }, [rows, overrides, designStyle, dismissedSignature])
 
   const scrollToDesigner = () => {
     const target = document.getElementById('contact-details-panel')
@@ -61,6 +116,8 @@ export const BulkSignaturesPanel = ({
     setPreviews(null)
     setOverrides([])
     setEditingIndex(null)
+    setDesignStyle(null)
+    setDismissedSignature(null)
     setStatus('')
     setStatusTone('idle')
     if (fileInputRef.current) fileInputRef.current.value = ''
@@ -82,6 +139,8 @@ export const BulkSignaturesPanel = ({
       setRows(parsedRows)
       setPreviews(builtPreviews)
       setOverrides(parsedRows.map(() => null))
+      setDesignStyle(extractStyleFields(template))
+      setDismissedSignature(null)
       const maxPreviewWidth = builtPreviews.reduce((max, preview) => Math.max(max, preview.width), 0)
       onPreviewContentWidth?.(maxPreviewWidth)
       setStatus(
@@ -148,6 +207,38 @@ export const BulkSignaturesPanel = ({
     } finally {
       setWorking(false)
     }
+  }
+
+  const applyDesignToAll = async () => {
+    if (!rows) return
+    setWorking(true)
+    setStatus(t(lang, 'bulkBuildingPreviews'))
+    setStatusTone('idle')
+
+    try {
+      const nextOverrides: BulkRowFormOverrides = rows.map(() => null)
+      const builtPreviews = await buildBulkSignaturePreviews(template, rows, nextOverrides)
+      setOverrides(nextOverrides)
+      setPreviews(builtPreviews)
+      setDesignStyle(extractStyleFields(template))
+      setDismissedSignature(null)
+      const maxPreviewWidth = builtPreviews.reduce((max, preview) => Math.max(max, preview.width), 0)
+      onPreviewContentWidth?.(maxPreviewWidth)
+      setStatus(t(lang, 'bulkDesignAppliedAll').replace('{count}', String(rows.length)))
+      setStatusTone('success')
+    } catch (error) {
+      const code = parseBulkErrorCode(error)
+      const key = bulkErrorMessageKey(code)
+      const message = code === 'UNKNOWN' && error instanceof Error ? error.message : t(lang, key)
+      setStatus(`${t(lang, 'bulkFailed')} ${message}`)
+      setStatusTone('error')
+    } finally {
+      setWorking(false)
+    }
+  }
+
+  const dismissDesignChange = () => {
+    setDismissedSignature(liveSignature)
   }
 
   const downloadZip = async (forItOutlook: boolean) => {
@@ -270,6 +361,28 @@ export const BulkSignaturesPanel = ({
         <p className="hint">{t(lang, 'bulkUsesCurrentDesign')}</p>
       )}
       {status && <p className={statusClass}>{status}</p>}
+      {showDesignBanner && rows && (
+        <div className="bulk-design-banner" role="status">
+          <p className="bulk-design-banner-text">
+            {t(lang, 'bulkDesignChanged').replace('{count}', String(rows.length))}
+          </p>
+          <div className="bulk-design-banner-actions">
+            <button
+              type="button"
+              className="primary"
+              disabled={working}
+              onClick={() => {
+                applyDesignToAll().catch(() => undefined)
+              }}
+            >
+              {t(lang, 'bulkApplyDesignAll')}
+            </button>
+            <button type="button" className="secondary" disabled={working} onClick={dismissDesignChange}>
+              {t(lang, 'bulkDismissDesignChange')}
+            </button>
+          </div>
+        </div>
+      )}
       {previews && previews.length > 0 && (
         <section
           className="bulk-previews"
