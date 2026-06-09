@@ -1,3 +1,4 @@
+import { signatureStrings } from '../i18n'
 import type { SignatureFormState, SignatureLayoutSettings } from '../types/signatureForm'
 import {
   getBundledFontCssFamily,
@@ -13,9 +14,16 @@ export type SignatureTextImageSlot = {
   alt: string
 }
 
+export type SignatureContactLabelImages = {
+  phone?: SignatureTextImageSlot
+  email?: SignatureTextImageSlot
+  website?: SignatureTextImageSlot
+}
+
 export type SignatureTextImages = {
   name?: SignatureTextImageSlot
   titleBlock?: SignatureTextImageSlot
+  contactLabels?: SignatureContactLabelImages
 }
 
 const WEB_SAFE_FONT_RE =
@@ -287,8 +295,40 @@ export const generateSignatureTextImages = async (
       : Promise.resolve(null)
   ])
 
+  const showContactLabels = form.showContactLabels !== false
+  const labelStrings = signatureStrings[form.signatureLanguage]
+  const renderLabel = (
+    value: string,
+    text: string
+  ): Promise<SignatureTextImageSlot | null> =>
+    showContactLabels && value.trim()
+      ? renderTextBlockToImage({
+          lines: [text],
+          fontFamily: layout.fontFamily,
+          fontWeight: layout.titleFontWeight,
+          fontSize: layout.bodyFontSize,
+          lineHeight: 1,
+          colors: [layout.contactLabelColor],
+          direction,
+          align,
+          maxWidth: Math.max(40, layout.textColumnWidth)
+        })
+      : Promise.resolve(null)
+
+  const [phoneLabel, emailLabel, websiteLabel] = await Promise.all([
+    renderLabel(form.phone, labelStrings.phoneLabel),
+    renderLabel(form.email, labelStrings.emailLabel),
+    renderLabel(form.website, labelStrings.websiteLabel)
+  ])
+
+  const contactLabels: SignatureContactLabelImages = {}
+  if (phoneLabel) contactLabels.phone = phoneLabel
+  if (emailLabel) contactLabels.email = emailLabel
+  if (websiteLabel) contactLabels.website = websiteLabel
+
   const images: SignatureTextImages = {}
   if (name) images.name = name
   if (titleBlock) images.titleBlock = titleBlock
+  if (Object.keys(contactLabels).length) images.contactLabels = contactLabels
   return Object.keys(images).length ? images : undefined
 }

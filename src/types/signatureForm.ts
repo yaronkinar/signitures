@@ -78,6 +78,8 @@ export type SignatureFormState = {
   rasterizeNameTitle: boolean
   /** When true, phone/email/website use the same horizontal alignment as name and title. */
   contactMatchNameTitle: boolean
+  /** When true, contact rows show their label (Mobile:/Email:/Website:); when false, only the value. */
+  showContactLabels: boolean
   fullName: string
   /** ASCII name for classic Outlook signature files (list + .htm base name). */
   outlookSignatureName: string

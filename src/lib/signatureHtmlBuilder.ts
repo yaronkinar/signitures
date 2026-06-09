@@ -19,10 +19,17 @@ import {
 } from './signatureUtils'
 import { resolveSocialIconUrl } from './socialIcons'
 
+export type ContactLabelImages = {
+  phone?: SignatureTextImageSlot
+  email?: SignatureTextImageSlot
+  website?: SignatureTextImageSlot
+}
+
 export type BuildSignatureHtmlOptions = {
   textImages?: {
     name?: SignatureTextImageSlot
     titleBlock?: SignatureTextImageSlot
+    contactLabels?: ContactLabelImages
   }
   logoDisplaySize?: ImageDisplaySize
   bannerDisplaySize?: ImageDisplaySize
@@ -167,21 +174,33 @@ export const buildSignatureHtml = (
   })
   const hasFooterIcons = socialLinks.length > 0 || hasLinkFooterIcons
 
+  const showContactLabels = form.showContactLabels !== false
+  const contactLabelImages = options.textImages?.contactLabels
+
+  const buildLabelMarkup = (labelHtml: string, labelImage?: SignatureTextImageSlot): string => {
+    if (!showContactLabels) return ''
+    const labelDir = contactDirection === 'rtl' ? 'rtl' : 'ltr'
+    const labelBidiStyle =
+      labelDir === 'rtl' ? 'direction:rtl;unicode-bidi:embed;' : 'direction:ltr;unicode-bidi:embed;'
+    const labelSpan = labelImage
+      ? `<img src="${escapeHtml(labelImage.dataUrl)}" alt="${escapeHtml(labelImage.alt)}" width="${labelImage.width}" height="${labelImage.height}" style="display:inline-block;width:${labelImage.width}px;height:${labelImage.height}px;border:0;vertical-align:top;mso-line-height-rule:exactly;" />`
+      : `<span dir="${labelDir}" style="display:inline-block;${labelBidiStyle}white-space:nowrap;font-weight:${titleFontWeight};color:${contactLabelColor};vertical-align:top;mso-line-height-rule:exactly;">${labelHtml}</span>`
+    return `${labelSpan}&nbsp;`
+  }
+
   const buildContactRow = (
     labelHtml: string,
     valueHtml: string,
+    labelImage?: SignatureTextImageSlot,
     valueStyle = 'unicode-bidi:plaintext;overflow-wrap:anywhere;word-break:break-word;'
   ): string => {
     const contactBorderStyle = hasFooterIcons
       ? ''
       : `border-bottom:1px solid ${contactRowBorder};`
-    const labelDir = contactDirection === 'rtl' ? 'rtl' : 'ltr'
-    const labelBidiStyle =
-      labelDir === 'rtl' ? 'direction:rtl;unicode-bidi:embed;' : 'direction:ltr;unicode-bidi:embed;'
 
     return `<tr>
       <td dir="${contactDirection}" align="${contactAlignAttr}" style="padding:3px 0 6px;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};text-align:${contactAlign};${contactBorderStyle}">
-        <span dir="${labelDir}" style="display:inline-block;${labelBidiStyle}white-space:nowrap;font-weight:${titleFontWeight};color:${contactLabelColor};vertical-align:top;mso-line-height-rule:exactly;">${labelHtml}</span>&nbsp;<span dir="ltr" style="display:inline-block;direction:ltr;unicode-bidi:isolate;font-weight:${bodyFontWeight};vertical-align:top;${valueStyle}">${valueHtml}</span>
+        ${buildLabelMarkup(labelHtml, labelImage)}<span dir="ltr" style="display:inline-block;direction:ltr;unicode-bidi:isolate;font-weight:${bodyFontWeight};vertical-align:top;${valueStyle}">${valueHtml}</span>
       </td>
     </tr>`
   }
@@ -193,7 +212,8 @@ export const buildSignatureHtml = (
         strings.phoneLabel,
         wrapLtrValue(
           `<a href="${escapeHtml(normalizeUrl(`tel:${form.phone.trim()}`))}" dir="ltr" style="${ltrValueStyle}text-decoration:none;color:${phoneColor};">${phone}</a>`
-        )
+        ),
+        contactLabelImages?.phone
       )
     )
   }
@@ -203,7 +223,8 @@ export const buildSignatureHtml = (
         strings.emailLabel,
         wrapLtrValue(
           `<a href="${escapeHtml(normalizeUrl(`mailto:${email}`))}" dir="ltr" style="${ltrValueStyle}text-decoration:underline;color:${emailColor};font-size:${compactLinkFontSizePx};overflow-wrap:anywhere;word-break:break-word;">${formatBreakableText(email)}</a>`
-        )
+        ),
+        contactLabelImages?.email
       )
     )
   }
@@ -214,7 +235,8 @@ export const buildSignatureHtml = (
         strings.websiteLabel,
         wrapLtrValue(
           `<a href="${escapeHtml(website)}" dir="ltr" style="${ltrValueStyle}text-decoration:underline;color:${websiteColor};overflow-wrap:anywhere;word-break:break-word;">${formatBreakableText(websiteDisplayText)}</a>`
-        )
+        ),
+        contactLabelImages?.website
       )
     )
   }

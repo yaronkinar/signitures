@@ -34,6 +34,7 @@ const STYLE_FIELD_KEYS = [
   'fontFamily',
   'rasterizeNameTitle',
   'contactMatchNameTitle',
+  'showContactLabels',
   'nameFontWeight',
   'titleFontWeight',
   'bodyFontWeight',

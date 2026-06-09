@@ -53,6 +53,7 @@ export const createDefaultFormState = (): SignatureFormState => ({
   linkImages: [createDefaultLinkImage({ id: 'initial-link-image' })],
   rasterizeNameTitle: true,
   contactMatchNameTitle: true,
+  showContactLabels: true,
   fontFamily: DEFAULT_BRAND_PRESET.fontFamily,
   nameFontWeight: 700,
   titleFontWeight: 600,

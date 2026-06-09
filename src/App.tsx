@@ -1093,6 +1093,16 @@ export default function App() {
                   <span className="hint">{t(lang, 'contactMatchNameTitleHint')}</span>
                 </label>
               </Field>
+              <Field label={t(lang, 'showContactLabels')}>
+                <label className="ai-keep-contact">
+                  <input
+                    type="checkbox"
+                    checked={form.showContactLabels !== false}
+                    onChange={(e) => updateForm({ showContactLabels: e.target.checked })}
+                  />
+                  <span className="hint">{t(lang, 'showContactLabelsHint')}</span>
+                </label>
+              </Field>
               {(
                 [
                   ['textAlign', 'mainTextAlign'],

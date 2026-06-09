@@ -230,6 +230,9 @@ const translations = {
     contactMatchNameTitle: 'Match name & title alignment',
     contactMatchNameTitleHint:
       'When checked, phone, email, and website line up with the name and title. Uncheck to use Main text align instead.',
+    showContactLabels: 'Show contact labels',
+    showContactLabelsHint:
+      'When checked, each line shows its label (Mobile:/Email:/Website:). Uncheck to show only the phone, email, and website values. When “Render name & title as images” is on, visible labels are drawn as images too so they keep the correct font.',
     nameTitleAlign: 'Name/title align',
     emailAlign: 'Position in email',
     logoAlign: 'Logo align',
@@ -639,6 +642,9 @@ const translations = {
     contactMatchNameTitle: 'יישור כמו שם ותפקיד',
     contactMatchNameTitleHint:
       'כשמסומן, טלפון, דוא"ל ואתר מיושרים עם השם והתפקיד. בטלו סימון כדי להשתמש ב«יישור טקסט ראשי».',
+    showContactLabels: 'הצגת תוויות פרטים',
+    showContactLabelsHint:
+      'כשמסומן, כל שורה מציגה תווית (נייד:/דוא"ל:/אתר:). בטלו סימון כדי להציג רק את הערכים. כש«הצגת שם ותפקיד כתמונה» פעיל, גם התוויות המוצגות מצוירות כתמונה כדי לשמור על הגופן הנכון.',
     nameTitleAlign: 'יישור שם/תפקיד',
     emailAlign: 'מיקום בדוא"ל',
     logoAlign: 'יישור לוגו',
