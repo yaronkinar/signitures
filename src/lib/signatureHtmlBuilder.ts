@@ -176,7 +176,7 @@ export const buildSignatureHtml = (
       ? ''
       : `border-bottom:1px solid ${contactRowBorder};`
     return `<tr>
-      <td dir="ltr" align="${contactAlignAttr}" style="padding:3px 0 6px;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};text-align:${contactAlign};${contactBorderStyle}">
+      <td dir="${contactDirection}" align="${contactAlignAttr}" style="padding:3px 0 6px;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};text-align:${contactAlign};${contactBorderStyle}">
         <span style="display:inline-block;white-space:nowrap;font-weight:${titleFontWeight};color:${contactLabelColor};vertical-align:top;mso-line-height-rule:exactly;">${labelHtml}</span>&nbsp;<span style="display:inline-block;font-weight:${bodyFontWeight};vertical-align:top;${valueStyle}">${valueHtml}</span>
       </td>
     </tr>`
@@ -410,7 +410,7 @@ export const buildSignatureHtml = (
               )
             : `<tr><td dir="${nameTitleDirection}" align="${nameTitleAlignAttr}" style="${fontFamilyStyle}font-size:${layout.titleFontSize}px;line-height:${titleLineHeight};font-weight:${titleFontWeight};color:${jobTitleColor};padding:0 0 3px;text-align:${nameTitleAlign};unicode-bidi:plaintext;overflow-wrap:anywhere;word-break:break-word;">${jobTitle || strings.jobTitlePlaceholder}${company ? `<br style="line-height:${titleLineHeight};" /><span style="${fontFamilyStyle}font-weight:${titleFontWeight};line-height:${titleLineHeight};color:${companyColor};overflow-wrap:anywhere;word-break:break-word;">${company}</span>` : ''}</td></tr>`
         }
-        ${contactRows.length ? `<tr><td dir="ltr" align="${contactAlignAttr}" style="padding-top:2px;padding-bottom:0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contactAlignAttr}" dir="ltr" style="text-align:${contactAlign};border-collapse:collapse;">${contactRows.join('')}</table></td></tr>` : ''}
+        ${contactRows.length ? `<tr><td dir="${contactDirection}" align="${contactAlignAttr}" style="padding-top:2px;padding-bottom:0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" align="${contactAlignAttr}" dir="${contactDirection}" style="text-align:${contactAlign};border-collapse:collapse;">${contactRows.join('')}</table></td></tr>` : ''}
         ${buildSocialFooterRows()}
       </table>`
   const textCell = `<td valign="${textColumnVerticalAlign}" style="${dividerOnTextSide}vertical-align:${textColumnVerticalAlign};${textCellOutlookHeight}padding-left:${textPaddingLeft}px;padding-right:${textPaddingRight}px;padding-top:${Math.max(
