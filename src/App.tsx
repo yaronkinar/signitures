@@ -178,7 +178,10 @@ const OutlookPreviewPane = ({
     return () => observer.disconnect()
   }, [html, minHeight])
 
+  const isScaled = previewScale < 1
+  const scaledWidth = Math.max(1, Math.round(width * previewScale))
   const scaledHeight = Math.max(48, Math.round(contentHeight * previewScale))
+  const hebrewPreview = lang === 'he'
 
   return (
     <div className="outlook-preview" aria-label={t(lang, 'preview')}>
@@ -202,7 +205,16 @@ const OutlookPreviewPane = ({
             <div ref={wrapRef} className="outlook-preview-signature-wrap">
               <div
                 className="outlook-preview-signature-scale"
-                style={{ height: previewScale < 1 ? `${scaledHeight}px` : undefined }}
+                style={
+                  isScaled
+                    ? {
+                        position: 'relative',
+                        width: `${scaledWidth}px`,
+                        maxWidth: '100%',
+                        height: `${scaledHeight}px`
+                      }
+                    : undefined
+                }
               >
                 <div
                   ref={signatureRef}
@@ -211,8 +223,16 @@ const OutlookPreviewPane = ({
                     width: `${width}px`,
                     minHeight: `${minHeight}px`,
                     height: 'auto',
-                    transform: previewScale < 1 ? `scale(${previewScale})` : undefined,
-                    transformOrigin: lang === 'he' ? 'top right' : 'top left'
+                    ...(isScaled
+                      ? {
+                          position: 'absolute',
+                          top: 0,
+                          right: hebrewPreview ? 0 : undefined,
+                          left: hebrewPreview ? undefined : 0,
+                          transform: `scale(${previewScale})`,
+                          transformOrigin: hebrewPreview ? 'top right' : 'top left'
+                        }
+                      : {})
                   }}
                   dangerouslySetInnerHTML={{ __html: html }}
                 />
