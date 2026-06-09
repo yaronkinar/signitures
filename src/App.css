@@ -2835,7 +2835,7 @@ border-width: 1px;
 }
 
 html[data-ui-theme=precision] .outlook-preview-signature-scale {
-overflow: hidden;
+overflow: visible;
 }
 
 html[data-ui-theme=precision] .outlook-preview-signature {

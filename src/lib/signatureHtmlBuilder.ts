@@ -585,15 +585,15 @@ export const resolveSignatureHtmlBuildOptions = async (
   layout: SignatureLayoutSettings
 ): Promise<BuildSignatureHtmlOptions> => {
   const [textImages, logoDisplaySize, bannerDisplaySize] = await Promise.all([
-    generateSignatureTextImages(form, layout),
+    generateSignatureTextImages(form, layout).catch(() => undefined),
     form.logoUrl.trim()
-      ? resolveImageDisplaySize(form.logoUrl, layout.logoMaxWidth)
+      ? resolveImageDisplaySize(form.logoUrl, layout.logoMaxWidth).catch(() => null)
       : Promise.resolve(null),
     form.bannerUrl.trim()
       ? resolveImageDisplaySize(
           form.bannerUrl,
           Math.min(layout.bannerMaxWidth, layout.signatureWidth)
-        )
+        ).catch(() => null)
       : Promise.resolve(null)
   ])
 

@@ -149,14 +149,17 @@ export const useSignatureApp = () => {
     }
     debounceRef.current = window.setTimeout(() => {
       debounceRef.current = null
-      generate().catch(() => undefined)
+      generate().catch((error) => {
+        console.error('Preview generation failed', error)
+        addToast(t(form.signatureLanguage, 'previewGenerateFailed'), 'error')
+      })
     }, 120)
     return () => {
       if (debounceRef.current !== null) {
         window.clearTimeout(debounceRef.current)
       }
     }
-  }, [form, generate])
+  }, [form, generate, addToast])
 
   useEffect(() => {
     if (saveDebounceRef.current !== null) {

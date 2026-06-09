@@ -563,7 +563,7 @@ overflow-x: auto;
 }
 
 html[data-ui-theme=classic] .outlook-preview-signature-scale {
-overflow: hidden;
+overflow: visible;
 }
 
 html[data-ui-theme=classic] .workspace-toolbar-row--primary {
