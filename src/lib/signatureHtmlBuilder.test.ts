@@ -50,6 +50,11 @@ describe('buildSignatureHtml', () => {
     expect(html).toMatch(
       /<span dir="ltr" style="direction:ltr;unicode-bidi:isolate;">[\s\S]*www\.sba\.org\.il/
     )
+    expect(html).toContain('white-space:nowrap')
+    expect(html).toContain('דוא"ל:')
+    expect(html).toMatch(
+      /<td[^>]*white-space:nowrap;[^>]*>דוא"ל:<\/td>/
+    )
   })
 
   it('uses LTR when English content has no Hebrew', () => {

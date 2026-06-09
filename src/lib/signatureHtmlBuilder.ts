@@ -167,6 +167,7 @@ export const buildSignatureHtml = (
   })
   const hasFooterIcons = socialLinks.length > 0 || hasLinkFooterIcons
 
+  const contactLabelGapPx = 6
   const buildContactRow = (
     labelHtml: string,
     valueHtml: string,
@@ -175,9 +176,19 @@ export const buildSignatureHtml = (
     const contactBorderStyle = hasFooterIcons
       ? ''
       : `border-bottom:1px solid ${contactRowBorder};`
+    const labelCellPadding =
+      contactDirection === 'rtl'
+        ? `padding:0 0 0 ${contactLabelGapPx}px;`
+        : `padding:0 ${contactLabelGapPx}px 0 0;`
+    const labelCell = `<td valign="top" style="${labelCellPadding}white-space:nowrap;font-weight:${titleFontWeight};color:${contactLabelColor};vertical-align:top;mso-line-height-rule:exactly;">${labelHtml}</td>`
+    const valueCell = `<td valign="top" width="100%" dir="ltr" align="left" style="width:100%;font-weight:${bodyFontWeight};vertical-align:top;text-align:left;${valueStyle}">${valueHtml}</td>`
     return `<tr>
-      <td dir="${contactDirection}" align="${contactAlignAttr}" style="padding:3px 0 6px;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};text-align:${contactAlign};${contactBorderStyle}">
-        <span style="font-weight:${titleFontWeight};color:${contactLabelColor};">${labelHtml}</span>&nbsp;<span style="${valueStyle}font-weight:${bodyFontWeight};">${valueHtml}</span>
+      <td align="${contactAlignAttr}" style="padding:3px 0 6px;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};${contactBorderStyle}">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" dir="${contactDirection}" align="${contactAlignAttr}" style="width:100%;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;text-align:${contactAlign};">
+          <tr>
+            ${labelCell}${valueCell}
+          </tr>
+        </table>
       </td>
     </tr>`
   }
@@ -198,9 +209,8 @@ export const buildSignatureHtml = (
       buildContactRow(
         strings.emailLabel,
         wrapLtrValue(
-          `<a href="${escapeHtml(normalizeUrl(`mailto:${email}`))}" dir="ltr" style="${ltrValueStyle}text-decoration:underline;color:${emailColor};font-size:${compactLinkFontSizePx};white-space:nowrap;">${escapeHtml(email)}</a>`
-        ),
-        'white-space:nowrap;'
+          `<a href="${escapeHtml(normalizeUrl(`mailto:${email}`))}" dir="ltr" style="${ltrValueStyle}text-decoration:underline;color:${emailColor};font-size:${compactLinkFontSizePx};overflow-wrap:anywhere;word-break:break-word;">${formatBreakableText(email)}</a>`
+        )
       )
     )
   }
