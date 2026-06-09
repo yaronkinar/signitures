@@ -6,7 +6,7 @@ html[data-ui-theme=precision] {
 color-scheme: light;
 font-family: 'Inter', Arial, Helvetica, sans-serif;
 --font-headline: 'Hanken Grotesk', 'Rubik', Arial, Helvetica, sans-serif;
---font-body: 'Inter', Arial, Helvetica, sans-serif;
+--font-body: 'Lexend', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 --font-label: 'JetBrains Mono', ui-monospace, Consolas, monospace;
 --primary: #006685;
 --primary-container: #30bbed;
@@ -97,12 +97,12 @@ overflow: hidden;
 background: var(--background);
 color: var(--on-surface);
 font-family: var(--font-body);
-font-size: 14px;
-line-height: 1.45;
+font-size: 16px;
+line-height: 1.6;
 }
 
 [dir='rtl'] body {
-font-family: 'Assistant', var(--font-body);
+font-family: 'Rubik', 'Heebo', 'Assistant', 'Noto Sans Hebrew', var(--font-body);
 }
 
 .material-symbols-outlined {
@@ -245,6 +245,87 @@ box-shadow: var(--shadow-sm);
 .language-toggle-btn:focus-visible {
 outline: 2px solid rgba(48, 187, 237, 0.45);
 outline-offset: 2px;
+}
+
+.ui-font-controls {
+display: inline-flex;
+align-items: center;
+align-self: center;
+gap: 8px;
+}
+
+.ui-font-controls .ui-font-select-label {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+margin: 0;
+font: inherit;
+text-transform: none;
+letter-spacing: normal;
+white-space: nowrap;
+}
+
+.ui-font-controls .ui-font-select-caption {
+font-size: 12px;
+font-weight: 600;
+text-transform: none;
+letter-spacing: normal;
+color: var(--on-surface-variant, #4d4c4f);
+}
+
+.ui-font-select {
+width: auto;
+min-width: 7rem;
+padding: 6px 10px;
+border: 1px solid var(--border-subtle, #dadee7);
+border-radius: 8px;
+background: var(--surface-container-lowest, #fff);
+color: inherit;
+font-family: inherit;
+font-size: 13px;
+font-weight: 600;
+cursor: pointer;
+}
+
+.ui-font-size {
+display: inline-flex;
+align-items: center;
+gap: 2px;
+padding: 2px;
+border: 1px solid var(--border-subtle, #dadee7);
+border-radius: 999px;
+background: var(--surface-container, #eceef0);
+}
+
+.ui-font-size-btn {
+border: 0;
+border-radius: 999px;
+min-width: 30px;
+height: 28px;
+padding: 0 8px;
+background: transparent;
+color: inherit;
+font-size: 13px;
+font-weight: 700;
+cursor: pointer;
+}
+
+.ui-font-size-btn:hover:not(:disabled) {
+background: var(--surface-container-lowest, #fff);
+}
+
+.ui-font-size-btn:disabled {
+opacity: 0.4;
+cursor: not-allowed;
+}
+
+.ui-font-size-value {
+min-width: 40px;
+text-align: center;
+font-size: 12px;
+font-weight: 700;
+font-variant-numeric: tabular-nums;
+color: inherit;
 }
 
 .app-navbar {

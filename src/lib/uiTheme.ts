@@ -1,7 +1,7 @@
 export type AppUiTheme = 'classic' | 'precision'
 
 export const UI_THEME_STORAGE_KEY = 'signitures-ui-theme'
-export const DEFAULT_UI_THEME: AppUiTheme = 'precision'
+export const DEFAULT_UI_THEME: AppUiTheme = 'classic'
 
 export const isAppUiTheme = (value: string): value is AppUiTheme =>
   value === 'classic' || value === 'precision'

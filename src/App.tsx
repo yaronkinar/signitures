@@ -8,11 +8,13 @@ import { SubPanel } from './components/SubPanel'
 import { EditorNavBar } from './components/EditorNavBar'
 import { LanguageToggle } from './components/LanguageToggle'
 import { ThemeToggle } from './components/ThemeToggle'
+import { UiFontControls } from './components/UiFontControls'
 import { Toaster } from './components/Toaster'
 import { StyleSummary } from './components/StyleSummary'
 import { PlacementControl } from './components/PlacementControl'
 import { useResizableSidebar } from './hooks/useResizableSidebar'
 import { useUiTheme } from './hooks/useUiTheme'
+import { useUiFont } from './hooks/useUiFont'
 import { UpdatePrompt } from './components/UpdatePrompt'
 import { useSignatureApp } from './hooks/useSignatureApp'
 import { outlookHelpStatusHtml, t, type AppLanguage } from './i18n'
@@ -248,6 +250,7 @@ const OutlookPreviewPane = ({
 export default function App() {
   const app = useSignatureApp()
   const { uiTheme, setUiTheme } = useUiTheme()
+  const uiFont = useUiFont()
   const { form, updateForm, lang } = app
   const {
     sidebarWidth,
@@ -352,9 +355,23 @@ export default function App() {
         ? 'ai-status is-error'
         : 'ai-status'
 
+  const fontControls = (
+    <UiFontControls
+      lang={lang}
+      fontId={uiFont.fontId}
+      fontScale={uiFont.fontScale}
+      onFontChange={uiFont.setFontId}
+      onIncrease={uiFont.increaseFontScale}
+      onDecrease={uiFont.decreaseFontScale}
+      canIncrease={uiFont.canIncrease}
+      canDecrease={uiFont.canDecrease}
+    />
+  )
+
   return (
     <main className="app-shell">
       <header className="app-mobile-chrome" aria-label={t(lang, 'uiThemeToggleLabel')}>
+        {fontControls}
         <ThemeToggle lang={lang} theme={uiTheme} onChange={setUiTheme} />
         <LanguageToggle lang={lang} onChange={app.handleLanguageChange} />
       </header>
@@ -365,6 +382,7 @@ export default function App() {
             <span className="app-topbar-title">{t(lang, 'pageHeading')}</span>
           </div>
           <div className="app-topbar-actions">
+            {fontControls}
             <ThemeToggle lang={lang} theme={uiTheme} onChange={setUiTheme} />
             <LanguageToggle lang={lang} onChange={app.handleLanguageChange} />
             <button type="button" className="btn-topbar-primary" onClick={() => app.generate()}>
@@ -377,6 +395,7 @@ export default function App() {
       <div className="page">
         <div className="ui-classic-only card-header-title">
           <div className="classic-topbar-actions">
+            {fontControls}
             <ThemeToggle lang={lang} theme={uiTheme} onChange={setUiTheme} />
             <LanguageToggle lang={lang} onChange={app.handleLanguageChange} />
           </div>

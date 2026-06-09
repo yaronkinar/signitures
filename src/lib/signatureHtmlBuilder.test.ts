@@ -128,6 +128,7 @@ describe('buildSignatureHtml', () => {
 
   it('places logo column on the left when logoSide is left', () => {
     const form = createTestForm({
+      signatureLanguage: 'en',
       logoSide: 'left',
       logoUrl: 'https://example.com/logo.png',
       fullName: 'Jane'
@@ -140,6 +141,33 @@ describe('buildSignatureHtml', () => {
     const cells = rowContent![1]
     const logoIndex = cells.indexOf('logo.png')
     const nameIndex = cells.indexOf('Jane')
+    expect(logoIndex).toBeGreaterThan(-1)
+    expect(nameIndex).toBeGreaterThan(-1)
+    expect(logoIndex).toBeLessThan(nameIndex)
+  })
+
+  it('uses an RTL structure and reverses column order for Hebrew so Outlook does not mirror it', () => {
+    const form = createTestForm({
+      signatureLanguage: 'he',
+      fullName: 'ישראל ישראלי',
+      logoSide: 'right',
+      logoUrl: 'https://example.com/logo.png'
+    })
+    const layout = createTestLayout(form)
+    const html = buildSignatureHtml(form, layout)
+
+    // Outer wrapper and signature tables are emitted RTL to match the compose window.
+    expect(html).toContain('<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" dir="rtl"')
+    expect(html).toContain('dir="rtl" align=')
+    expect(html).toContain('direction:rtl;font-family:')
+
+    // With a right-side logo in an RTL row the logo cell renders first (right edge),
+    // so the name column comes after it in the DOM to keep the same visual layout.
+    const rowContent = html.match(/<tr style="[^"]*">\n\s*([\s\S]*?)\n\s*<\/tr>\s*\n<\/table>/)
+    expect(rowContent).not.toBeNull()
+    const cells = rowContent![1]
+    const logoIndex = cells.indexOf('logo.png')
+    const nameIndex = cells.indexOf('ישראל ישראלי')
     expect(logoIndex).toBeGreaterThan(-1)
     expect(nameIndex).toBeGreaterThan(-1)
     expect(logoIndex).toBeLessThan(nameIndex)

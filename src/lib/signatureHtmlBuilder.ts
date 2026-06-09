@@ -60,6 +60,11 @@ export const buildSignatureHtml = (
     lang === 'he' || [form.fullName, form.jobTitle, form.company].some(hasHebrew)
   const nameTitleDirection = rtlContent ? 'rtl' : 'ltr'
   const contactDirection = nameTitleDirection
+  // Outlook (OWA / New Outlook) re-bases the whole pasted block to the compose
+  // window's direction (RTL for Hebrew users) and strips inner dir="ltr".
+  // Emit the structure in the content's own direction so the layout survives the
+  // re-base instead of being mirrored ("backwards").
+  const structuralDirection = rtlContent ? 'rtl' : 'ltr'
   const textOffsetLeft = Math.max(layout.textOffsetX, 0)
   const textOffsetRight = Math.max(-layout.textOffsetX, 0)
   const nameTitleAlign = rtlContent ? 'right' : layout.nameTitleAlign
@@ -529,16 +534,19 @@ export const buildSignatureHtml = (
       ${logoGraphic}
     </td>`
 
-  const rowCells = textOnlyLayout
+  const baseRowCells = textOnlyLayout
     ? [textCell]
     : logoOnLeft
       ? [logoCell, textCell]
       : [textCell, logoCell]
+  // In an RTL structure the first cell renders on the right, so reverse the DOM
+  // order to keep the same visual column placement as the preview.
+  const rowCells = rtlContent ? [...baseRowCells].reverse() : baseRowCells
   const mainRowStyle = hasFooterIcons
     ? 'height:auto;mso-height-rule:at-least;'
     : ''
 
-  const tableStyle = `direction:ltr;font-family:${fontFamilyCss};color:${textColor};background:${backgroundColor};width:${signatureWidth}px;max-width:100%;border-collapse:collapse;mso-line-height-rule:exactly;mso-table-lspace:0pt;mso-table-rspace:0pt;`
+  const tableStyle = `direction:${structuralDirection};font-family:${fontFamilyCss};color:${textColor};background:${backgroundColor};width:${signatureWidth}px;max-width:100%;border-collapse:collapse;mso-line-height-rule:exactly;mso-table-lspace:0pt;mso-table-rspace:0pt;`
 
   const buildStackedTextRow = (): string => `<tr style="${mainRowStyle}">
     <td valign="${textColumnVerticalAlign}" style="vertical-align:${textColumnVerticalAlign};${textCellOutlookHeight}padding-left:${textPaddingLeft}px;padding-right:${textPaddingRight}px;padding-top:${Math.max(
@@ -568,7 +576,7 @@ export const buildSignatureHtml = (
 
   const signatureTable =
     layout.logoSide === 'top'
-      ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${layout.emailAlign}" width="${signatureWidth}" style="${tableStyle}">
+      ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="${structuralDirection}" align="${layout.emailAlign}" width="${signatureWidth}" style="${tableStyle}">
   ${buildLinkImagesBandRow(topLinkImages, 1, 'top')}
   ${buildStackedLogoRow('top')}
   ${buildStackedTextRow()}
@@ -576,14 +584,14 @@ export const buildSignatureHtml = (
   ${buildLinkImagesBandRow(bottomLinkImages, 1, 'bottom')}
 </table>`
       : layout.logoSide === 'bottom'
-        ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${layout.emailAlign}" width="${signatureWidth}" style="${tableStyle}">
+        ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="${structuralDirection}" align="${layout.emailAlign}" width="${signatureWidth}" style="${tableStyle}">
   ${buildLinkImagesBandRow(topLinkImages, 1, 'top')}
   ${buildBannerRow(1, 'top')}
   ${buildStackedTextRow()}
   ${buildStackedLogoRow('bottom')}
   ${buildLinkImagesBandRow(bottomLinkImages, 1, 'bottom')}
 </table>`
-        : `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="${layout.emailAlign}" width="${signatureWidth}" style="${tableStyle}">
+        : `<table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="${structuralDirection}" align="${layout.emailAlign}" width="${signatureWidth}" style="${tableStyle}">
   ${buildLinkImagesBandRow(topLinkImages, sideBannerColspan, 'top')}
   <tr style="${mainRowStyle}">
     ${rowCells.join('\n    ')}
@@ -593,7 +601,7 @@ export const buildSignatureHtml = (
 </table>`
 
   return `<!-- Outlook email signature -->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" dir="ltr" style="direction:ltr;width:100%;max-width:100%;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" dir="${structuralDirection}" style="direction:${structuralDirection};width:100%;max-width:100%;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
   <tr>
     <td align="${layout.emailAlign}" style="text-align:${layout.emailAlign};max-width:100%;">
       ${signatureTable}
