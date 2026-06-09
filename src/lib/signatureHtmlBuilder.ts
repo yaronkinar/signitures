@@ -111,6 +111,9 @@ export const buildSignatureHtml = (
   const titleLineHeight = Math.max(1, layout.lineSpacing - 0.3)
 
   const contactRowBorder = dividerColor
+  const ltrValueStyle = 'direction:ltr;unicode-bidi:isolate;'
+  const wrapLtrValue = (html: string): string =>
+    `<span dir="ltr" style="${ltrValueStyle}">${html}</span>`
   const formatBreakableText = (value: string): string =>
     escapeHtml(value).replace(/([@._-])/g, '$1<wbr>')
 
@@ -184,7 +187,9 @@ export const buildSignatureHtml = (
     contactRows.push(
       buildContactRow(
         strings.phoneLabel,
-        `<a href="${escapeHtml(normalizeUrl(`tel:${form.phone.trim()}`))}" style="text-decoration:none;color:${phoneColor};">${phone}</a>`
+        wrapLtrValue(
+          `<a href="${escapeHtml(normalizeUrl(`tel:${form.phone.trim()}`))}" dir="ltr" style="${ltrValueStyle}text-decoration:none;color:${phoneColor};">${phone}</a>`
+        )
       )
     )
   }
@@ -192,7 +197,9 @@ export const buildSignatureHtml = (
     contactRows.push(
       buildContactRow(
         strings.emailLabel,
-        `<a href="${escapeHtml(normalizeUrl(`mailto:${email}`))}" style="text-decoration:underline;color:${emailColor};font-size:${compactLinkFontSizePx};white-space:nowrap;">${escapeHtml(email)}</a>`,
+        wrapLtrValue(
+          `<a href="${escapeHtml(normalizeUrl(`mailto:${email}`))}" dir="ltr" style="${ltrValueStyle}text-decoration:underline;color:${emailColor};font-size:${compactLinkFontSizePx};white-space:nowrap;">${escapeHtml(email)}</a>`
+        ),
         'white-space:nowrap;'
       )
     )
@@ -202,7 +209,9 @@ export const buildSignatureHtml = (
     contactRows.push(
       buildContactRow(
         strings.websiteLabel,
-        `<a href="${escapeHtml(website)}" style="text-decoration:underline;color:${websiteColor};overflow-wrap:anywhere;word-break:break-word;">${formatBreakableText(websiteDisplayText)}</a>`
+        wrapLtrValue(
+          `<a href="${escapeHtml(website)}" dir="ltr" style="${ltrValueStyle}text-decoration:underline;color:${websiteColor};overflow-wrap:anywhere;word-break:break-word;">${formatBreakableText(websiteDisplayText)}</a>`
+        )
       )
     )
   }
