@@ -27,6 +27,36 @@ describe('buildSignatureHtml', () => {
     expect(html).toContain('dir="rtl"')
   })
 
+  it('keeps English email and website left-to-right inside Hebrew signatures', () => {
+    const form = createTestForm({
+      signatureLanguage: 'he',
+      fullName: 'יעל קרילקר',
+      jobTitle: 'מנהלת תכנית הייעוץ',
+      company: 'מעוף מרכז ודרום',
+      email: 'Yael.Karilker@Service.economy.gov.il',
+      website: 'www.sba.org.il'
+    })
+    const layout = createTestLayout(form)
+    const html = buildSignatureHtml(form, layout)
+
+    expect(html).toContain('dir="rtl"')
+    expect(html).toContain('mailto:Yael.Karilker@Service.economy.gov.il')
+    expect(html).toContain('Yael.Karilker@Service.economy.gov.il')
+    expect(html).toContain('href="https://www.sba.org.il"')
+    expect(html).toContain('www.sba.org.il')
+    expect(html).toMatch(
+      /<span dir="ltr" style="direction:ltr;unicode-bidi:isolate;">[\s\S]*Yael\.Karilker@Service\.economy\.gov\.il/
+    )
+    expect(html).toMatch(
+      /<span dir="ltr" style="direction:ltr;unicode-bidi:isolate;">[\s\S]*www\.sba\.org\.il/
+    )
+    expect(html).toContain('white-space:nowrap')
+    expect(html).toContain('דוא"ל:')
+    expect(html).toMatch(
+      /<span dir="rtl"[^>]*>דוא"ל:<\/span>&nbsp;<span dir="ltr"[^>]*>[\s\S]*www\.sba\.org\.il/
+    )
+  })
+
   it('uses LTR when English content has no Hebrew', () => {
     const form = createTestForm({
       signatureLanguage: 'en',

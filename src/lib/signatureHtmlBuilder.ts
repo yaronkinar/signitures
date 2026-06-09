@@ -111,6 +111,9 @@ export const buildSignatureHtml = (
   const titleLineHeight = Math.max(1, layout.lineSpacing - 0.3)
 
   const contactRowBorder = dividerColor
+  const ltrValueStyle = 'direction:ltr;unicode-bidi:isolate;'
+  const wrapLtrValue = (html: string): string =>
+    `<span dir="ltr" style="${ltrValueStyle}">${html}</span>`
   const formatBreakableText = (value: string): string =>
     escapeHtml(value).replace(/([@._-])/g, '$1<wbr>')
 
@@ -172,9 +175,13 @@ export const buildSignatureHtml = (
     const contactBorderStyle = hasFooterIcons
       ? ''
       : `border-bottom:1px solid ${contactRowBorder};`
+    const labelDir = contactDirection === 'rtl' ? 'rtl' : 'ltr'
+    const labelBidiStyle =
+      labelDir === 'rtl' ? 'direction:rtl;unicode-bidi:embed;' : 'direction:ltr;unicode-bidi:embed;'
+
     return `<tr>
       <td dir="${contactDirection}" align="${contactAlignAttr}" style="padding:3px 0 6px;font-size:${bodyFontSizePx};line-height:${detailsLineHeight};text-align:${contactAlign};${contactBorderStyle}">
-        <span style="font-weight:${titleFontWeight};color:${contactLabelColor};">${labelHtml}</span>&nbsp;<span style="${valueStyle}font-weight:${bodyFontWeight};">${valueHtml}</span>
+        <span dir="${labelDir}" style="display:inline-block;${labelBidiStyle}white-space:nowrap;font-weight:${titleFontWeight};color:${contactLabelColor};vertical-align:top;mso-line-height-rule:exactly;">${labelHtml}</span>&nbsp;<span dir="ltr" style="display:inline-block;direction:ltr;unicode-bidi:isolate;font-weight:${bodyFontWeight};vertical-align:top;${valueStyle}">${valueHtml}</span>
       </td>
     </tr>`
   }
@@ -184,7 +191,9 @@ export const buildSignatureHtml = (
     contactRows.push(
       buildContactRow(
         strings.phoneLabel,
-        `<a href="${escapeHtml(normalizeUrl(`tel:${form.phone.trim()}`))}" style="text-decoration:none;color:${phoneColor};">${phone}</a>`
+        wrapLtrValue(
+          `<a href="${escapeHtml(normalizeUrl(`tel:${form.phone.trim()}`))}" dir="ltr" style="${ltrValueStyle}text-decoration:none;color:${phoneColor};">${phone}</a>`
+        )
       )
     )
   }
@@ -192,8 +201,9 @@ export const buildSignatureHtml = (
     contactRows.push(
       buildContactRow(
         strings.emailLabel,
-        `<a href="${escapeHtml(normalizeUrl(`mailto:${email}`))}" style="text-decoration:underline;color:${emailColor};font-size:${compactLinkFontSizePx};white-space:nowrap;">${escapeHtml(email)}</a>`,
-        'white-space:nowrap;'
+        wrapLtrValue(
+          `<a href="${escapeHtml(normalizeUrl(`mailto:${email}`))}" dir="ltr" style="${ltrValueStyle}text-decoration:underline;color:${emailColor};font-size:${compactLinkFontSizePx};overflow-wrap:anywhere;word-break:break-word;">${formatBreakableText(email)}</a>`
+        )
       )
     )
   }
@@ -202,7 +212,9 @@ export const buildSignatureHtml = (
     contactRows.push(
       buildContactRow(
         strings.websiteLabel,
-        `<a href="${escapeHtml(website)}" style="text-decoration:underline;color:${websiteColor};overflow-wrap:anywhere;word-break:break-word;">${formatBreakableText(websiteDisplayText)}</a>`
+        wrapLtrValue(
+          `<a href="${escapeHtml(website)}" dir="ltr" style="${ltrValueStyle}text-decoration:underline;color:${websiteColor};overflow-wrap:anywhere;word-break:break-word;">${formatBreakableText(websiteDisplayText)}</a>`
+        )
       )
     )
   }
