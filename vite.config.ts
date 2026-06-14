@@ -8,10 +8,16 @@ const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 
 }
 const buildTime = new Date().toISOString()
 
+const clerkPublishableKey =
+  process.env.VITE_CLERK_PUBLISHABLE_KEY ??
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ??
+  ''
+
 export default defineConfig({
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(pkg.version),
-    'import.meta.env.VITE_BUILD_TIME': JSON.stringify(buildTime)
+    'import.meta.env.VITE_BUILD_TIME': JSON.stringify(buildTime),
+    'import.meta.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify(clerkPublishableKey)
   },
   plugins: [
     react(),
