@@ -1,15 +1,14 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { randomUUID } from 'node:crypto'
+import { AuthError, requireUser, resolveTenant } from './auth'
 import {
   deleteZipFromBlob,
   findManifestEntryByName,
   isBlobConfigured,
   readManifest,
-  readZipFromBlob,
   saveZipToBlob,
   upsertManifestEntry,
   validateSaveId,
-  validateWorkspaceId,
   writeManifest,
   type ManifestEntry
 } from './signatureBlobShared'
@@ -40,6 +39,9 @@ const blobUnavailable = (res: VercelResponse): void => {
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   try {
+    const user = await requireUser(req)
+    const tenant = resolveTenant(user)
+
     if (!isBlobConfigured()) {
       if (req.method === 'GET') {
         res.status(200).json({ available: false, entries: [] })
@@ -50,20 +52,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     }
 
     if (req.method === 'GET') {
-      const workspaceId = typeof req.query.workspaceId === 'string' ? req.query.workspaceId.trim() : ''
-      if (!validateWorkspaceId(workspaceId)) {
-        res.status(400).json({ error: 'Invalid workspaceId' })
-        return
-      }
-
-      const manifest = await readManifest(workspaceId)
+      const manifest = await readManifest(tenant.id)
       res.status(200).json({ available: true, entries: manifest.entries })
       return
     }
 
     if (req.method === 'POST') {
       const body = parseJsonBody(req.body)
-      const workspaceId = typeof body.workspaceId === 'string' ? body.workspaceId.trim() : ''
       const name = typeof body.name === 'string' ? body.name.trim() : ''
       const zipBase64 = typeof body.zipBase64 === 'string' ? body.zipBase64.trim() : ''
       const overwriteId =
@@ -71,10 +66,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
           ? body.overwriteId
           : undefined
 
-      if (!validateWorkspaceId(workspaceId)) {
-        res.status(400).json({ error: 'Invalid workspaceId' })
-        return
-      }
       if (!name) {
         res.status(400).json({ error: 'Missing name' })
         return
@@ -94,7 +85,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         return
       }
 
-      const manifest = await readManifest(workspaceId)
+      const manifest = await readManifest(tenant.id)
       const existingByName = findManifestEntryByName(manifest, name)
       const saveId = overwriteId ?? existingByName?.id ?? randomUUID()
       const now = Date.now()
@@ -111,8 +102,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         throw error
       }
 
-      await saveZipToBlob(workspaceId, saveId, zipBytes)
-      await writeManifest(workspaceId, nextManifest)
+      await saveZipToBlob(tenant.id, saveId, zipBytes)
+      await writeManifest(tenant.id, nextManifest)
 
       res.status(200).json({ entry })
       return
@@ -120,22 +111,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
     if (req.method === 'DELETE') {
       const body = parseJsonBody(req.body)
-      const workspaceId = typeof body.workspaceId === 'string' ? body.workspaceId.trim() : ''
       const saveId = typeof body.id === 'string' ? body.id.trim() : ''
 
-      if (!validateWorkspaceId(workspaceId) || !validateSaveId(saveId)) {
-        res.status(400).json({ error: 'Invalid workspaceId or id' })
+      if (!validateSaveId(saveId)) {
+        res.status(400).json({ error: 'Invalid id' })
         return
       }
 
-      const manifest = await readManifest(workspaceId)
+      const manifest = await readManifest(tenant.id)
       const nextManifest = {
         version: 1 as const,
         entries: manifest.entries.filter((entry) => entry.id !== saveId)
       }
 
-      await deleteZipFromBlob(workspaceId, saveId).catch(() => undefined)
-      await writeManifest(workspaceId, nextManifest)
+      await deleteZipFromBlob(tenant.id, saveId).catch(() => undefined)
+      await writeManifest(tenant.id, nextManifest)
 
       res.status(200).json({ ok: true })
       return
@@ -143,50 +133,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
     res.status(405).json({ error: 'Method not allowed' })
   } catch (error) {
+    if (error instanceof AuthError) {
+      res.status(error.status).json({ error: error.message })
+      return
+    }
     const message = error instanceof Error ? error.message : 'Blob request failed'
     console.error('[signatures]', message, error)
-    res.status(500).json({ error: message })
-  }
-}
-
-export const downloadHandler = async (req: VercelRequest, res: VercelResponse): Promise<void> => {
-  try {
-    if (!isBlobConfigured()) {
-      blobUnavailable(res)
-      return
-    }
-
-    if (req.method !== 'GET') {
-      res.status(405).json({ error: 'Method not allowed' })
-      return
-    }
-
-    const saveId = typeof req.query.id === 'string' ? req.query.id.trim() : ''
-    const workspaceId = typeof req.query.workspaceId === 'string' ? req.query.workspaceId.trim() : ''
-
-    if (!validateWorkspaceId(workspaceId) || !validateSaveId(saveId)) {
-      res.status(400).json({ error: 'Invalid workspaceId or id' })
-      return
-    }
-
-    const manifest = await readManifest(workspaceId)
-    if (!manifest.entries.some((entry) => entry.id === saveId)) {
-      res.status(404).json({ error: 'Saved signature not found' })
-      return
-    }
-
-    const zipBytes = await readZipFromBlob(workspaceId, saveId)
-    if (!zipBytes) {
-      res.status(404).json({ error: 'Saved signature file not found' })
-      return
-    }
-
-    res.setHeader('Content-Type', 'application/zip')
-    res.setHeader('Cache-Control', 'private, no-store')
-    res.status(200).send(zipBytes)
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Download failed'
-    console.error('[signatures-download]', message, error)
     res.status(500).json({ error: message })
   }
 }

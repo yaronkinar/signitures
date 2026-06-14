@@ -16,23 +16,23 @@ export type SignatureManifest = {
 
 export const isBlobConfigured = (): boolean => Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim())
 
-export const validateWorkspaceId = (value: string): boolean =>
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
-
 export const validateSaveId = (value: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
 
-export const manifestPath = (workspaceId: string): string =>
-  `signatures/workspaces/${workspaceId}/manifest.json`
+export const validateTenantId = (value: string): boolean =>
+  /^(domain:[a-z0-9.-]+|user:[A-Za-z0-9_-]+)$/.test(value)
 
-export const zipPath = (workspaceId: string, saveId: string): string =>
-  `signatures/workspaces/${workspaceId}/${saveId}.zip`
+export const manifestPath = (tenantId: string): string =>
+  `signatures/tenants/${tenantId}/manifest.json`
+
+export const zipPath = (tenantId: string, saveId: string): string =>
+  `signatures/tenants/${tenantId}/${saveId}.zip`
 
 const emptyManifest = (): SignatureManifest => ({ version: 1, entries: [] })
 
-export const readManifest = async (workspaceId: string): Promise<SignatureManifest> => {
+export const readManifest = async (tenantId: string): Promise<SignatureManifest> => {
   try {
-    const pathname = manifestPath(workspaceId)
+    const pathname = manifestPath(tenantId)
     const result = await get(pathname, { access: 'private' })
     if (!result || result.statusCode !== 200 || !result.stream) {
       return emptyManifest()
@@ -60,10 +60,10 @@ export const readManifest = async (workspaceId: string): Promise<SignatureManife
 }
 
 export const writeManifest = async (
-  workspaceId: string,
+  tenantId: string,
   manifest: SignatureManifest
 ): Promise<void> => {
-  await put(manifestPath(workspaceId), JSON.stringify(manifest), {
+  await put(manifestPath(tenantId), JSON.stringify(manifest), {
     access: 'private',
     contentType: 'application/json',
     addRandomSuffix: false,
@@ -72,11 +72,11 @@ export const writeManifest = async (
 }
 
 export const saveZipToBlob = async (
-  workspaceId: string,
+  tenantId: string,
   saveId: string,
   zipBytes: Buffer
 ): Promise<void> => {
-  await put(zipPath(workspaceId, saveId), zipBytes, {
+  await put(zipPath(tenantId, saveId), zipBytes, {
     access: 'private',
     contentType: 'application/zip',
     addRandomSuffix: false,
@@ -84,9 +84,9 @@ export const saveZipToBlob = async (
   })
 }
 
-export const readZipFromBlob = async (workspaceId: string, saveId: string): Promise<Buffer | null> => {
+export const readZipFromBlob = async (tenantId: string, saveId: string): Promise<Buffer | null> => {
   try {
-    const result = await get(zipPath(workspaceId, saveId), { access: 'private' })
+    const result = await get(zipPath(tenantId, saveId), { access: 'private' })
     if (!result || result.statusCode !== 200 || !result.stream) {
       return null
     }
@@ -98,8 +98,8 @@ export const readZipFromBlob = async (workspaceId: string, saveId: string): Prom
   }
 }
 
-export const deleteZipFromBlob = async (workspaceId: string, saveId: string): Promise<void> => {
-  await del(zipPath(workspaceId, saveId))
+export const deleteZipFromBlob = async (tenantId: string, saveId: string): Promise<void> => {
+  await del(zipPath(tenantId, saveId))
 }
 
 export const upsertManifestEntry = (
