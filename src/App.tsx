@@ -9,6 +9,7 @@ import { EditorNavBar } from './components/EditorNavBar'
 import { LanguageToggle } from './components/LanguageToggle'
 import { ThemeToggle } from './components/ThemeToggle'
 import { UiFontControls } from './components/UiFontControls'
+import { UserMenu } from './components/UserMenu'
 import { Toaster } from './components/Toaster'
 import { StyleSummary } from './components/StyleSummary'
 import { PlacementControl } from './components/PlacementControl'
@@ -374,6 +375,7 @@ export default function App() {
         {fontControls}
         <ThemeToggle lang={lang} theme={uiTheme} onChange={setUiTheme} />
         <LanguageToggle lang={lang} onChange={app.handleLanguageChange} />
+        <UserMenu />
       </header>
 
       <div className="ui-precision-only">
@@ -385,6 +387,7 @@ export default function App() {
             {fontControls}
             <ThemeToggle lang={lang} theme={uiTheme} onChange={setUiTheme} />
             <LanguageToggle lang={lang} onChange={app.handleLanguageChange} />
+            <UserMenu />
             <button type="button" className="btn-topbar-primary" onClick={() => app.generate()}>
               {t(lang, 'generateSignature')}
             </button>
@@ -398,6 +401,7 @@ export default function App() {
             {fontControls}
             <ThemeToggle lang={lang} theme={uiTheme} onChange={setUiTheme} />
             <LanguageToggle lang={lang} onChange={app.handleLanguageChange} />
+            <UserMenu />
           </div>
           <h1>{t(lang, 'pageHeading')}</h1>
           <p className="lead">{t(lang, 'pageLead')}</p>
