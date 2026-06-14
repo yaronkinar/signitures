@@ -13,6 +13,12 @@ const clerkPublishableKey =
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ??
   ''
 
+if (!clerkPublishableKey) {
+  console.warn(
+    '[vite.config] VITE_CLERK_PUBLISHABLE_KEY is not set. The build will produce an empty key; run `vercel env pull .env.local` after installing the Clerk Marketplace integration.'
+  )
+}
+
 export default defineConfig({
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(pkg.version),
