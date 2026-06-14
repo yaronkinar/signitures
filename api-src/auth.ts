@@ -38,7 +38,7 @@ export const resolveTenant = (user: AuthedUser): Tenant => {
 }
 
 const getBearerToken = (req: VercelRequest): string | null => {
-  const header = req.headers.authorization ?? req.headers.Authorization
+  const header = req.headers.authorization
   if (typeof header !== 'string') return null
   const match = /^Bearer\s+(.+)$/i.exec(header.trim())
   return match ? match[1].trim() : null
@@ -54,14 +54,15 @@ const getClerk = () => {
 }
 
 export const requireUser = async (req: VercelRequest): Promise<AuthedUser> => {
+  const secretKey = process.env.CLERK_SECRET_KEY
+  if (!secretKey) throw new AuthError('Auth is not configured on the server')
+
   const token = getBearerToken(req)
   if (!token) throw new AuthError('Not signed in')
 
   let payload
   try {
-    payload = await verifyToken(token, {
-      secretKey: process.env.CLERK_SECRET_KEY ?? ''
-    })
+    payload = await verifyToken(token, { secretKey })
   } catch {
     throw new AuthError('Invalid or expired session')
   }
