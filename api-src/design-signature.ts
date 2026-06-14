@@ -5,6 +5,7 @@ import {
   buildImageExtractionSystemPrompt,
   parseAiSignatureDesign
 } from '../lib/aiSignatureDesign'
+import { AuthError, requireUser } from './auth'
 
 const DEFAULT_BASE_URL = 'https://api.openai.com/v1'
 const DEFAULT_MODEL = 'gpt-4o-mini'
@@ -40,6 +41,7 @@ const parseJsonBody = (body: unknown): Record<string, unknown> => {
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   try {
+    await requireUser(req)
     if (req.method === 'GET') {
       res.status(200).json({
         ok: true,
@@ -135,6 +137,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     const design = parseAiSignatureDesign(content)
     res.status(200).json({ design })
   } catch (error) {
+    if (error instanceof AuthError) {
+      res.status(error.status).json({ error: error.message })
+      return
+    }
     const message = error instanceof Error ? error.message : 'AI request failed'
     console.error('[design-signature]', message, error)
     res.status(500).json({ error: message })
