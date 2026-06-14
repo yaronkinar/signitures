@@ -41,4 +41,10 @@ describe('resolveTenant', () => {
   it('throws if email has no domain', () => {
     expect(() => resolveTenant({ userId: 'user_1', email: 'no-at-sign' })).toThrow()
   })
+
+  it('throws if the computed tenant id contains illegal characters', () => {
+    expect(() =>
+      resolveTenant({ userId: 'user has spaces', email: 'bob@gmail.com' })
+    ).toThrow(/failed validation/)
+  })
 })

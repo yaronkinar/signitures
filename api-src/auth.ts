@@ -1,5 +1,6 @@
 import type { VercelRequest } from '@vercel/node'
 import { createClerkClient, verifyToken } from '@clerk/backend'
+import { validateTenantId } from './signatureBlobShared'
 
 export type AuthedUser = { userId: string; email: string }
 export type Tenant = { id: string }
@@ -31,10 +32,13 @@ export const resolveTenant = (user: AuthedUser): Tenant => {
     throw new Error(`Email "${user.email}" has no domain`)
   }
   const domain = user.email.slice(at + 1).toLowerCase()
-  if (FREE_EMAIL_DOMAINS.has(domain)) {
-    return { id: `user:${user.userId}` }
+  const id = FREE_EMAIL_DOMAINS.has(domain)
+    ? `user:${user.userId}`
+    : `domain:${domain}`
+  if (!validateTenantId(id)) {
+    throw new Error(`Computed tenant id "${id}" failed validation`)
   }
-  return { id: `domain:${domain}` }
+  return { id }
 }
 
 const getBearerToken = (req: VercelRequest): string | null => {

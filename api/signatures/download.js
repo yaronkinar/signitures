@@ -26124,73 +26124,6 @@ function createClerkClient(options) {
   };
 }
 
-// api-src/auth.ts
-var AuthError = class extends Error {
-  status = 401;
-  constructor(message) {
-    super(message);
-    this.name = "AuthError";
-  }
-};
-var FREE_EMAIL_DOMAINS = /* @__PURE__ */ new Set([
-  "gmail.com",
-  "googlemail.com",
-  "outlook.com",
-  "hotmail.com",
-  "live.com",
-  "yahoo.com",
-  "icloud.com",
-  "proton.me",
-  "protonmail.com",
-  "aol.com"
-]);
-var resolveTenant = (user) => {
-  const at = user.email.lastIndexOf("@");
-  if (at < 1 || at === user.email.length - 1) {
-    throw new Error(`Email "${user.email}" has no domain`);
-  }
-  const domain = user.email.slice(at + 1).toLowerCase();
-  if (FREE_EMAIL_DOMAINS.has(domain)) {
-    return { id: `user:${user.userId}` };
-  }
-  return { id: `domain:${domain}` };
-};
-var getBearerToken = (req) => {
-  const header = req.headers.authorization;
-  if (typeof header !== "string") return null;
-  const match2 = /^Bearer\s+(.+)$/i.exec(header.trim());
-  return match2 ? match2[1].trim() : null;
-};
-var cachedClerk = null;
-var getClerk = () => {
-  if (cachedClerk) return cachedClerk;
-  const secretKey = process.env.CLERK_SECRET_KEY;
-  if (!secretKey) throw new AuthError("Auth is not configured on the server");
-  cachedClerk = createClerkClient({ secretKey });
-  return cachedClerk;
-};
-var requireUser = async (req) => {
-  const secretKey = process.env.CLERK_SECRET_KEY;
-  if (!secretKey) throw new AuthError("Auth is not configured on the server");
-  const token = getBearerToken(req);
-  if (!token) throw new AuthError("Not signed in");
-  let payload;
-  try {
-    payload = await verifyToken2(token, { secretKey });
-  } catch {
-    throw new AuthError("Invalid or expired session");
-  }
-  const userId = typeof payload.sub === "string" ? payload.sub : "";
-  if (!userId) throw new AuthError("Invalid session payload");
-  const clerk = getClerk();
-  const user = await clerk.users.getUser(userId);
-  const primary = user.emailAddresses.find(
-    (address) => address.id === user.primaryEmailAddressId && address.verification?.status === "verified"
-  );
-  if (!primary?.emailAddress) throw new AuthError("No verified email on this account");
-  return { userId, email: primary.emailAddress };
-};
-
 // node_modules/is-node-process/lib/index.mjs
 function isNodeProcess() {
   if (typeof navigator !== "undefined" && navigator.product === "ReactNative") {
@@ -27814,6 +27747,7 @@ var completeMultipartUpload2 = createCompleteMultipartUploadMethod({
 var MAX_ZIP_BYTES = 10 * 1024 * 1024;
 var isBlobConfigured = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
 var validateSaveId = (value) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+var validateTenantId = (value) => /^(domain:[a-z0-9.-]+|user:[A-Za-z0-9_-]+)$/.test(value);
 var manifestPath = (tenantId) => `signatures/tenants/${tenantId}/manifest.json`;
 var zipPath = (tenantId, saveId) => `signatures/tenants/${tenantId}/${saveId}.zip`;
 var emptyManifest = () => ({ version: 1, entries: [] });
@@ -27850,6 +27784,74 @@ var readZipFromBlob = async (tenantId, saveId) => {
   } catch {
     return null;
   }
+};
+
+// api-src/auth.ts
+var AuthError = class extends Error {
+  status = 401;
+  constructor(message) {
+    super(message);
+    this.name = "AuthError";
+  }
+};
+var FREE_EMAIL_DOMAINS = /* @__PURE__ */ new Set([
+  "gmail.com",
+  "googlemail.com",
+  "outlook.com",
+  "hotmail.com",
+  "live.com",
+  "yahoo.com",
+  "icloud.com",
+  "proton.me",
+  "protonmail.com",
+  "aol.com"
+]);
+var resolveTenant = (user) => {
+  const at = user.email.lastIndexOf("@");
+  if (at < 1 || at === user.email.length - 1) {
+    throw new Error(`Email "${user.email}" has no domain`);
+  }
+  const domain = user.email.slice(at + 1).toLowerCase();
+  const id = FREE_EMAIL_DOMAINS.has(domain) ? `user:${user.userId}` : `domain:${domain}`;
+  if (!validateTenantId(id)) {
+    throw new Error(`Computed tenant id "${id}" failed validation`);
+  }
+  return { id };
+};
+var getBearerToken = (req) => {
+  const header = req.headers.authorization;
+  if (typeof header !== "string") return null;
+  const match2 = /^Bearer\s+(.+)$/i.exec(header.trim());
+  return match2 ? match2[1].trim() : null;
+};
+var cachedClerk = null;
+var getClerk = () => {
+  if (cachedClerk) return cachedClerk;
+  const secretKey = process.env.CLERK_SECRET_KEY;
+  if (!secretKey) throw new AuthError("Auth is not configured on the server");
+  cachedClerk = createClerkClient({ secretKey });
+  return cachedClerk;
+};
+var requireUser = async (req) => {
+  const secretKey = process.env.CLERK_SECRET_KEY;
+  if (!secretKey) throw new AuthError("Auth is not configured on the server");
+  const token = getBearerToken(req);
+  if (!token) throw new AuthError("Not signed in");
+  let payload;
+  try {
+    payload = await verifyToken2(token, { secretKey });
+  } catch {
+    throw new AuthError("Invalid or expired session");
+  }
+  const userId = typeof payload.sub === "string" ? payload.sub : "";
+  if (!userId) throw new AuthError("Invalid session payload");
+  const clerk = getClerk();
+  const user = await clerk.users.getUser(userId);
+  const primary = user.emailAddresses.find(
+    (address) => address.id === user.primaryEmailAddressId && address.verification?.status === "verified"
+  );
+  if (!primary?.emailAddress) throw new AuthError("No verified email on this account");
+  return { userId, email: primary.emailAddress };
 };
 
 // api-src/signatures-download.ts

@@ -7665,6 +7665,9 @@ function createClerkClient(options) {
   };
 }
 
+// api-src/signatureBlobShared.ts
+var MAX_ZIP_BYTES = 10 * 1024 * 1024;
+
 // api-src/auth.ts
 var AuthError = class extends Error {
   status = 401;
