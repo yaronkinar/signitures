@@ -1,7 +1,9 @@
-import { StrictMode } from 'react'
+import { StrictMode, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ClerkProvider } from '@clerk/clerk-react'
+import { heIL } from '@clerk/localizations'
 import { AuthGate } from './components/AuthGate'
+import { UiLanguageProvider, useUiLanguage } from './contexts/UiLanguageContext'
 import './App.css'
 
 const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
@@ -12,6 +14,18 @@ if (!publishableKey) {
   )
 }
 
+const LocalizedClerkProvider = ({ children }: { children: ReactNode }) => {
+  const { uiLanguage } = useUiLanguage()
+  return (
+    <ClerkProvider
+      publishableKey={publishableKey}
+      localization={uiLanguage === 'he' ? heIL : undefined}
+    >
+      {children}
+    </ClerkProvider>
+  )
+}
+
 const root = document.getElementById('root')
 if (!root) {
   throw new Error('Missing #root element')
@@ -19,8 +33,10 @@ if (!root) {
 
 createRoot(root).render(
   <StrictMode>
-    <ClerkProvider publishableKey={publishableKey}>
-      <AuthGate />
-    </ClerkProvider>
+    <UiLanguageProvider>
+      <LocalizedClerkProvider>
+        <AuthGate />
+      </LocalizedClerkProvider>
+    </UiLanguageProvider>
   </StrictMode>
 )

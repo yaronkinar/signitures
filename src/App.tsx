@@ -16,6 +16,7 @@ import { PlacementControl } from './components/PlacementControl'
 import { useResizableSidebar } from './hooks/useResizableSidebar'
 import { useUiTheme } from './hooks/useUiTheme'
 import { useUiFont } from './hooks/useUiFont'
+import { useUiLanguage } from './contexts/UiLanguageContext'
 import { UpdatePrompt } from './components/UpdatePrompt'
 import { useSignatureApp } from './hooks/useSignatureApp'
 import { outlookHelpStatusHtml, t, type AppLanguage } from './i18n'
@@ -252,7 +253,12 @@ export default function App() {
   const app = useSignatureApp()
   const { uiTheme, setUiTheme } = useUiTheme()
   const uiFont = useUiFont()
+  const { setUiLanguage } = useUiLanguage()
   const { form, updateForm, lang } = app
+
+  useEffect(() => {
+    setUiLanguage(lang)
+  }, [lang, setUiLanguage])
   const {
     sidebarWidth,
     sidebarScrollRef,

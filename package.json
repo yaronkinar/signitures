@@ -1,6 +1,6 @@
 {
   "name": "signitures",
-  "version": "1.0.52",
+  "version": "1.0.53",
   "description": "",
   "scripts": {
     "prepare": "node scripts/install-git-hooks.mjs",
@@ -37,6 +37,7 @@
   "dependencies": {
     "@clerk/backend": "^2.33.5",
     "@clerk/clerk-react": "^5.61.8",
+    "@clerk/localizations": "^4.8.1",
     "@fontsource/cairo": "^5.2.7",
     "@fontsource/rubik": "^5.2.8",
     "@vercel/blob": "^2.4.0",
