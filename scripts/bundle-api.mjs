@@ -5,7 +5,8 @@ const bundles = [
   ['api-src/signatures.ts', 'api/signatures.js'],
   ['api-src/signatures-download.ts', 'api/signatures/download.js'],
   ['api-src/entitlements-get.ts', 'api/entitlements.js'],
-  ['api-src/entitlements-checkout.ts', 'api/entitlements/checkout.js']
+  ['api-src/entitlements-checkout.ts', 'api/entitlements/checkout.js'],
+  ['api-src/webhooks-lemonsqueezy.ts', 'api/webhooks/lemonsqueezy.js']
 ]
 
 for (const [entry, outfile] of bundles) {
