@@ -818,14 +818,16 @@ export const useSignatureApp = () => {
   }, [activeSavedId, addToast, cloudStorageAvailable, lang, refreshSavedSignatures])
 
   const handleExportParams = useCallback(async () => {
+    if (!(await ensureExportUnlocked())) return
     await downloadFormStateExport(form)
     addToast(t(lang, 'paramsExportSuccess'), 'success')
-  }, [addToast, form, lang])
+  }, [addToast, ensureExportUnlocked, form, lang])
 
   const handleExportStyle = useCallback(async () => {
+    if (!(await ensureExportUnlocked())) return
     await downloadFormStyleExport(form)
     addToast(t(lang, 'paramsStyleExportSuccess'), 'success')
-  }, [addToast, form, lang])
+  }, [addToast, ensureExportUnlocked, form, lang])
 
   const handleImportParams = useCallback(
     async (file: File | undefined) => {
