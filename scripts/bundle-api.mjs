@@ -4,7 +4,8 @@ const bundles = [
   ['api-src/design-signature.ts', 'api/design-signature.js'],
   ['api-src/signatures.ts', 'api/signatures.js'],
   ['api-src/signatures-download.ts', 'api/signatures/download.js'],
-  ['api-src/entitlements-get.ts', 'api/entitlements.js']
+  ['api-src/entitlements-get.ts', 'api/entitlements.js'],
+  ['api-src/entitlements-checkout.ts', 'api/entitlements/checkout.js']
 ]
 
 for (const [entry, outfile] of bundles) {
