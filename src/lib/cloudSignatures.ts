@@ -31,7 +31,7 @@ export const setCloudAuthTokenGetter = (next: TokenGetter): void => {
   getToken = next
 }
 
-const authedFetch = async (input: RequestInfo, init: RequestInit = {}): Promise<Response> => {
+export const authedFetch = async (input: RequestInfo, init: RequestInit = {}): Promise<Response> => {
   const token = await getToken()
   const headers = new Headers(init.headers)
   if (token) headers.set('Authorization', `Bearer ${token}`)
