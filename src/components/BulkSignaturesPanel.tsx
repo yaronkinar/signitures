@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRequireSignIn } from '../hooks/useRequireSignIn'
 import { useEntitlements } from '../hooks/useEntitlements'
+import type { EntitlementsResponse } from '../lib/entitlements'
 import { usePaywallModal } from '../contexts/PaywallModalContext'
 import { Panel } from './Panel'
 import { t, type AppLanguage } from '../i18n'
@@ -71,8 +72,13 @@ export const BulkSignaturesPanel = ({
       return false
     }
     if (isPro) return true
-    // Re-fetch in case a teammate on the same tenant just upgraded to Pro.
-    const fresh = await refresh()
+    let fresh: EntitlementsResponse
+    try {
+      // Re-fetch in case a teammate on the same tenant just upgraded to Pro.
+      fresh = await refresh()
+    } catch {
+      return false
+    }
     if (fresh.tier === 'pro') return true
     try {
       await requestUnlock({ kind: 'pro' })
