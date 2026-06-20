@@ -70,6 +70,9 @@ import {
 import { t, type AppLanguage } from '../i18n'
 import { useFormHistory } from './useFormHistory'
 import { useToasts } from './useToasts'
+import { useRequireSignIn } from './useRequireSignIn'
+import { useEntitlements } from './useEntitlements'
+import { usePaywallModal } from '../contexts/PaywallModalContext'
 import type { LinkImage, SignatureFormState } from '../types/signatureForm'
 
 export type AiStatusTone = 'idle' | 'working' | 'success' | 'error'
@@ -77,6 +80,9 @@ const MAX_SIGNATURE_IMAGE_BYTES = 5 * 1024 * 1024
 
 export const useSignatureApp = () => {
   const { toasts, addToast, dismissToast } = useToasts()
+  const { ensureSignedIn } = useRequireSignIn()
+  const { isPro, unlockedSignatureIds, refresh } = useEntitlements()
+  const { requestUnlock } = usePaywallModal()
   const {
     form,
     setForm,
@@ -444,22 +450,74 @@ export const useSignatureApp = () => {
       ? t(lang, 'aiApiKeyUsingEnv')
       : t(lang, 'aiApiKeyPlaceholder')
 
+  const ensureExportUnlocked = useCallback(async (): Promise<boolean> => {
+    try {
+      await ensureSignedIn()
+    } catch {
+      return false
+    }
+
+    if (isPro) return true
+
+    let signatureId = activeSavedId
+    if (!signatureId) {
+      const result = saveSignatureAs(saveAsName.trim() || defaultSaveAsName(form), form)
+      if (!result.ok) {
+        addToast(t(lang, 'saveAsFailedStorage'), 'error')
+        return false
+      }
+      signatureId = result.entry.id
+      setActiveSavedId(signatureId)
+      setSaveAsName(result.entry.name)
+      setSavedSignatures(listSavedSignatures())
+    }
+
+    if (unlockedSignatureIds.includes(signatureId)) return true
+
+    // Re-fetch before deciding to paywall: another tab may have just completed
+    // payment for this same signature id (or upgraded to Pro), and the
+    // unlockedSignatureIds/isPro captured above could be stale.
+    const fresh = await refresh()
+    if (fresh.tier === 'pro' || fresh.unlockedSignatureIds.includes(signatureId)) return true
+
+    try {
+      await requestUnlock({ kind: 'download', signatureId })
+      return true
+    } catch {
+      return false
+    }
+  }, [
+    activeSavedId,
+    addToast,
+    ensureSignedIn,
+    form,
+    isPro,
+    lang,
+    refresh,
+    requestUnlock,
+    saveAsName,
+    unlockedSignatureIds
+  ])
+
   const copyOutput = useCallback(async () => {
+    if (!(await ensureExportUnlocked())) return
     const value = outputHtml.trim()
     if (!value) return
     const richCopied = await copySignatureForOutlookPaste(value, form)
     if (!richCopied) {
       await navigator.clipboard.writeText(value)
     }
-  }, [form, outputHtml])
+  }, [ensureExportUnlocked, form, outputHtml])
 
   const handleDownload = useCallback(async () => {
+    if (!(await ensureExportUnlocked())) return
     const value = outputHtml.trim()
     if (!value) return
     await downloadHtmlOutput(value, lang, form.fontFamily, form)
-  }, [form, lang, outputHtml])
+  }, [ensureExportUnlocked, form, lang, outputHtml])
 
   const handleDownloadPng = useCallback(async () => {
+    if (!(await ensureExportUnlocked())) return
     try {
       const value = outputHtml.trim() ? outputHtml : await generate()
       if (!value.trim()) {
@@ -470,7 +528,7 @@ export const useSignatureApp = () => {
     } catch {
       addToast(t(lang, 'downloadPngFailed'), 'error')
     }
-  }, [addToast, form, generate, lang, layout, outputHtml])
+  }, [addToast, ensureExportUnlocked, form, generate, lang, layout, outputHtml])
 
   const openInstallWizard = useCallback(() => {
     setInstallWizardPhase('options')
@@ -486,6 +544,7 @@ export const useSignatureApp = () => {
   }, [])
 
   const confirmInstallDownload = useCallback(async () => {
+    if (!(await ensureExportUnlocked())) return
     setInstallWizardWorking(true)
     setInstallWizardPhase('running')
     try {
@@ -507,9 +566,10 @@ export const useSignatureApp = () => {
     } finally {
       setInstallWizardWorking(false)
     }
-  }, [form, generate, installFontOnPc, installRestartOutlook, lang])
+  }, [ensureExportUnlocked, form, generate, installFontOnPc, installRestartOutlook, lang])
 
   const confirmInstallSaveAs = useCallback(async () => {
+    if (!(await ensureExportUnlocked())) return
     setInstallWizardWorking(true)
     setInstallWizardPhase('running')
     try {
@@ -543,7 +603,7 @@ export const useSignatureApp = () => {
     } finally {
       setInstallWizardWorking(false)
     }
-  }, [form, generate, installFontOnPc, installRestartOutlook, lang])
+  }, [ensureExportUnlocked, form, generate, installFontOnPc, installRestartOutlook, lang])
 
   const handleOpenInstallDownloads = useCallback(() => {
     downloadOpenDownloadsFolderBat(lang)
@@ -561,13 +621,14 @@ export const useSignatureApp = () => {
   }, [form, lang])
 
   const handleInstallNewOutlook = useCallback(async () => {
+    if (!(await ensureExportUnlocked())) return
     try {
       const html = outputHtml.trim() ? outputHtml : await generate()
       await installForNewOutlook(html, lang, form)
     } catch {
       window.alert(t(lang, 'alertNewOutlookFailed'))
     }
-  }, [generate, lang, outputHtml])
+  }, [ensureExportUnlocked, generate, lang, outputHtml])
 
   const handleOpenSignaturesFolder = useCallback(() => {
     downloadOpenSignaturesFolderBat(lang)
