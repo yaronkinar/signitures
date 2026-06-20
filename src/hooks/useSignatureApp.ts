@@ -689,6 +689,11 @@ export const useSignatureApp = () => {
   }, [generate, lang, setForm])
 
   const refreshSavedSignatures = useCallback(async () => {
+    if (!isPro) {
+      setCloudStorageAvailable(false)
+      setSavedSignatures(listSavedSignatures())
+      return
+    }
     try {
       const cloud = await fetchCloudSignatures()
       setCloudStorageAvailable(cloud.available)
@@ -700,7 +705,7 @@ export const useSignatureApp = () => {
       setCloudStorageAvailable(false)
     }
     setSavedSignatures(listSavedSignatures())
-  }, [])
+  }, [isPro])
 
   useEffect(() => {
     refreshSavedSignatures().catch(() => undefined)
