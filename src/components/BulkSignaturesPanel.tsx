@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { useRequireSignIn } from '../hooks/useRequireSignIn'
+import { useEntitlements } from '../hooks/useEntitlements'
+import { usePaywallModal } from '../contexts/PaywallModalContext'
 import { Panel } from './Panel'
 import { t, type AppLanguage } from '../i18n'
 import {
@@ -44,6 +47,9 @@ export const BulkSignaturesPanel = ({
   onLoadDesignerForm,
   onPreviewContentWidth
 }: BulkSignaturesPanelProps) => {
+  const { ensureSignedIn } = useRequireSignIn()
+  const { isPro, refresh } = useEntitlements()
+  const { requestUnlock } = usePaywallModal()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [working, setWorking] = useState(false)
   const [status, setStatus] = useState('')
@@ -57,6 +63,24 @@ export const BulkSignaturesPanel = ({
   /** Style signature the user dismissed, so the banner stays hidden until the next change. */
   const [dismissedSignature, setDismissedSignature] = useState<string | null>(null)
   const restoredRef = useRef(false)
+
+  const ensureBulkUnlocked = async (): Promise<boolean> => {
+    try {
+      await ensureSignedIn()
+    } catch {
+      return false
+    }
+    if (isPro) return true
+    // Re-fetch in case a teammate on the same tenant just upgraded to Pro.
+    const fresh = await refresh()
+    if (fresh.tier === 'pro') return true
+    try {
+      await requestUnlock({ kind: 'pro' })
+      return true
+    } catch {
+      return false
+    }
+  }
 
   const statusClass =
     statusTone === 'success' ? 'ai-status is-success' : statusTone === 'error' ? 'ai-status is-error' : 'ai-status'
@@ -124,6 +148,8 @@ export const BulkSignaturesPanel = ({
   }
 
   const handleUpload = async (file: File) => {
+    if (!(await ensureBulkUnlocked())) return
+
     setWorking(true)
     setStatus(t(lang, 'bulkBuildingPreviews'))
     setStatusTone('idle')
@@ -243,6 +269,7 @@ export const BulkSignaturesPanel = ({
 
   const downloadZip = async (forItOutlook: boolean) => {
     if (!rows?.length) return
+    if (!(await ensureBulkUnlocked())) return
     setWorking(true)
     setStatus(t(lang, 'bulkWorking'))
     setStatusTone('idle')
@@ -276,6 +303,7 @@ export const BulkSignaturesPanel = ({
 
   const downloadPngZip = async () => {
     if (!rows?.length) return
+    if (!(await ensureBulkUnlocked())) return
     setWorking(true)
     setStatus(t(lang, 'bulkWorking'))
     setStatusTone('idle')
