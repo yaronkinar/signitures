@@ -314,8 +314,33 @@ export const useSignatureApp = () => {
     [form, lang]
   )
 
+  const ensureProUnlocked = useCallback(async (): Promise<boolean> => {
+    try {
+      await ensureSignedIn()
+    } catch {
+      return false
+    }
+    if (isPro) return true
+    // Re-fetch in case a teammate on the same tenant just upgraded to Pro,
+    // or this tab's cached isPro is otherwise stale.
+    let fresh: EntitlementsResponse
+    try {
+      fresh = await refresh()
+    } catch {
+      return false
+    }
+    if (fresh.tier === 'pro') return true
+    try {
+      await requestUnlock({ kind: 'pro' })
+      return true
+    } catch {
+      return false
+    }
+  }, [ensureSignedIn, isPro, refresh, requestUnlock])
+
   const runAiDesign = useCallback(
     async (mode: AiDesignMode) => {
+      if (!(await ensureProUnlocked())) return
       const brief = aiBrief.trim()
       if (!brief) {
         setAiStatus(t(lang, 'aiDesignMissingBrief'))
@@ -390,6 +415,7 @@ export const useSignatureApp = () => {
       aiBrief,
       aiKeepContact,
       buildAiRequestSnapshot,
+      ensureProUnlocked,
       generate,
       lang,
       revealSignaturePreview
@@ -399,6 +425,7 @@ export const useSignatureApp = () => {
   const runImageImport = useCallback(
     async (file: File | undefined) => {
       if (!file) return
+      if (!(await ensureProUnlocked())) return
       if (file.size > MAX_SIGNATURE_IMAGE_BYTES) {
         setImageImportStatus(t(lang, 'imageImportTooLarge'))
         setImageImportStatusTone('error')
@@ -442,7 +469,7 @@ export const useSignatureApp = () => {
         setImageImportWorking(false)
       }
     },
-    [aiApiKey, generate, lang, revealSignaturePreview]
+    [aiApiKey, ensureProUnlocked, generate, lang, revealSignaturePreview]
   )
 
   const apiKeyPlaceholder = isUsingServerAiProxy(aiApiKey)
