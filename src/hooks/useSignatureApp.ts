@@ -72,6 +72,7 @@ import { useFormHistory } from './useFormHistory'
 import { useToasts } from './useToasts'
 import { useRequireSignIn } from './useRequireSignIn'
 import { useEntitlements } from './useEntitlements'
+import type { EntitlementsResponse } from '../lib/entitlements'
 import { usePaywallModal } from '../contexts/PaywallModalContext'
 import type { LinkImage, SignatureFormState } from '../types/signatureForm'
 
@@ -477,7 +478,12 @@ export const useSignatureApp = () => {
     // Re-fetch before deciding to paywall: another tab may have just completed
     // payment for this same signature id (or upgraded to Pro), and the
     // unlockedSignatureIds/isPro captured above could be stale.
-    const fresh = await refresh()
+    let fresh: EntitlementsResponse
+    try {
+      fresh = await refresh()
+    } catch {
+      return false
+    }
     if (fresh.tier === 'pro' || fresh.unlockedSignatureIds.includes(signatureId)) return true
 
     try {
