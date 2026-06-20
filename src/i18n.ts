@@ -437,7 +437,25 @@ const translations = {
     creatorClose: 'Close',
     appUpdateAvailable: 'A new version is available. Reload to get the latest changes.',
     appUpdateReload: 'Reload',
-    appUpdateDismiss: 'Later'
+    appUpdateDismiss: 'Later',
+    signInModalTitle: 'Sign in to continue',
+    signInModalClose: 'Close',
+    paywallDownloadTitle: 'Unlock this signature',
+    paywallDownloadBody:
+      'Pay once to download and re-export this signature forever, or upgrade to Pro for unlimited downloads on every signature.',
+    paywallDownloadCta: 'Unlock for $1.99',
+    paywallProTitle: 'Upgrade to Pro',
+    paywallProBody:
+      'Pro unlocks unlimited downloads, the AI Design Assistant, cloud save & sync, and bulk signature generation for your whole company.',
+    paywallProCta: 'Upgrade for $29/mo',
+    paywallClose: 'Close',
+    paywallFinalizing: 'Finalizing payment…',
+    paywallError: 'Something went wrong. Please try again.',
+    paywallTimeout: 'Payment received — refresh to continue.',
+    paywallRetry: 'Refresh',
+    userMenuUpgrade: 'Upgrade to Pro',
+    userMenuProBadge: 'Pro',
+    userMenuSignIn: 'Sign in'
   },
   he: {
     pageTitle: 'מחולל חתימות Outlook',
@@ -858,7 +876,25 @@ const translations = {
     creatorClose: 'סגירה',
     appUpdateAvailable: 'גרסה חדשה זמינה. רעננו כדי לקבל את העדכון האחרון.',
     appUpdateReload: 'רענון',
-    appUpdateDismiss: 'אחר כך'
+    appUpdateDismiss: 'אחר כך',
+    signInModalTitle: 'התחברות להמשך',
+    signInModalClose: 'סגירה',
+    paywallDownloadTitle: 'פתיחת חתימה זו',
+    paywallDownloadBody:
+      'שלמו חד-פעמי כדי להוריד ולייצא חתימה זו לתמיד, או עברו ל-Pro להורדות בלי הגבלה לכל החתימות.',
+    paywallDownloadCta: 'פתיחה ב-1.99$',
+    paywallProTitle: 'שדרוג ל-Pro',
+    paywallProBody:
+      'Pro פותח הורדות בלי הגבלה, עוזר עיצוב AI, שמירה וסנכרון בענן, וייצור חתימות בכמות לכל החברה.',
+    paywallProCta: 'שדרוג ב-29$/חודש',
+    paywallClose: 'סגירה',
+    paywallFinalizing: 'מסיימים את התשלום…',
+    paywallError: 'משהו השתבש. נסו שוב.',
+    paywallTimeout: 'התשלום התקבל — רענון להמשך.',
+    paywallRetry: 'רענון',
+    userMenuUpgrade: 'שדרוג ל-Pro',
+    userMenuProBadge: 'Pro',
+    userMenuSignIn: 'התחברות'
   }
 } as const
 
