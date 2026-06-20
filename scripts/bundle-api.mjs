@@ -20,7 +20,7 @@ for (const [entry, outfile] of bundles) {
     packages: 'bundle',
     logLevel: 'info',
     footer: {
-      js: 'module.exports = module.exports.default ?? module.exports;'
+      js: 'const __exports = module.exports; const __handler = __exports.default ?? __exports; if (__handler !== __exports) { for (const __key of Object.keys(__exports)) { if (__key !== "default") __handler[__key] = __exports[__key]; } } module.exports = __handler;'
     }
   })
   console.log(`Bundled ${outfile}`)
