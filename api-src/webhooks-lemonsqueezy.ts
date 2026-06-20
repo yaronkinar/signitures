@@ -35,71 +35,77 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return
   }
 
-  const rawBody = await readRawBody(req)
-  const signatureHeader = req.headers['x-signature']
-  const signature = Array.isArray(signatureHeader) ? signatureHeader[0] : signatureHeader
-
-  if (!verifyLemonSqueezySignature(rawBody, signature, secret)) {
-    res.status(400).json({ error: 'Invalid signature' })
-    return
-  }
-
-  let payload: LemonWebhookPayload
   try {
-    payload = JSON.parse(rawBody) as LemonWebhookPayload
-  } catch {
-    res.status(400).json({ error: 'Invalid JSON' })
-    return
-  }
+    const rawBody = await readRawBody(req)
+    const signatureHeader = req.headers['x-signature']
+    const signature = Array.isArray(signatureHeader) ? signatureHeader[0] : signatureHeader
 
-  const eventName = payload.meta?.event_name
-  const tenantId = payload.meta?.custom_data?.tenantId
-  const signatureId = payload.meta?.custom_data?.signatureId
+    if (!verifyLemonSqueezySignature(rawBody, signature, secret)) {
+      res.status(400).json({ error: 'Invalid signature' })
+      return
+    }
 
-  if (!eventName || !tenantId) {
-    res.status(200).json({ ok: true })
-    return
-  }
+    let payload: LemonWebhookPayload
+    try {
+      payload = JSON.parse(rawBody) as LemonWebhookPayload
+    } catch {
+      res.status(400).json({ error: 'Invalid JSON' })
+      return
+    }
 
-  const entitlements = await readEntitlements(tenantId)
+    const eventName = payload.meta?.event_name
+    const tenantId = payload.meta?.custom_data?.tenantId
+    const signatureId = payload.meta?.custom_data?.signatureId
 
-  if (eventName === 'order_created') {
-    if (signatureId && !entitlements.unlockedSignatureIds.includes(signatureId)) {
+    if (!eventName || !tenantId) {
+      res.status(200).json({ ok: true })
+      return
+    }
+
+    const entitlements = await readEntitlements(tenantId)
+
+    if (eventName === 'order_created') {
+      if (signatureId && !entitlements.unlockedSignatureIds.includes(signatureId)) {
+        await writeEntitlements(tenantId, {
+          ...entitlements,
+          unlockedSignatureIds: [...entitlements.unlockedSignatureIds, signatureId]
+        })
+      }
+      res.status(200).json({ ok: true })
+      return
+    }
+
+    if (eventName === 'subscription_created' || eventName === 'subscription_payment_success') {
+      const renewsAt = payload.data?.attributes?.renews_at
       await writeEntitlements(tenantId, {
         ...entitlements,
-        unlockedSignatureIds: [...entitlements.unlockedSignatureIds, signatureId]
+        pro: {
+          active: true,
+          subscriptionId: payload.data?.id,
+          renewsAt: renewsAt ? Date.parse(renewsAt) : undefined
+        }
       })
+      res.status(200).json({ ok: true })
+      return
     }
-    res.status(200).json({ ok: true })
-    return
-  }
 
-  if (eventName === 'subscription_created' || eventName === 'subscription_payment_success') {
-    const renewsAt = payload.data?.attributes?.renews_at
-    await writeEntitlements(tenantId, {
-      ...entitlements,
-      pro: {
-        active: true,
-        subscriptionId: payload.data?.id,
-        renewsAt: renewsAt ? Date.parse(renewsAt) : undefined
-      }
-    })
-    res.status(200).json({ ok: true })
-    return
-  }
+    if (
+      eventName === 'subscription_cancelled' ||
+      eventName === 'subscription_expired' ||
+      eventName === 'subscription_payment_failed'
+    ) {
+      await writeEntitlements(tenantId, {
+        ...entitlements,
+        pro: { ...entitlements.pro, active: false }
+      })
+      res.status(200).json({ ok: true })
+      return
+    }
 
-  if (
-    eventName === 'subscription_cancelled' ||
-    eventName === 'subscription_expired' ||
-    eventName === 'subscription_payment_failed'
-  ) {
-    await writeEntitlements(tenantId, {
-      ...entitlements,
-      pro: { ...entitlements.pro, active: false }
-    })
     res.status(200).json({ ok: true })
-    return
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Webhook processing failed'
+    console.error('[webhooks-lemonsqueezy]', message, error)
+    res.status(500).json({ error: message })
   }
-
-  res.status(200).json({ ok: true })
 }
