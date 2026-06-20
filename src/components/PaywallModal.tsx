@@ -30,11 +30,19 @@ export const PaywallModal = () => {
       return
     }
     await openLemonCheckout(checkoutUrl, async (outcome) => {
+      if (outcome === 'closed') {
+        setPhase('idle')
+        return
+      }
       if (outcome !== 'success') return
       setPhase('finalizing')
-      const unlocked = await pollUntilUnlocked(matchesUnlock)
-      setPhase(unlocked ? 'idle' : 'timeout')
-      if (unlocked) resolveUnlock()
+      try {
+        const unlocked = await pollUntilUnlocked(matchesUnlock)
+        setPhase(unlocked ? 'idle' : 'timeout')
+        if (unlocked) resolveUnlock()
+      } catch {
+        setPhase('error')
+      }
     })
   }
 
