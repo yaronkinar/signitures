@@ -21,6 +21,7 @@ export const PaywallModalProvider = ({ children }: { children: ReactNode }) => {
 
   const requestUnlock = useCallback((next: PaywallRequest): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
+      pendingRef.current?.reject(new Error('Superseded by a new paywall request'))
       pendingRef.current = { resolve, reject }
       setRequest(next)
     })
