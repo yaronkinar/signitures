@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import App from '../App'
 import { SignInModal } from './SignInModal'
 import { SignInModalProvider } from '../contexts/SignInModalContext'
+import { EntitlementsProvider } from '../contexts/EntitlementsContext'
 import { setCloudAuthTokenGetter } from '../lib/cloudSignatures'
 
 const RegisterCloudAuthToken = () => {
@@ -17,9 +18,11 @@ const RegisterCloudAuthToken = () => {
 export const AuthGate = () => {
   return (
     <SignInModalProvider>
-      <RegisterCloudAuthToken />
-      <App />
-      <SignInModal />
+      <EntitlementsProvider>
+        <RegisterCloudAuthToken />
+        <App />
+        <SignInModal />
+      </EntitlementsProvider>
     </SignInModalProvider>
   )
 }
