@@ -1,6 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { readEntitlements, writeEntitlements } from './entitlements'
 import { verifyLemonSqueezySignature } from './lemonsqueezy'
+import { validateTenantId } from './signatureBlobShared'
+
+export const config = {
+  api: {
+    bodyParser: false
+  }
+}
 
 const readRawBody = (req: VercelRequest): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -59,6 +66,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
     if (!eventName || !tenantId) {
       res.status(200).json({ ok: true })
+      return
+    }
+
+    if (!validateTenantId(tenantId)) {
+      console.error('[webhooks-lemonsqueezy] Invalid tenantId in webhook payload', tenantId)
+      res.status(400).json({ error: 'Invalid tenant id' })
       return
     }
 

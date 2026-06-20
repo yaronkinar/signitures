@@ -668,9 +668,11 @@ export const useSignatureApp = () => {
   }, [lang])
 
   const handleExportSignaturesZip = useCallback(async () => {
+    if (!(await ensureExportUnlocked())) return
+
     const html = outputHtml.trim() ? outputHtml : await generate()
     await downloadExportSignaturesFolderBat(html, form)
-  }, [form, generate, outputHtml])
+  }, [ensureExportUnlocked, form, generate, outputHtml])
 
   const applyAiPreset = useCallback(
     (presetId: string) => {
