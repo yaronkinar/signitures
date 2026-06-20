@@ -21,7 +21,7 @@ Add login to the signature-builder app and convert cloud storage from anonymous 
 | 1 | Tenant model: per-organization (one tenant per email domain). |
 | 2 | Sign-in: social only — Google + Microsoft. |
 | 3 | Org assignment: email-domain auto-join. Free-email domains fall through to a per-user tenant. |
-| 4 | Login is required to use the app at all. |
+| 4 | ~~Login is required to use the app at all.~~ **Superseded** by [2026-06-20-monetization-payments-design.md](2026-06-20-monetization-payments-design.md) — anonymous visitors can design and locally save; sign-in is required only for server-side actions (export, AI, cloud save, bulk). |
 | 5 | Existing `workspaces/<uuid>/...` blob data is abandoned. No migration. |
 | 6 | Flat roles. No admin/member distinction in v1. |
 | 7 | Provider: Clerk via Vercel Marketplace. Identity only — Clerk Organizations is not used. |
