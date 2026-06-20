@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { AuthError, requireUser, resolveTenant } from './auth'
+import { isPro, readEntitlements } from './entitlements'
 import {
   isBlobConfigured,
   readManifest,
@@ -18,6 +19,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   try {
     const user = await requireUser(req)
     const tenant = resolveTenant(user)
+
+    const entitlements = await readEntitlements(tenant.id)
+    if (!isPro(entitlements)) {
+      res.status(403).json({ error: 'Pro subscription required' })
+      return
+    }
 
     if (!isBlobConfigured()) {
       blobUnavailable(res)
