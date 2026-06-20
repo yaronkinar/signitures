@@ -5,7 +5,8 @@ import {
   buildImageExtractionSystemPrompt,
   parseAiSignatureDesign
 } from '../lib/aiSignatureDesign'
-import { AuthError, requireUser } from './auth'
+import { AuthError, requireUser, resolveTenant } from './auth'
+import { isPro, readEntitlements } from './entitlements'
 
 const DEFAULT_BASE_URL = 'https://api.openai.com/v1'
 const DEFAULT_MODEL = 'gpt-4o-mini'
@@ -41,7 +42,7 @@ const parseJsonBody = (body: unknown): Record<string, unknown> => {
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   try {
-    await requireUser(req)
+    const user = await requireUser(req)
     if (req.method === 'GET') {
       res.status(200).json({
         ok: true,
@@ -53,6 +54,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' })
+      return
+    }
+
+    const tenant = resolveTenant(user)
+    const entitlements = await readEntitlements(tenant.id)
+    if (!isPro(entitlements)) {
+      res.status(403).json({ error: 'Pro subscription required' })
       return
     }
 
