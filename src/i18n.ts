@@ -16,6 +16,7 @@ const translations = {
   en: {
     pageTitle: 'Outlook Signature Generator',
     pageHeading: 'Outlook Signature Generator',
+    signIn: 'Sign in',
     editorSidebarTitle: 'Signature Editor',
     editorActiveTemplate: 'Active template',
     previewPageHeading: 'Live Signature Preview',
@@ -442,6 +443,7 @@ const translations = {
   he: {
     pageTitle: 'מחולל חתימות Outlook',
     pageHeading: 'מחולל חתימות Outlook',
+    signIn: 'התחברות',
     editorSidebarTitle: 'עורך חתימות',
     editorActiveTemplate: 'תבנית פעילה',
     previewPageHeading: 'תצוגה מקדימה חיה',

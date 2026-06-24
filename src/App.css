@@ -208,6 +208,23 @@ transition: opacity 0.15s ease, transform 0.15s ease;
 opacity: 0.92;
 }
 
+.btn-sign-in {
+border: 1px solid var(--border-subtle);
+border-radius: var(--radius-lg);
+padding: 8px 16px;
+font-family: var(--font-body);
+font-size: 14px;
+font-weight: 600;
+cursor: pointer;
+background: var(--surface-container);
+color: var(--on-surface);
+transition: opacity 0.15s ease;
+}
+
+.btn-sign-in:hover {
+opacity: 0.85;
+}
+
 .language-toggle {
 display: inline-flex;
 align-items: stretch;

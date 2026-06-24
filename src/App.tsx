@@ -381,7 +381,7 @@ export default function App() {
         {fontControls}
         <ThemeToggle lang={lang} theme={uiTheme} onChange={setUiTheme} />
         <LanguageToggle lang={lang} onChange={app.handleLanguageChange} />
-        <UserMenu />
+        <UserMenu lang={lang} />
       </header>
 
       <div className="ui-precision-only">
@@ -393,7 +393,7 @@ export default function App() {
             {fontControls}
             <ThemeToggle lang={lang} theme={uiTheme} onChange={setUiTheme} />
             <LanguageToggle lang={lang} onChange={app.handleLanguageChange} />
-            <UserMenu />
+            <UserMenu lang={lang} />
             <button type="button" className="btn-topbar-primary" onClick={() => app.generate()}>
               {t(lang, 'generateSignature')}
             </button>
@@ -407,7 +407,7 @@ export default function App() {
             {fontControls}
             <ThemeToggle lang={lang} theme={uiTheme} onChange={setUiTheme} />
             <LanguageToggle lang={lang} onChange={app.handleLanguageChange} />
-            <UserMenu />
+            <UserMenu lang={lang} />
           </div>
           <h1>{t(lang, 'pageHeading')}</h1>
           <p className="lead">{t(lang, 'pageLead')}</p>
