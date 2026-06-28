@@ -8,6 +8,6 @@
     }
   },
   "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    { "source": "/((?!api/)(?!@vite)(?!@react-refresh)(?!node_modules/)(?!.*\\.[a-zA-Z0-9]+$).*)", "destination": "/index.html" }
   ]
 }
