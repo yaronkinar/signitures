@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { AuthError, requireUser, resolveTenant } from './auth'
-import { isPro, readEntitlements } from './entitlements'
+import { isPro, readEntitlements, readGlobalProOverride } from './entitlements'
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   try {
@@ -12,9 +12,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       return
     }
 
-    const entitlements = await readEntitlements(tenant.id)
+    const [entitlements, globalOverride] = await Promise.all([
+      readEntitlements(tenant.id),
+      readGlobalProOverride()
+    ])
     res.status(200).json({
-      tier: isPro(entitlements) ? 'pro' : 'free',
+      tier: (isPro(entitlements) || globalOverride.active) ? 'pro' : 'free',
       unlockedSignatureIds: entitlements.unlockedSignatureIds
     })
   } catch (error) {
