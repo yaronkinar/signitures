@@ -340,7 +340,11 @@ export const useSignatureApp = () => {
 
   const runAiDesign = useCallback(
     async (mode: AiDesignMode) => {
-      if (!(await ensureProUnlocked())) return
+      if (!(await ensureProUnlocked())) {
+        setAiStatus(t(lang, 'aiProAccessFailed'))
+        setAiStatusTone('error')
+        return
+      }
       const brief = aiBrief.trim()
       if (!brief) {
         setAiStatus(t(lang, 'aiDesignMissingBrief'))
@@ -425,7 +429,11 @@ export const useSignatureApp = () => {
   const runImageImport = useCallback(
     async (file: File | undefined) => {
       if (!file) return
-      if (!(await ensureProUnlocked())) return
+      if (!(await ensureProUnlocked())) {
+        setImageImportStatus(t(lang, 'aiProAccessFailed'))
+        setImageImportStatusTone('error')
+        return
+      }
       if (file.size > MAX_SIGNATURE_IMAGE_BYTES) {
         setImageImportStatus(t(lang, 'imageImportTooLarge'))
         setImageImportStatusTone('error')

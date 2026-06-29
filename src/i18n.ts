@@ -104,6 +104,7 @@ const translations = {
     aiDesignMissingApiKey:
       'Add an OpenAI API key above, set VITE_OPENAI_API_KEY in .env for local dev, or OPENAI_API_KEY on Vercel.',
     aiDesignFailed: 'AI design failed. Check your API key and try again.',
+    aiProAccessFailed: "Couldn't verify Pro access. Please sign in and try again.",
     aiSignaturePreview: 'Your signature preview',
     contactDetails: 'Contact details',
     language: 'Language',
@@ -545,6 +546,7 @@ const translations = {
     aiDesignMissingApiKey:
       'הוסיפו מפתח OpenAI למעלה, הגדירו VITE_OPENAI_API_KEY ב-.env לפיתוח מקומי, או OPENAI_API_KEY ב-Vercel.',
     aiDesignFailed: 'עיצוב ה-AI נכשל. בדקו את מפתח ה-API ונסו שוב.',
+    aiProAccessFailed: 'לא ניתן לאמת גישת Pro. התחברו ונסו שוב.',
     aiSignaturePreview: 'תצוגה מקדימה של החתימה',
     contactDetails: 'פרטי קשר',
     language: 'שפה',
