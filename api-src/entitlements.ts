@@ -50,3 +50,32 @@ export const writeEntitlements = async (tenantId: string, next: Entitlements): P
     allowOverwrite: true
   })
 }
+
+export type GlobalProOverride = { active: boolean }
+
+export const GLOBAL_PRO_OVERRIDE_PATH = 'entitlements/_global-pro-override.json'
+
+export const defaultGlobalProOverride = (): GlobalProOverride => ({ active: false })
+
+export const readGlobalProOverride = async (): Promise<GlobalProOverride> => {
+  try {
+    const result = await get(GLOBAL_PRO_OVERRIDE_PATH, { access: 'private' })
+    if (!result || result.statusCode !== 200 || !result.stream) {
+      return defaultGlobalProOverride()
+    }
+    const text = await new Response(result.stream).text()
+    const parsed = JSON.parse(text) as GlobalProOverride
+    return { active: Boolean(parsed?.active) }
+  } catch {
+    return defaultGlobalProOverride()
+  }
+}
+
+export const writeGlobalProOverride = async (active: boolean): Promise<void> => {
+  await put(GLOBAL_PRO_OVERRIDE_PATH, JSON.stringify({ active }), {
+    access: 'private',
+    contentType: 'application/json',
+    addRandomSuffix: false,
+    allowOverwrite: true
+  })
+}

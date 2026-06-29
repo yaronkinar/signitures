@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { defaultEntitlements, entitlementsPath, isPro } from './entitlements'
+import {
+  GLOBAL_PRO_OVERRIDE_PATH,
+  defaultEntitlements,
+  defaultGlobalProOverride,
+  entitlementsPath,
+  isPro
+} from './entitlements'
 
 describe('defaultEntitlements', () => {
   it('returns free tier with no unlocked signatures', () => {
@@ -28,5 +34,17 @@ describe('isPro', () => {
 
   it('returns false when pro.active is false', () => {
     expect(isPro({ version: 1, pro: { active: false }, unlockedSignatureIds: [] })).toBe(false)
+  })
+})
+
+describe('GLOBAL_PRO_OVERRIDE_PATH', () => {
+  it('points at a fixed path', () => {
+    expect(GLOBAL_PRO_OVERRIDE_PATH).toBe('entitlements/_global-pro-override.json')
+  })
+})
+
+describe('defaultGlobalProOverride', () => {
+  it('defaults to inactive', () => {
+    expect(defaultGlobalProOverride()).toEqual({ active: false })
   })
 })
