@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { resolveTenant } from './auth'
+import { AuthError, resolveTenant } from './auth'
 
 describe('resolveTenant', () => {
   it('derives a domain tenant from a business email', () => {
@@ -46,5 +46,15 @@ describe('resolveTenant', () => {
     expect(() =>
       resolveTenant({ userId: 'user has spaces', email: 'bob@gmail.com' })
     ).toThrow(/failed validation/)
+  })
+})
+
+describe('AuthError', () => {
+  it('defaults to a 401 status', () => {
+    expect(new AuthError('Not signed in').status).toBe(401)
+  })
+
+  it('accepts a custom status', () => {
+    expect(new AuthError('Forbidden', 403).status).toBe(403)
   })
 })

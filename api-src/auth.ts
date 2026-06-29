@@ -6,10 +6,11 @@ export type AuthedUser = { userId: string; email: string }
 export type Tenant = { id: string }
 
 export class AuthError extends Error {
-  status = 401
-  constructor(message: string) {
+  status: number
+  constructor(message: string, status = 401) {
     super(message)
     this.name = 'AuthError'
+    this.status = status
   }
 }
 
