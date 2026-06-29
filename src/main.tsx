@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { ClerkProvider } from '@clerk/clerk-react'
 import { heIL } from '@clerk/localizations'
 import { AuthGate } from './components/AuthGate'
+import { AdminGate } from './components/AdminGate'
 import { UiLanguageProvider, useUiLanguage } from './contexts/UiLanguageContext'
 import './App.css'
 
@@ -31,11 +32,13 @@ if (!root) {
   throw new Error('Missing #root element')
 }
 
+const isAdminRoute = window.location.pathname === '/admin'
+
 createRoot(root).render(
   <StrictMode>
     <UiLanguageProvider>
       <LocalizedClerkProvider>
-        <AuthGate />
+        {isAdminRoute ? <AdminGate /> : <AuthGate />}
       </LocalizedClerkProvider>
     </UiLanguageProvider>
   </StrictMode>
