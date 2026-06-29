@@ -33,7 +33,28 @@ type SignatureBrandPreset = {
     | 'phoneColor'
     | 'emailColor'
     | 'websiteColor'
-  >
+  > &
+    Partial<
+      Pick<
+        SignatureFormState,
+        | 'layoutPreset'
+        | 'logoSide'
+        | 'dividerThickness'
+        | 'textColumnWidth'
+        | 'logoMaxWidth'
+        | 'logoOffsetX'
+        | 'logoOffsetY'
+        | 'verticalAlign'
+        | 'showContactLabels'
+        | 'contactMatchNameTitle'
+        | 'textAlign'
+        | 'facebookIconVariant'
+        | 'instagramIconVariant'
+        | 'linkedinIconVariant'
+        | 'xIconVariant'
+        | 'youtubeIconVariant'
+      >
+    >
 }
 
 const SBA_SIGNATURE_COLORS = {
@@ -79,6 +100,40 @@ export const SBA_BRAND_PRESETS: SignatureBrandPreset[] = [
       titleFontWeight: 600,
       bodyFontWeight: 400,
       ...SBA_SIGNATURE_COLORS
+    }
+  },
+  {
+    id: 'sba-full-signature',
+    label: {
+      en: 'Maof - Full signature',
+      he: 'מעוף - חתימה מלאה'
+    },
+    values: {
+      fontFamily: "'Rubik', Arial, Helvetica, sans-serif",
+      nameFontWeight: 700,
+      titleFontWeight: 600,
+      bodyFontWeight: 400,
+      ...SBA_SIGNATURE_COLORS,
+      dividerColor: '#c9c9c9',
+      phoneColor: '#4d4c4f',
+      emailColor: '#4d4c4f',
+      websiteColor: '#4d4c4f',
+      layoutPreset: 'side-right',
+      logoSide: 'right',
+      dividerThickness: 1,
+      textColumnWidth: 252,
+      logoMaxWidth: 122,
+      logoOffsetX: 10,
+      logoOffsetY: 6,
+      verticalAlign: 'top',
+      showContactLabels: false,
+      contactMatchNameTitle: false,
+      textAlign: 'left',
+      facebookIconVariant: 'brand',
+      instagramIconVariant: 'gradient',
+      linkedinIconVariant: 'badge',
+      xIconVariant: 'brand',
+      youtubeIconVariant: 'brand'
     }
   }
 ]
