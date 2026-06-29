@@ -70,28 +70,28 @@ Bidding: start with **Maximize Conversions**, switch to **Target CPA** once ~30 
 
 ## 4. Responsive Search Ads — copy
 
-### Headlines (mix across pinned/unpinned, 15 max per ad)
-1. Outlook Signature Generator
-2. Free to Design, Pay to Export
-3. AI-Designed Email Signatures
-4. Bulk Signatures From One Excel File
-5. One Click, Whole Team Branded
-6. No Design Skills Needed
-7. Outlook & New Outlook Supported
-8. Consistent Signatures, Every Employee
-9. Build Your Signature in Minutes
-10. $1.99 Per Signature, No Subscription
-11. Or Go Pro: Unlimited Team Exports
-12. Try It Free — No Signup to Design
-13. Signature Designer for Outlook
-14. Email Signatures That Match Your Brand
-15. Generate 100 Signatures at Once
+### Headlines (mix across pinned/unpinned, 15 max per ad, ≤30 characters each — Google's RSA headline limit)
+1. Outlook Signature Generator (27)
+2. Free to Design, Pay to Export (29)
+3. AI-Designed Email Signatures (28)
+4. Bulk Signatures From Excel (26)
+5. One Click, Whole Team Branded (29)
+6. No Design Skills Needed (23)
+7. Outlook & New Outlook Ready (27)
+8. One Signature, Every Employee (29)
+9. Build a Signature in Minutes (28)
+10. Pay $1.99, No Subscription (26)
+11. Go Pro: Unlimited Team Exports (30)
+12. Try It Free, No Signup Needed (29)
+13. Signature Designer for Outlook (30)
+14. On-Brand Email Signatures (25)
+15. Generate 100s of Signatures (27)
 
-### Descriptions (4 max per ad)
-1. Design your Outlook signature free. Pay only when you export — $1.99 one-time or $29/mo Pro for your whole company.
-2. Upload an Excel list and generate every employee's signature in one pass. Built for IT admins and office managers.
-3. AI Design Assistant helps you get a polished, on-brand signature without a designer.
-4. Works with classic Outlook and the new Outlook. Export HTML, install directly, or download as PNG.
+### Descriptions (4 max per ad, ≤90 characters each — Google's RSA description limit)
+1. Design free in Outlook. Pay only to export — $1.99 once, or $29/mo Pro for your team. (86)
+2. Upload an Excel list, generate every employee's signature in one pass. For IT admins. (87)
+3. AI Design Assistant helps you get a polished, on-brand signature without a designer. (84)
+4. Works with classic and new Outlook. Export, install, or download as PNG. (72)
 
 ### Sitelink extensions
 - "Bulk Signature Generator" → landing on bulk/Excel feature
