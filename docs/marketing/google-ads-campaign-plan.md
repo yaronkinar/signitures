@@ -1,0 +1,137 @@
+# Google Ads campaign plan — Outlook Signature Generator (signitures.dev)
+
+**Date:** 2026-06-29
+**Product:** signitures.dev — design Outlook/Outlook-Web email signatures, AI design assistant, bulk Excel-driven generation for whole teams, free design + paid export (Pro $29/mo per company domain, or $1.99 pay-per-download).
+**Goal:** Drive qualified signups from people setting up email signatures for themselves or their company, optimizing for Pro subscription conversions (admins/IT/marketing buying for a whole domain) and pay-per-download conversions (individuals).
+
+## 1. Audience & positioning
+
+Two buyer types, two messages:
+
+| Segment | Intent | Message |
+|---|---|---|
+| Individual professional / freelancer | "I need a signature now" | Fast, free, no design skill needed |
+| IT admin / office manager / marketing lead at a company | "Standardize signatures across N employees" | Bulk generation from Excel, brand consistency, one purchase covers the whole team |
+
+Lead with the bulk/brand-consistency angle for Search (higher intent, higher LTV); use the individual angle for broader reach.
+
+## 2. Campaign structure
+
+```
+Campaign: Signitures – Search – Brand Consistency (B2B)
+  Ad Group: Bulk Signature Generation
+  Ad Group: Outlook Signature for Company / Team
+
+Campaign: Signitures – Search – Individual Signature
+  Ad Group: Outlook Signature Generator
+  Ad Group: Email Signature Maker / Templates
+
+Campaign: Signitures – Search – Branded (own name)
+  Ad Group: Signitures Brand
+```
+
+Separate brand campaign protects against competitor bidding on "signitures" and keeps CPC low; never mix brand and non-brand spend/budget reporting.
+
+Bidding: start with **Maximize Conversions**, switch to **Target CPA** once ~30 conversions/campaign have accumulated. Track two conversion actions separately (Pro checkout started, pay-per-download checkout started) so Smart Bidding doesn't conflate a $1.99 sale with a $29/mo subscription.
+
+## 3. Keywords
+
+**Ad Group: Bulk Signature Generation** (Phrase + Exact)
+- "bulk email signature generator"
+- "company wide email signature"
+- "email signature generator for employees"
+- "outlook signature for all employees"
+- "email signature from excel"
+- "standardize email signatures"
+
+**Ad Group: Outlook Signature for Company / Team**
+- "email signature for company"
+- "corporate email signature generator"
+- "consistent email signatures team"
+- "email signature management tool"
+
+**Ad Group: Outlook Signature Generator**
+- "outlook signature generator"
+- "outlook email signature maker"
+- "create outlook signature"
+- "outlook signature design"
+- "new outlook signature generator"
+
+**Ad Group: Email Signature Maker / Templates**
+- "email signature maker"
+- "email signature template"
+- "free email signature generator"
+- "professional email signature"
+- "html email signature generator"
+
+**Negative keywords (all campaigns):** gmail, apple mail, thunderbird, digital signature, electronic signature, docusign, e-signature, signature loan, signature pad, jobs, career, free download crack.
+
+(Negatives matter here — "signature generator" and "digital/e-signature" intent are completely different products and will burn budget fast.)
+
+## 4. Responsive Search Ads — copy
+
+### Headlines (mix across pinned/unpinned, 15 max per ad)
+1. Outlook Signature Generator
+2. Free to Design, Pay to Export
+3. AI-Designed Email Signatures
+4. Bulk Signatures From One Excel File
+5. One Click, Whole Team Branded
+6. No Design Skills Needed
+7. Outlook & New Outlook Supported
+8. Consistent Signatures, Every Employee
+9. Build Your Signature in Minutes
+10. $1.99 Per Signature, No Subscription
+11. Or Go Pro: Unlimited Team Exports
+12. Try It Free — No Signup to Design
+13. Signature Designer for Outlook
+14. Email Signatures That Match Your Brand
+15. Generate 100 Signatures at Once
+
+### Descriptions (4 max per ad)
+1. Design your Outlook signature free. Pay only when you export — $1.99 one-time or $29/mo Pro for your whole company.
+2. Upload an Excel list and generate every employee's signature in one pass. Built for IT admins and office managers.
+3. AI Design Assistant helps you get a polished, on-brand signature without a designer.
+4. Works with classic Outlook and the new Outlook. Export HTML, install directly, or download as PNG.
+
+### Sitelink extensions
+- "Bulk Signature Generator" → landing on bulk/Excel feature
+- "AI Design Assistant" → AI feature
+- "Pricing" → pricing/Pro page
+- "Install to Outlook" → install guide
+
+### Callout extensions
+- Free to design
+- No credit card to start
+- AI-assisted design
+- Bulk Excel import
+- Works with new Outlook
+
+### Structured snippets
+- Types: Email signatures, Bulk import, AI design, Outlook & New Outlook
+
+## 5. Landing pages
+
+- Non-brand individual + brand campaigns → homepage (`/`) — it already supports full anonymous design with no login wall, so traffic lands directly in the product.
+- Bulk/B2B ad group → ideally a dedicated landing section anchored on the bulk-generation feature (if/when one exists); until then, point to `/` since the designer is reachable with no friction and bulk generation is a visible panel in-app.
+
+Do not point ads at any page that requires sign-in before letting the visitor see the product — the existing monetization design (`docs/superpowers/specs/2026-06-20-monetization-payments-design.md`) keeps the designer open to anonymous visitors specifically so ad/SEO traffic isn't lost to a login wall; ad copy and landing pages should lean into that ("free to design, no signup to start").
+
+## 6. Conversion tracking (not yet implemented)
+
+Two distinct conversion actions are needed in Google Ads / GA4 before launch:
+1. **Pro checkout started/completed** (high value — $29/mo)
+2. **Pay-per-download checkout started/completed** (lower value — $1.99)
+
+These map to the Lemon Squeezy checkout flow described in the monetization design doc. Implementing the actual `gtag('event', 'conversion', ...)` calls at the checkout-start and checkout-success points (`PaywallModal.tsx`, the Lemon.js overlay success callback) is a separate, code-level task — flagged here so it isn't forgotten before spend ramps up, since campaigns without conversion tracking can't use Smart Bidding effectively.
+
+## 7. Budget & rollout
+
+- Phase 1 (2 weeks): Brand + "Outlook Signature Generator" ad group only, $20–30/day, Maximize Clicks, to validate landing page CTR and confirm tracking fires correctly.
+- Phase 2 (once conversion tracking is live): Add bulk/B2B ad group, switch to Maximize Conversions, raise budget to $50–75/day, split spend ~60% non-brand / 40% bulk-B2B given higher LTV of Pro signups.
+- Review weekly: pause keywords with >$15 spend and 0 conversions; promote winning search terms from Search Terms report into exact-match keywords.
+
+## 8. Open items before launch
+
+- [ ] Set up conversion actions in Google Ads + GA4 and wire `gtag` events at checkout start/success (code change, not covered by this doc).
+- [ ] Confirm `signitures.dev` has Google Ads' required policy pages (Privacy Policy, Terms) linked in the footer — required for billing-related ad approval.
+- [ ] Decide final daily budget and who owns the Google Ads account billing.
