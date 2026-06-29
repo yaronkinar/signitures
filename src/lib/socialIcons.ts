@@ -47,6 +47,31 @@ const buildInstagramGradientIconSvg = (): string =>
     <path fill="#ffffff" d="${siInstagram.path}"/>
   </svg>`
 
+const buildCircleIconSvg = (path: string, bgFill: string): string =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="12" fill="${bgFill}"/>
+    <g transform="translate(4.8 4.8) scale(0.6)">
+      <path fill="#ffffff" d="${path}"/>
+    </g>
+  </svg>`
+
+const buildInstagramGradientCircleIconSvg = (): string =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+    <defs>
+      <linearGradient id="ig-circle" x1="0" y1="24" x2="24" y2="0" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#FEDA75"/>
+        <stop offset="0.25" stop-color="#FA7E1E"/>
+        <stop offset="0.5" stop-color="#D62976"/>
+        <stop offset="0.75" stop-color="#962FBF"/>
+        <stop offset="1" stop-color="#4F5BD5"/>
+      </linearGradient>
+    </defs>
+    <circle cx="12" cy="12" r="12" fill="url(#ig-circle)"/>
+    <g transform="translate(4.8 4.8) scale(0.6)">
+      <path fill="#ffffff" d="${siInstagram.path}"/>
+    </g>
+  </svg>`
+
 const linkedInBadgeIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
   <rect x="0" y="0" width="24" height="24" rx="4" fill="#0A66C2" />
   <g transform="translate(0.3 0.2) scale(0.92)">
@@ -65,9 +90,11 @@ const linkedInWhiteIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24"
   <path fill="#ffffff" d="${linkedInGlyphPath}"/>
 </svg>`
 
+const LINKEDIN_BRAND_COLOR = '#0A66C2'
+
 const SOCIAL_ICON_PNG_PIXEL_SIZE = 80
 /** Bump when rasterization changes so cached data URLs are rebuilt on next load. */
-const SOCIAL_ICON_GENERATION = 4
+const SOCIAL_ICON_GENERATION = 5
 /** Equal transparent margin on all sides — Outlook often crops the top or bottom edge. */
 const SOCIAL_ICON_PNG_SAFE_PAD = 8
 
@@ -138,6 +165,13 @@ const renderSimpleIconVariants = async (
       })
     )
   }
+  if (variants.includes('circle')) {
+    tasks.push(
+      svgToPngDataUrl(buildCircleIconSvg(icon.path, brandColor)).then((dataUrl) => {
+        setVariantUrl(platform, 'circle', dataUrl)
+      })
+    )
+  }
 
   await Promise.all(tasks)
 }
@@ -164,10 +198,16 @@ export const initializeSocialIconDataUrls = async (): Promise<void> => {
     svgToPngDataUrl(buildInstagramGradientIconSvg()).then((dataUrl) => {
       setVariantUrl('Instagram', 'gradient', dataUrl)
     }),
+    svgToPngDataUrl(buildInstagramGradientCircleIconSvg()).then((dataUrl) => {
+      setVariantUrl('Instagram', 'circle', dataUrl)
+    }),
     renderSimpleIconVariants('X', siX, BRAND_COLORS.X),
     renderSimpleIconVariants('YouTube', siYoutube, BRAND_COLORS.YouTube),
     svgToPngDataUrl(linkedInBadgeIconSvg).then((dataUrl) => {
       setVariantUrl('LinkedIn', 'badge', dataUrl)
+    }),
+    svgToPngDataUrl(buildCircleIconSvg(linkedInGlyphPath, LINKEDIN_BRAND_COLOR)).then((dataUrl) => {
+      setVariantUrl('LinkedIn', 'circle', dataUrl)
     }),
     svgToPngDataUrl(linkedInMonoIconSvg).then((dataUrl) => {
       setVariantUrl('LinkedIn', 'mono', dataUrl)

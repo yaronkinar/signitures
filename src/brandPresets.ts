@@ -47,6 +47,7 @@ type SignatureBrandPreset = {
         | 'verticalAlign'
         | 'showContactLabels'
         | 'contactMatchNameTitle'
+        | 'socialIconsLtrOrder'
         | 'textAlign'
         | 'facebookIconVariant'
         | 'instagramIconVariant'
@@ -128,12 +129,13 @@ export const SBA_BRAND_PRESETS: SignatureBrandPreset[] = [
       verticalAlign: 'top',
       showContactLabels: false,
       contactMatchNameTitle: false,
+      socialIconsLtrOrder: true,
       textAlign: 'left',
-      facebookIconVariant: 'brand',
-      instagramIconVariant: 'gradient',
-      linkedinIconVariant: 'badge',
-      xIconVariant: 'brand',
-      youtubeIconVariant: 'brand'
+      facebookIconVariant: 'circle',
+      instagramIconVariant: 'circle',
+      linkedinIconVariant: 'circle',
+      xIconVariant: 'circle',
+      youtubeIconVariant: 'circle'
     }
   }
 ]

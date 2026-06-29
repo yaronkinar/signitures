@@ -1,16 +1,16 @@
 export type SocialPlatform = 'Facebook' | 'Instagram' | 'LinkedIn' | 'X' | 'YouTube'
 
-export type SocialIconVariantId = 'brand' | 'mono' | 'white' | 'gradient' | 'badge'
+export type SocialIconVariantId = 'brand' | 'mono' | 'white' | 'gradient' | 'badge' | 'circle'
 
 export const SOCIAL_ICON_VARIANTS_BY_PLATFORM: Record<
   SocialPlatform,
   readonly SocialIconVariantId[]
 > = {
-  Facebook: ['brand', 'mono', 'white'],
-  Instagram: ['brand', 'gradient', 'mono', 'white'],
-  LinkedIn: ['badge', 'mono', 'white'],
-  X: ['brand', 'mono', 'white'],
-  YouTube: ['brand', 'mono', 'white']
+  Facebook: ['brand', 'circle', 'mono', 'white'],
+  Instagram: ['brand', 'gradient', 'circle', 'mono', 'white'],
+  LinkedIn: ['badge', 'circle', 'mono', 'white'],
+  X: ['brand', 'circle', 'mono', 'white'],
+  YouTube: ['brand', 'circle', 'mono', 'white']
 }
 
 export const DEFAULT_SOCIAL_ICON_VARIANT: Record<SocialPlatform, SocialIconVariantId> = {
@@ -43,6 +43,7 @@ export type SocialIconVariantLabelKey =
   | 'socialIconVariantWhite'
   | 'socialIconVariantGradient'
   | 'socialIconVariantBadge'
+  | 'socialIconVariantCircle'
 
 export const SOCIAL_ICON_VARIANT_LABEL_KEYS: Record<
   SocialIconVariantId,
@@ -52,5 +53,6 @@ export const SOCIAL_ICON_VARIANT_LABEL_KEYS: Record<
   mono: 'socialIconVariantMono',
   white: 'socialIconVariantWhite',
   gradient: 'socialIconVariantGradient',
-  badge: 'socialIconVariantBadge'
+  badge: 'socialIconVariantBadge',
+  circle: 'socialIconVariantCircle'
 }

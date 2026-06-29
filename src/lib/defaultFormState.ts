@@ -54,6 +54,7 @@ export const createDefaultFormState = (): SignatureFormState => ({
   rasterizeNameTitle: true,
   contactMatchNameTitle: true,
   showContactLabels: true,
+  socialIconsLtrOrder: false,
   fontFamily: DEFAULT_BRAND_PRESET.fontFamily,
   nameFontWeight: 700,
   titleFontWeight: 600,

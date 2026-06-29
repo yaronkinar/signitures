@@ -80,6 +80,8 @@ export type SignatureFormState = {
   contactMatchNameTitle: boolean
   /** When true, contact rows show their label (Mobile:/Email:/Website:); when false, only the value. */
   showContactLabels: boolean
+  /** When true, social icons always render left-to-right, ignoring RTL content direction. */
+  socialIconsLtrOrder: boolean
   fullName: string
   /** ASCII name for classic Outlook signature files (list + .htm base name). */
   outlookSignatureName: string

@@ -35,6 +35,7 @@ const STYLE_FIELD_KEYS = [
   'rasterizeNameTitle',
   'contactMatchNameTitle',
   'showContactLabels',
+  'socialIconsLtrOrder',
   'nameFontWeight',
   'titleFontWeight',
   'bodyFontWeight',

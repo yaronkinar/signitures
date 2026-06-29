@@ -256,7 +256,8 @@ export const buildSignatureHtml = (
     `<tr>
       <td align="${nameTitleAlignAttr}" height="${heightPx}" style="height:${heightPx}px;mso-height-rule:exactly;line-height:${heightPx}px;font-size:${heightPx}px;mso-line-height-rule:exactly;padding:0;border:0;">&nbsp;</td>
     </tr>`
-  const orderedSocialLinks = rtlContent ? [...socialLinks].reverse() : socialLinks
+  const reverseSocialRow = rtlContent && !form.socialIconsLtrOrder
+  const orderedSocialLinks = reverseSocialRow ? [...socialLinks].reverse() : socialLinks
   const socialIconsRowWidth =
     orderedSocialLinks.length * socialIconCellWidth +
     Math.max(0, orderedSocialLinks.length - 1) * socialIconGapPx
@@ -300,7 +301,7 @@ export const buildSignatureHtml = (
   const socialRowLinkImages = parsedLinkImages.filter((item) => item.placement === 'with-social')
   const topLinkImages = parsedLinkImages.filter((item) => item.placement === 'top')
   const bottomLinkImages = parsedLinkImages.filter((item) => item.placement === 'bottom')
-  const orderedSocialRowLinkImages = rtlContent
+  const orderedSocialRowLinkImages = reverseSocialRow
     ? [...socialRowLinkImages].reverse()
     : socialRowLinkImages
   const orderedFooterLinkImages = rtlContent ? [...footerLinkImages].reverse() : footerLinkImages
