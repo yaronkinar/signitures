@@ -50,7 +50,7 @@ const getBearerToken = (req: VercelRequest): string | null => {
 }
 
 let cachedClerk: ReturnType<typeof createClerkClient> | null = null
-const getClerk = () => {
+export const getClerk = () => {
   if (cachedClerk) return cachedClerk
   const secretKey = process.env.CLERK_SECRET_KEY
   if (!secretKey) throw new AuthError('Auth is not configured on the server')
@@ -83,4 +83,14 @@ export const requireUser = async (req: VercelRequest): Promise<AuthedUser> => {
   if (!primary?.emailAddress) throw new AuthError('No verified email on this account')
 
   return { userId, email: primary.emailAddress }
+}
+
+export const requireAdmin = async (req: VercelRequest): Promise<AuthedUser> => {
+  const user = await requireUser(req)
+  const clerk = getClerk()
+  const clerkUser = await clerk.users.getUser(user.userId)
+  if (clerkUser.publicMetadata?.role !== 'admin') {
+    throw new AuthError('Forbidden', 403)
+  }
+  return user
 }
