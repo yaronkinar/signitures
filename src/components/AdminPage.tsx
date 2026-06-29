@@ -5,6 +5,9 @@ import { authedFetch } from '../lib/cloudSignatures'
 type SetProResult = { tenantId: string; email: string; active: boolean }
 type ApiError = { error: string }
 
+const describeError = (response: Response, fallback: string): string =>
+  response.status === 403 ? "You don't have admin access" : fallback
+
 export const AdminPage = () => {
   const [email, setEmail] = useState('')
   const [customerStatus, setCustomerStatus] = useState('')
@@ -21,7 +24,7 @@ export const AdminPage = () => {
       .then(async (response) => {
         if (cancelled) return
         if (!response.ok) {
-          setGlobalStatus(`Failed to load global override (${response.status})`)
+          setGlobalStatus(describeError(response, `Failed to load global override (${response.status})`))
           return
         }
         const payload = (await response.json()) as { active: boolean }
@@ -54,7 +57,8 @@ export const AdminPage = () => {
       })
       const payload = (await response.json()) as SetProResult | ApiError
       if (!response.ok) {
-        setCustomerStatus('error' in payload ? payload.error : `Request failed (${response.status})`)
+        const fallback = 'error' in payload ? payload.error : `Request failed (${response.status})`
+        setCustomerStatus(describeError(response, fallback))
         return
       }
       const result = payload as SetProResult
@@ -79,7 +83,7 @@ export const AdminPage = () => {
       })
       if (!response.ok) {
         const payload = (await response.json()) as ApiError
-        setGlobalStatus(payload.error ?? `Request failed (${response.status})`)
+        setGlobalStatus(describeError(response, payload.error ?? `Request failed (${response.status})`))
         return
       }
       setGlobalActive(active)
