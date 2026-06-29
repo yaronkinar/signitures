@@ -50,31 +50,41 @@ export const AdminPage = () => {
     }
   }, [])
 
-  const loadTenants = async (cursor: string | null) => {
+  const loadTenants = async (cursor: string | null, isCancelled?: () => boolean) => {
+    if (cursor && tenantsLoadingMore) return
     if (cursor) {
       setTenantsLoadingMore(true)
     }
     try {
       const query = cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''
       const response = await authedFetch(`/api/admin/tenants${query}`)
+      if (isCancelled?.()) return
       if (!response.ok) {
         const payload = (await response.json()) as ApiError
+        if (isCancelled?.()) return
         setTenantsStatus(describeError(response, payload.error ?? `Failed to load tenants (${response.status})`))
         return
       }
       const payload = (await response.json()) as TenantsResponse
+      if (isCancelled?.()) return
       setTenants((existing) => (cursor ? [...existing, ...payload.tenants] : payload.tenants))
       setTenantsCursor(payload.nextCursor)
     } catch {
-      setTenantsStatus('Failed to load tenants')
+      if (!isCancelled?.()) setTenantsStatus('Failed to load tenants')
     } finally {
-      setTenantsLoaded(true)
-      setTenantsLoadingMore(false)
+      if (!isCancelled?.()) {
+        setTenantsLoaded(true)
+        setTenantsLoadingMore(false)
+      }
     }
   }
 
   useEffect(() => {
-    loadTenants(null)
+    let cancelled = false
+    loadTenants(null, () => cancelled)
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const setCustomerPro = async (active: boolean) => {
@@ -132,6 +142,7 @@ export const AdminPage = () => {
   }
 
   const setTenantRowPro = async (tenantId: string, active: boolean) => {
+    if (tenantWorkingId !== null) return
     setTenantWorkingId(tenantId)
     setTenantsStatus('')
     try {
