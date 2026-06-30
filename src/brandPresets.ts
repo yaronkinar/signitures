@@ -41,6 +41,7 @@ type SignatureBrandPreset = {
         | 'logoSide'
         | 'dividerThickness'
         | 'textColumnWidth'
+        | 'titleFontSize'
         | 'logoMaxWidth'
         | 'logoOffsetX'
         | 'logoOffsetY'
@@ -112,7 +113,7 @@ export const SBA_BRAND_PRESETS: SignatureBrandPreset[] = [
     values: {
       fontFamily: "'Rubik', Arial, Helvetica, sans-serif",
       nameFontWeight: 700,
-      titleFontWeight: 600,
+      titleFontWeight: 400,
       bodyFontWeight: 400,
       ...SBA_SIGNATURE_COLORS,
       dividerColor: '#4d4c4f',
@@ -123,6 +124,7 @@ export const SBA_BRAND_PRESETS: SignatureBrandPreset[] = [
       logoSide: 'right',
       dividerThickness: 2,
       textColumnWidth: 252,
+      titleFontSize: 14,
       logoMaxWidth: 122,
       logoOffsetX: 10,
       logoOffsetY: 6,
