@@ -26,6 +26,10 @@ try {
 }
 
 if (currentPath !== desiredPath) {
-  execSync(`git config core.hooksPath ${desiredPath}`, { stdio: 'inherit' })
-  console.log(`Git hooks path set to ${desiredPath}`)
+  try {
+    execSync(`git config core.hooksPath ${desiredPath}`, { stdio: 'inherit' })
+    console.log(`Git hooks path set to ${desiredPath}`)
+  } catch {
+    console.warn('Could not set core.hooksPath (no .git directory, e.g. in a CI/deploy checkout); skipping.')
+  }
 }
