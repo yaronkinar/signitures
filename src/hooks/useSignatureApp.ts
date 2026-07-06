@@ -21,6 +21,7 @@ import {
   createInitialFormState,
   downloadFormStateExport,
   downloadFormStyleExport,
+  loadStoredFormState,
   parseFormImportFile,
   storeFormState
 } from '../lib/formStorage'
@@ -63,7 +64,6 @@ import {
   setTenantDefaultPreset,
   type TenantPresetEntry
 } from '../lib/cloudTenantPresets'
-import { loadStoredFormState } from '../lib/formStorage'
 import { initializeSocialIconDataUrls } from '../lib/socialIcons'
 import { downloadSignaturePng } from '../lib/signatureImageExport'
 import { stripOutlookStoredAssetPathsFromForm } from '../lib/signatureImageAssets'
