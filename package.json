@@ -1,6 +1,6 @@
 {
   "name": "signitures",
-  "version": "1.0.128",
+  "version": "1.0.129",
   "description": "",
   "scripts": {
     "prepare": "node scripts/install-git-hooks.mjs",
