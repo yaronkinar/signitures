@@ -254,7 +254,15 @@ export default function App() {
   const { uiTheme, setUiTheme } = useUiTheme()
   const uiFont = useUiFont()
   const { setUiLanguage } = useUiLanguage()
-  const { form, updateForm, lang } = app
+  const { form, updateForm, lang,
+    tenantPresetsAvailable,
+    tenantPresets,
+    tenantDefaultPresetId,
+    handleSaveTenantPreset,
+    handleDeleteTenantPreset,
+    handleSetTenantDefaultPreset,
+    applyTenantPreset,
+  } = app
 
   useEffect(() => {
     setUiLanguage(lang)
@@ -270,6 +278,9 @@ export default function App() {
   } = useResizableSidebar(lang === 'he')
   const [aiPresetId, setAiPresetId] = useState('')
   const [brandPresetId, setBrandPresetId] = useState('')
+  const [tenantPresetSaveOpen, setTenantPresetSaveOpen] = useState(false)
+  const [tenantPresetSaveName, setTenantPresetSaveName] = useState('')
+  const [tenantPresetSaving, setTenantPresetSaving] = useState(false)
   const [signatureImageFile, setSignatureImageFile] = useState<File | undefined>()
   const [changelogOpen, setChangelogOpen] = useState(false)
   const [creatorOpen, setCreatorOpen] = useState(false)
@@ -347,6 +358,18 @@ export default function App() {
     const preset = SBA_BRAND_PRESETS.find((item) => item.id === presetId)
     if (preset) updateForm(preset.values, { immediate: true })
     setBrandPresetId('')
+  }
+
+  const submitSaveTenantPreset = async () => {
+    const name = tenantPresetSaveName.trim()
+    if (!name) return
+    setTenantPresetSaving(true)
+    const ok = await handleSaveTenantPreset(name)
+    setTenantPresetSaving(false)
+    if (ok) {
+      setTenantPresetSaveOpen(false)
+      setTenantPresetSaveName('')
+    }
   }
 
   const aiStatusClass =
@@ -977,6 +1000,97 @@ export default function App() {
                 </div>
                 <p className="hint">{t(lang, 'brandPresetHint')}</p>
               </div>
+
+              {tenantPresetsAvailable && (
+                <div className="tenant-preset-row">
+                  <Field label={t(lang, 'tenantPresets')}>
+                    <SelectInput value="" onChange={(e) => {
+                      const entry = tenantPresets.find((p) => p.id === e.target.value)
+                      if (entry) applyTenantPreset(entry)
+                    }}>
+                      <option value="">{t(lang, 'tenantPresetPlaceholder')}</option>
+                      {tenantPresets.map((preset) => (
+                        <option key={preset.id} value={preset.id}>
+                          {preset.name}{preset.id === tenantDefaultPresetId ? ' ★' : ''}
+                        </option>
+                      ))}
+                    </SelectInput>
+                  </Field>
+
+                  {tenantPresets.length > 0 && (
+                    <div className="tenant-preset-actions">
+                      {tenantPresets.map((preset) => (
+                        <div key={preset.id} className="tenant-preset-action-row">
+                          <span className="tenant-preset-action-name">{preset.name}</span>
+                          <button
+                            type="button"
+                            className="tenant-preset-btn"
+                            title={preset.id === tenantDefaultPresetId
+                              ? t(lang, 'tenantPresetClearDefault')
+                              : t(lang, 'tenantPresetSetDefault')}
+                            onClick={() => handleSetTenantDefaultPreset(
+                              preset.id === tenantDefaultPresetId ? null : preset.id
+                            )}
+                          >
+                            {preset.id === tenantDefaultPresetId ? '★' : '☆'}
+                          </button>
+                          <button
+                            type="button"
+                            className="tenant-preset-btn tenant-preset-btn--delete"
+                            title={t(lang, 'tenantPresetDelete')}
+                            onClick={() => handleDeleteTenantPreset(preset.id)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {!tenantPresetSaveOpen && (
+                    <button
+                      type="button"
+                      className="tenant-preset-save-btn"
+                      onClick={() => setTenantPresetSaveOpen(true)}
+                    >
+                      {t(lang, 'tenantPresetSaveButton')}
+                    </button>
+                  )}
+
+                  {tenantPresetSaveOpen && (
+                    <div className="tenant-preset-save-form">
+                      <label className="field-label">{t(lang, 'tenantPresetNameLabel')}</label>
+                      <input
+                        type="text"
+                        className="text-input"
+                        placeholder={t(lang, 'tenantPresetNamePlaceholder')}
+                        value={tenantPresetSaveName}
+                        onChange={(e) => setTenantPresetSaveName(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') submitSaveTenantPreset() }}
+                        autoFocus
+                      />
+                      <div className="tenant-preset-save-btns">
+                        <button
+                          type="button"
+                          className="btn-primary"
+                          disabled={!tenantPresetSaveName.trim() || tenantPresetSaving}
+                          onClick={submitSaveTenantPreset}
+                        >
+                          {t(lang, 'tenantPresetSaveConfirm')}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          onClick={() => { setTenantPresetSaveOpen(false); setTenantPresetSaveName('') }}
+                        >
+                          {t(lang, 'tenantPresetCancel')}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <Field label={t(lang, 'fontFamily')}>
                 <SelectInput
                   value={form.fontFamily}
