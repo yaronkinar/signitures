@@ -737,6 +737,7 @@ export const useSignatureApp = () => {
         return
       }
     } catch {
+      setCloudStorageAvailable(false)
       // fall through
     }
     setSavedSignatures(listSavedSignatures())
