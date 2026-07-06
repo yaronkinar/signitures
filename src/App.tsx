@@ -1028,9 +1028,12 @@ export default function App() {
                             title={preset.id === tenantDefaultPresetId
                               ? t(lang, 'tenantPresetClearDefault')
                               : t(lang, 'tenantPresetSetDefault')}
-                            onClick={() => handleSetTenantDefaultPreset(
+                            aria-label={preset.id === tenantDefaultPresetId
+                              ? t(lang, 'tenantPresetClearDefault')
+                              : t(lang, 'tenantPresetSetDefault')}
+                            onClick={() => { void handleSetTenantDefaultPreset(
                               preset.id === tenantDefaultPresetId ? null : preset.id
-                            )}
+                            ) }}
                           >
                             {preset.id === tenantDefaultPresetId ? '★' : '☆'}
                           </button>
@@ -1038,7 +1041,8 @@ export default function App() {
                             type="button"
                             className="tenant-preset-btn tenant-preset-btn--delete"
                             title={t(lang, 'tenantPresetDelete')}
-                            onClick={() => handleDeleteTenantPreset(preset.id)}
+                            aria-label={t(lang, 'tenantPresetDelete')}
+                            onClick={() => { void handleDeleteTenantPreset(preset.id) }}
                           >
                             ✕
                           </button>
@@ -1059,14 +1063,15 @@ export default function App() {
 
                   {tenantPresetSaveOpen && (
                     <div className="tenant-preset-save-form">
-                      <label className="field-label">{t(lang, 'tenantPresetNameLabel')}</label>
+                      <label htmlFor="tenant-preset-name-input" className="field-label">{t(lang, 'tenantPresetNameLabel')}</label>
                       <input
+                        id="tenant-preset-name-input"
                         type="text"
                         className="text-input"
                         placeholder={t(lang, 'tenantPresetNamePlaceholder')}
                         value={tenantPresetSaveName}
                         onChange={(e) => setTenantPresetSaveName(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') submitSaveTenantPreset() }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') void submitSaveTenantPreset() }}
                         autoFocus
                       />
                       <div className="tenant-preset-save-btns">
