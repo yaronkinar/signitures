@@ -56,6 +56,14 @@ import {
   loadCloudSignatureForm,
   saveCloudSignature
 } from '../lib/cloudSignatures'
+import {
+  deleteTenantPreset,
+  fetchTenantPresets,
+  saveTenantPreset,
+  setTenantDefaultPreset,
+  type TenantPresetEntry
+} from '../lib/cloudTenantPresets'
+import { loadStoredFormState } from '../lib/formStorage'
 import { initializeSocialIconDataUrls } from '../lib/socialIcons'
 import { downloadSignaturePng } from '../lib/signatureImageExport'
 import { stripOutlookStoredAssetPathsFromForm } from '../lib/signatureImageAssets'
@@ -122,6 +130,11 @@ export const useSignatureApp = () => {
   const [activeSavedId, setActiveSavedId] = useState('')
   const [saveAsName, setSaveAsName] = useState('')
   const [cloudStorageAvailable, setCloudStorageAvailable] = useState(false)
+  const [tenantPresetsAvailable, setTenantPresetsAvailable] = useState(false)
+  const [tenantPresets, setTenantPresets] = useState<TenantPresetEntry[]>([])
+  const [tenantDefaultPresetId, setTenantDefaultPresetId] = useState<string | null>(null)
+  const formWasDefaultOnMountRef = useRef(loadStoredFormState() === null)
+  const tenantDefaultAppliedRef = useRef(false)
   const previewCardRef = useRef<HTMLElement>(null)
   const debounceRef = useRef<number | null>(null)
   const saveDebounceRef = useRef<number | null>(null)
@@ -698,28 +711,51 @@ export const useSignatureApp = () => {
     generate(defaults).catch(() => undefined)
   }, [generate, lang, setForm])
 
+  const refreshTenantPresets = useCallback(async () => {
+    const result = await fetchTenantPresets()
+    setTenantPresetsAvailable(result.available)
+    setTenantPresets(result.entries)
+    setTenantDefaultPresetId(result.defaultPresetId)
+    return result
+  }, [])
+
   const refreshSavedSignatures = useCallback(async () => {
     if (!isPro) {
       setCloudStorageAvailable(false)
       setSavedSignatures(listSavedSignatures())
+      setTenantPresetsAvailable(false)
       return
     }
     try {
-      const cloud = await fetchCloudSignatures()
+      const [cloud] = await Promise.all([
+        fetchCloudSignatures(),
+        refreshTenantPresets()
+      ])
       setCloudStorageAvailable(cloud.available)
       if (cloud.available) {
         setSavedSignatures(cloud.entries)
         return
       }
     } catch {
-      setCloudStorageAvailable(false)
+      // fall through
     }
     setSavedSignatures(listSavedSignatures())
-  }, [isPro])
+  }, [isPro, refreshTenantPresets])
 
   useEffect(() => {
     refreshSavedSignatures().catch(() => undefined)
   }, [refreshSavedSignatures])
+
+  useEffect(() => {
+    if (tenantDefaultAppliedRef.current) return
+    if (!tenantPresetsAvailable) return
+    if (!tenantDefaultPresetId) return
+    if (!formWasDefaultOnMountRef.current) return
+    const preset = tenantPresets.find((e) => e.id === tenantDefaultPresetId)
+    if (!preset) return
+    tenantDefaultAppliedRef.current = true
+    updateForm(preset.values, { immediate: true })
+  }, [tenantPresetsAvailable, tenantDefaultPresetId, tenantPresets, updateForm])
 
   const handleSaveAs = useCallback(async () => {
     const name = saveAsName.trim() || defaultSaveAsName(form)
@@ -824,6 +860,68 @@ export const useSignatureApp = () => {
     await refreshSavedSignatures()
     addToast(t(lang, 'savedDeleteSuccess'), 'success')
   }, [activeSavedId, addToast, cloudStorageAvailable, lang, refreshSavedSignatures])
+
+  const handleSaveTenantPreset = useCallback(
+    async (name: string, overwriteId?: string): Promise<boolean> => {
+      const styleFields: Array<keyof SignatureFormState> = [
+        'fontFamily', 'nameFontWeight', 'titleFontWeight', 'bodyFontWeight',
+        'accentColor', 'textColor', 'secondaryTextColor', 'dividerColor', 'linkColor',
+        'backgroundColor', 'nameColor', 'jobTitleColor', 'companyColor',
+        'contactLabelColor', 'phoneColor', 'emailColor', 'websiteColor',
+        'layoutPreset', 'logoSide', 'dividerThickness', 'textColumnWidth',
+        'titleFontSize', 'logoMaxWidth', 'logoOffsetX', 'logoOffsetY', 'verticalAlign',
+        'showContactLabels', 'contactMatchNameTitle', 'socialIconsLtrOrder',
+        'textAlign', 'facebookIconVariant', 'instagramIconVariant',
+        'linkedinIconVariant', 'xIconVariant', 'youtubeIconVariant'
+      ]
+      const values = Object.fromEntries(styleFields.map((k) => [k, form[k]])) as Partial<SignatureFormState>
+      const result = await saveTenantPreset(name, values, overwriteId)
+      if (!result.ok) {
+        const key =
+          result.reason === 'too_many' ? 'tenantPresetSaveTooMany' : 'tenantPresetSaveFailed'
+        addToast(t(lang, key), 'error')
+        return false
+      }
+      await refreshTenantPresets()
+      addToast(t(lang, 'tenantPresetSaveSuccess'), 'success')
+      return true
+    },
+    [addToast, form, lang, refreshTenantPresets]
+  )
+
+  const handleDeleteTenantPreset = useCallback(
+    async (id: string): Promise<void> => {
+      if (!window.confirm(t(lang, 'tenantPresetDeleteConfirm'))) return
+      const ok = await deleteTenantPreset(id)
+      if (!ok) {
+        addToast(t(lang, 'tenantPresetDeleteFailed'), 'error')
+        return
+      }
+      await refreshTenantPresets()
+      addToast(t(lang, 'tenantPresetDeleteSuccess'), 'success')
+    },
+    [addToast, lang, refreshTenantPresets]
+  )
+
+  const handleSetTenantDefaultPreset = useCallback(
+    async (id: string | null): Promise<void> => {
+      const ok = await setTenantDefaultPreset(id)
+      if (!ok) {
+        addToast(t(lang, 'tenantPresetDefaultFailed'), 'error')
+        return
+      }
+      setTenantDefaultPresetId(id)
+      addToast(t(lang, 'tenantPresetDefaultSet'), 'success')
+    },
+    [addToast, lang]
+  )
+
+  const applyTenantPreset = useCallback(
+    (entry: TenantPresetEntry) => {
+      updateForm(entry.values, { immediate: true })
+    },
+    [updateForm]
+  )
 
   const handleExportParams = useCallback(async () => {
     if (!(await ensureExportUnlocked())) return
@@ -965,6 +1063,13 @@ export const useSignatureApp = () => {
     handleSaveAs,
     handleLoadSaved,
     handleDeleteSaved,
+    tenantPresetsAvailable,
+    tenantPresets,
+    tenantDefaultPresetId,
+    handleSaveTenantPreset,
+    handleDeleteTenantPreset,
+    handleSetTenantDefaultPreset,
+    applyTenantPreset,
     handleExportParams,
     handleExportStyle,
     handleImportParams,
