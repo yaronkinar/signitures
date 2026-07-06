@@ -45,7 +45,8 @@ export const readTenantPresets = async (tenantId: string): Promise<TenantPresets
           typeof e.name === 'string' &&
           typeof e.createdAt === 'number' &&
           e.values &&
-          typeof e.values === 'object'
+          typeof e.values === 'object' &&
+          !Array.isArray(e.values)
       )
     }
   } catch {
