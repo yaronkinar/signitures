@@ -74,7 +74,7 @@ export const buildSignatureHtml = (
   const contactAlignAttr =
     contactAlign === 'left' ? 'left' : contactAlign === 'center' ? 'center' : 'right'
   const edgeInset = 8
-  const dividerInset = 12
+  const dividerInset = layout.dividerSpacing
 
   const fullName = sanitizeSignatureInlineHtml(form.fullName.trim())
   const jobTitle = sanitizeSignatureInlineHtml(form.jobTitle.trim())

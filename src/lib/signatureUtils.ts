@@ -312,6 +312,7 @@ export const getLayoutSettings = (form: SignatureFormState): SignatureLayoutSett
   logoOffsetX: parseNumberInput(form.logoOffsetX, 10, -120, 120),
   logoOffsetY: parseNumberInput(form.logoOffsetY, 6, -120, 120),
   dividerThickness: parseNumberInput(form.dividerThickness, 2, 0, 10),
+  dividerSpacing: parseNumberInput(form.dividerSpacing, 12, 0, 40),
   socialIconGap: parseNumberInput(form.socialIconGap, 5, 0, 20),
   accentColor: parseColorInput(form.accentColor, '#88236f'),
   textColor: parseColorInput(form.textColor, '#4c4c4e'),

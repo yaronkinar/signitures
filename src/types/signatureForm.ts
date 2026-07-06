@@ -56,6 +56,7 @@ export type SignatureLayoutSettings = {
   logoOffsetX: number
   logoOffsetY: number
   dividerThickness: number
+  dividerSpacing: number
   socialIconGap: number
   accentColor: string
   textColor: string

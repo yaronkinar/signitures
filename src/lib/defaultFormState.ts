@@ -80,6 +80,7 @@ export const createDefaultFormState = (): SignatureFormState => ({
   logoOffsetX: 10,
   logoOffsetY: 6,
   dividerThickness: 2,
+  dividerSpacing: 12,
   socialIconGap: 5,
   accentColor: DEFAULT_BRAND_PRESET.accentColor,
   textColor: DEFAULT_BRAND_PRESET.textColor,

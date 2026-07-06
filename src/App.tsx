@@ -1161,6 +1161,7 @@ export default function App() {
                   ['textOffsetX', 'textOffsetX'],
                   ['textOffsetY', 'textOffsetY'],
                   ['dividerThickness', 'dividerThickness'],
+                  ['dividerSpacing', 'dividerSpacing'],
                   ['socialIconGap', 'socialIconGap']
                 ] as const
               ).map(([key, labelKey]) => (

@@ -60,6 +60,7 @@ const STYLE_FIELD_KEYS = [
   'logoOffsetX',
   'logoOffsetY',
   'dividerThickness',
+  'dividerSpacing',
   'socialIconGap',
   'accentColor',
   'textColor',
