@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>איך מוסיפים חתימה במייל באאוטלוק — מדריך לדסקטופ, ווב ומובייל</title>
+    <meta name="theme-color" content="#88236f" />
+    <meta name="description" content="מדריך שלב אחר שלב להוספת חתימת HTML לאאוטלוק החדש, לאאוטלוק הקלאסי, לאאוטלוק בדפדפן ולאפליקציות אייפון ואנדרואיד." />
+    <link rel="canonical" href="https://signitures.dev/he/guides/outlook-email-signature" />
+    <link rel="alternate" hreflang="en" href="https://signitures.dev/guides/outlook-email-signature" />
+    <link rel="alternate" hreflang="he" href="https://signitures.dev/he/guides/outlook-email-signature" />
+    <link rel="alternate" hreflang="x-default" href="https://signitures.dev/guides/outlook-email-signature" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://signitures.dev/he/guides/outlook-email-signature" />
+    <meta property="og:title" content="איך מוסיפים חתימה במייל באאוטלוק — מדריך לדסקטופ, ווב ומובייל" />
+    <meta property="og:description" content="מדריך שלב אחר שלב להוספת חתימת HTML לאאוטלוק החדש, לאאוטלוק הקלאסי, לאאוטלוק בדפדפן ולאפליקציות אייפון ואנדרואיד." />
+    <meta property="og:image" content="https://signitures.dev/og-image.png" />
+    <meta property="og:site_name" content="Signitures" />
+    <meta property="og:locale" content="he_IL" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="איך מוסיפים חתימה במייל באאוטלוק — מדריך לדסקטופ, ווב ומובייל" />
+    <meta name="twitter:description" content="מדריך שלב אחר שלב להוספת חתימת HTML לאאוטלוק החדש, לאאוטלוק הקלאסי, לאאוטלוק בדפדפן ולאפליקציות אייפון ואנדרואיד." />
+    <meta name="twitter:image" content="https://signitures.dev/og-image.png" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Rubik:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+  :root { color-scheme: light dark; --brand: #88236f; --ink: #16181d; --muted: #5a6070; --line: #e2e6ee; --bg: #ffffff; --panel: #f7f9fc; }
+  @media (prefers-color-scheme: dark) { :root { --ink: #eef1f6; --muted: #a3abbd; --line: #2b303c; --bg: #14161b; --panel: #1c1f27; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Rubik', 'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; line-height: 1.7; font-size: 17px; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px 80px; }
+  a { color: var(--brand); }
+  header.site { border-bottom: 1px solid var(--line); }
+  header.site .wrap { padding-block: 16px; display: flex; gap: 16px; align-items: center; justify-content: space-between; }
+  .brand { font-weight: 700; text-decoration: none; color: var(--ink); }
+  nav.crumbs { font-size: 14px; color: var(--muted); margin: 24px 0 8px; }
+  nav.crumbs a { color: var(--muted); }
+  h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.2; letter-spacing: -0.02em; margin: 8px 0 16px; }
+  h2 { font-size: clamp(21px, 3vw, 26px); line-height: 1.3; letter-spacing: -0.01em; margin: 44px 0 12px; }
+  h3 { font-size: 18px; margin: 28px 0 8px; }
+  .lede { font-size: 19px; color: var(--muted); }
+  .meta { font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+  ol, ul { padding-inline-start: 22px; }
+  li { margin: 6px 0; }
+  .note { background: var(--panel); border-inline-start: 3px solid var(--brand); padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 16px; }
+  .toc { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin: 28px 0; }
+  .toc p { margin: 0 0 8px; font-weight: 600; font-size: 15px; }
+  .toc ul { margin: 0; }
+  .cta { border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 24px; margin: 48px 0 0; }
+  .cta h2 { margin-top: 0; }
+  .btn { display: inline-block; background: var(--brand); color: #fff; text-decoration: none; font-weight: 600; padding: 12px 22px; border-radius: 8px; margin-top: 8px; }
+  .faq h3 { font-size: 17px; }
+  .cards { list-style: none; padding: 0; display: grid; gap: 12px; }
+  .cards a { font-weight: 600; text-decoration: none; }
+  .cards li { border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin: 0; }
+  .cards p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+  footer.site { border-top: 1px solid var(--line); margin-top: 64px; }
+  footer.site .wrap { padding-block: 24px; font-size: 14px; color: var(--muted); }
+</style>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "איך מוסיפים חתימה במייל באאוטלוק",
+  "description": "מדריך שלב אחר שלב להוספת חתימת HTML לאאוטלוק החדש, לאאוטלוק הקלאסי, לאאוטלוק בדפדפן ולאפליקציות אייפון ואנדרואיד.",
+  "inLanguage": "he",
+  "datePublished": "2026-08-05",
+  "dateModified": "2026-08-05",
+  "mainEntityOfPage": "https://signitures.dev/he/guides/outlook-email-signature",
+  "image": "https://signitures.dev/og-image.png",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Signitures",
+    "url": "https://signitures.dev"
+  }
+}
+    </script>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "he",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "למה התמונה בחתימה לא מופיעה אצל הנמענים?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "כמעט תמיד התמונה מקושרת מהדיסק המקומי במקום להיות מוטמעת או מאוחסנת ברשת. הנמענים לא יכולים לגשת לנתיב במחשב שלכם. צריך להטמיע את התמונה בחתימה או לאחסן אותה בכתובת ציבורית."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "אפשר חתימות שונות להודעות חדשות ולתשובות?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "כן. בכל גרסאות אאוטלוק אפשר להגדיר חתימה אחת להודעות חדשות וחתימה אחרת לתשובות והעברות. מקובל להשתמש בחתימה מלאה בהודעות חדשות ובחתימה מקוצרת בתשובות."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "האם החתימה באאוטלוק מסתנכרנת בין המכשירים?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "רק באאוטלוק החדש ובאאוטלוק בדפדפן, ששומרים את החתימה בתיבת הדואר. אאוטלוק הקלאסי לחלונות ואאוטלוק ל‑Mac שומרים חתימות מקומית, ולכן כל מחשב דורש הגדרה נפרדת."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "איך מתקינים חתימה אוטומטית לכל העובדים בחברה?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "אפשר להפיץ את קובצי החתימה לפרופיל של כל משתמש באמצעות סקריפט או Group Policy, או להחיל את החתימה בצד השרת עם כלל תעבורה של Exchange. ייצוא מרוכז של קובצי חתימה לכל עובד הופך את השיטה הראשונה למעשית."
+      }
+    }
+  ]
+}
+    </script>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "דף הבית",
+      "item": "https://signitures.dev/he"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "מדריכים",
+      "item": "https://signitures.dev/he/guides"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "איך מוסיפים חתימה במייל באאוטלוק",
+      "item": "https://signitures.dev/he/guides/outlook-email-signature"
+    }
+  ]
+}
+    </script>
+  </head>
+  <body>
+    <header class="site">
+      <div class="wrap">
+        <a class="brand" href="/he">Signitures</a>
+        <a href="/he">למחולל החתימות</a>
+      </div>
+    </header>
+    <main class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="/he">דף הבית</a> ›
+        <a href="/he/guides">מדריכים</a>
+      </nav>
+      <h1>איך מוסיפים חתימה במייל באאוטלוק</h1>
+      <p class="meta">עודכן 2026-08-05</p>
+      <p class="lede">אאוטלוק שומר חתימות בדרך שונה בכל גרסה, ולכן חתימה שעובדת במחשב לרוב נעלמת בטלפון. המדריך הזה עובר על ארבעת המקומות שבהם צריך להגדיר אותה, ומה עושים כשהחתימה מאבדת את העיצוב.</p>
+      <nav class="toc" aria-label="בעמוד הזה">
+        <p>בעמוד הזה</p>
+        <ul>
+          <li><a href="#s1">אאוטלוק החדש לחלונות ואאוטלוק בדפדפן</a></li>
+          <li><a href="#s2">אאוטלוק הקלאסי לחלונות</a></li>
+          <li><a href="#s3">אאוטלוק ל‑Mac</a></li>
+          <li><a href="#s4">אאוטלוק לאייפון ולאנדרואיד</a></li>
+          <li><a href="#s5">כשהחתימה מאבדת את העיצוב</a></li>
+        </ul>
+      </nav>
+      <h2 id="s1">אאוטלוק החדש לחלונות ואאוטלוק בדפדפן</h2>
+      <p>אאוטלוק החדש ואאוטלוק בדפדפן חולקים את אותו מאגר חתימות, ולכן הגדרה במקום אחד חלה אוטומטית גם על השני. החתימה נשמרת בתיבת הדואר ב‑Microsoft 365 ולא במחשב עצמו.</p>
+      <ol>
+        <li>פותחים הגדרות דרך סמל גלגל השיניים בפינה העליונה.</li>
+        <li>נכנסים ל‑Mail ואז ל‑Compose and reply.</li>
+        <li>תחת Email signature נותנים שם לחתימה.</li>
+        <li>מדביקים את החתימה בעורך. מעתיקים מהתצוגה המעוצבת ולא מקוד ה‑HTML, כדי שהעיצוב יישמר.</li>
+        <li>בוחרים אם להחיל על הודעות חדשות, על תשובות והעברות, או על שניהם.</li>
+        <li>לוחצים על שמירה.</li>
+      </ol>
+      <p class="note">עורך הווב מוחק חלק מהגדרות ה‑CSS. אם המבנה מתפרק, סביר שהחתימה מסתמכת על CSS שאאוטלוק מסיר — ראו את המדריך על כתיבת HTML לחתימות.</p>
+      <h2 id="s2">אאוטלוק הקלאסי לחלונות</h2>
+      <p>אאוטלוק הקלאסי שומר חתימות כקבצים בדיסק, בשלושה חלקים: קובץ ‎.htm‎, גיבוי טקסט ‎.txt‎, ותיקייה עם התמונות. מכיוון שהתמונות מקושרות מהתיקייה הזו, העתקה של קובץ ה‑htm בלבד למחשב אחר תיצור חתימה עם ריבועים שבורים במקום תמונות.</p>
+      <ol>
+        <li>נכנסים ל‑File, ואז Options, ואז Mail, ואז Signatures.</li>
+        <li>לוחצים על New ונותנים שם לחתימה.</li>
+        <li>מדביקים את החתימה המעוצבת בתיבת העריכה.</li>
+        <li>מגדירים חתימת ברירת מחדל להודעות חדשות ולתשובות והעברות.</li>
+        <li>לוחצים על OK.</li>
+      </ol>
+      <p class="note">קובצי החתימה נמצאים בנתיב ‎%APPDATA%\Microsoft\Signatures‎. הנחת קובץ htm מוכן יחד עם תיקיית התמונות התואמת מתקינה חתימה בלי הדבקה ידנית — וכך בדיוק עובדת הפצה המונית.</p>
+      <h2 id="s3">אאוטלוק ל‑Mac</h2>
+      <p>אאוטלוק ל‑Mac שומר חתימות מקומית בפרופיל האפליקציה. החתימות לא מסתנכרנות מגרסת חלונות, ולכן צריך להגדיר אותן בכל מחשב בנפרד.</p>
+      <ol>
+        <li>פותחים את אאוטלוק, ואז Settings, ואז Signatures.</li>
+        <li>לוחצים על כפתור הפלוס להוספת חתימה.</li>
+        <li>מדביקים את החתימה המעוצבת ונותנים לה שם.</li>
+        <li>מגדירים אותה כברירת מחדל לחשבון תחת Choose default signature.</li>
+      </ol>
+      <h2 id="s4">אאוטלוק לאייפון ולאנדרואיד</h2>
+      <p>אפליקציות המובייל תומכות רק בחתימת טקסט פשוט. אי אפשר להגדיר בהן חתימת HTML עם לוגו. תשובות שנכתבות מהנייד ישתמשו בגרסת הטקסט הזו, ולכן כדאי לשמור אותה קצרה — בדרך כלל שם, תפקיד וטלפון.</p>
+      <p>אם הארגון צריך חתימת HTML אחידה גם במובייל, יש להחיל אותה בצד השרת באמצעות כלל תעבורה של Exchange, שמוסיף אותה להודעות ביציאה מהשרת.</p>
+      <ol>
+        <li>פותחים את האפליקציה ומקישים על סמל הפרופיל.</li>
+        <li>מקישים על גלגל השיניים כדי לפתוח הגדרות.</li>
+        <li>מקישים על Signature.</li>
+        <li>מחליפים את טקסט ברירת המחדל ומאשרים.</li>
+      </ol>
+      <h2 id="s5">כשהחתימה מאבדת את העיצוב</h2>
+      <p>כמעט כל מקרה של חתימה שבורה נובע משלוש סיבות. הראשונה, ההודעה נכתבת בטקסט רגיל ולא ב‑HTML — כדאי לבדוק בלשונית Format Text. השנייה, החתימה הועתקה מקוד המקור במקום מתצוגה מעוצבת, ולכן אאוטלוק מדביק את הקוד כטקסט גלוי. השלישית, העיצוב משתמש ב‑CSS מודרני כמו flexbox או grid, שמנוע הרינדור של Word שמאחורי אאוטלוק לחלונות לא תומך בו.</p>
+      <p>המחולל מייצר קוד מבוסס טבלאות עם עיצוב inline בדיוק כדי למנוע את המקרה השלישי.</p>
+      <section class="faq">
+        <h2>שאלות נפוצות</h2>
+        <h3>למה התמונה בחתימה לא מופיעה אצל הנמענים?</h3>
+        <p>כמעט תמיד התמונה מקושרת מהדיסק המקומי במקום להיות מוטמעת או מאוחסנת ברשת. הנמענים לא יכולים לגשת לנתיב במחשב שלכם. צריך להטמיע את התמונה בחתימה או לאחסן אותה בכתובת ציבורית.</p>
+        <h3>אפשר חתימות שונות להודעות חדשות ולתשובות?</h3>
+        <p>כן. בכל גרסאות אאוטלוק אפשר להגדיר חתימה אחת להודעות חדשות וחתימה אחרת לתשובות והעברות. מקובל להשתמש בחתימה מלאה בהודעות חדשות ובחתימה מקוצרת בתשובות.</p>
+        <h3>האם החתימה באאוטלוק מסתנכרנת בין המכשירים?</h3>
+        <p>רק באאוטלוק החדש ובאאוטלוק בדפדפן, ששומרים את החתימה בתיבת הדואר. אאוטלוק הקלאסי לחלונות ואאוטלוק ל‑Mac שומרים חתימות מקומית, ולכן כל מחשב דורש הגדרה נפרדת.</p>
+        <h3>איך מתקינים חתימה אוטומטית לכל העובדים בחברה?</h3>
+        <p>אפשר להפיץ את קובצי החתימה לפרופיל של כל משתמש באמצעות סקריפט או Group Policy, או להחיל את החתימה בצד השרת עם כלל תעבורה של Exchange. ייצוא מרוכז של קובצי חתימה לכל עובד הופך את השיטה הראשונה למעשית.</p>
+      </section>
+      <section>
+        <h2>מדריכים נוספים</h2>
+        <ul class="cards">
+          <li><a href="/he/guides/bulk-email-signatures-excel">יצירת חתימות מייל לכל הארגון מקובץ אקסל</a><p>איך מייצרים חתימות אאוטלוק אחידות לכל עובד בצורה מרוכזת מתוך גיליון עם שמות, תפקידים וטלפונים — ואיך מפיצים אותן בארגון.</p></li>
+          <li><a href="/he/guides/html-email-signature-best-practices">כללי כתיבת HTML לחתימות מייל</a><p>למה חתימות מייל נשברות באאוטלוק ואילו כללי קוד שומרים עליהן: טבלאות במקום flexbox, עיצוב inline, תמונות מאוחסנות וחלופות נגישות.</p></li>
+        </ul>
+      </section>
+      <section class="cta">
+        <h2>בנו את החתימה שלכם עכשיו</h2>
+        <p>ממלאים פרטים, בוחרים עיצוב, ומורידים חתימה מוכנה להדבקה באאוטלוק. השימוש חינם.</p>
+        <a class="btn" href="/he">פתחו את המחולל</a>
+      </section>
+    </main>
+    <footer class="site">
+      <div class="wrap">
+        <a href="/he">Signitures</a> ·
+        <a href="/he/guides">מדריכים</a>
+      </div>
+    </footer>
+  </body>
+</html>

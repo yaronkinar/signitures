@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How to Add an Email Signature in Outlook (Desktop, Web &amp; Mobile)</title>
+    <meta name="theme-color" content="#88236f" />
+    <meta name="description" content="Step-by-step instructions for adding an HTML email signature to new Outlook, classic Outlook, Outlook on the web, and the iOS and Android apps." />
+    <link rel="canonical" href="https://signitures.dev/guides/outlook-email-signature" />
+    <link rel="alternate" hreflang="en" href="https://signitures.dev/guides/outlook-email-signature" />
+    <link rel="alternate" hreflang="he" href="https://signitures.dev/he/guides/outlook-email-signature" />
+    <link rel="alternate" hreflang="x-default" href="https://signitures.dev/guides/outlook-email-signature" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://signitures.dev/guides/outlook-email-signature" />
+    <meta property="og:title" content="How to Add an Email Signature in Outlook (Desktop, Web &amp; Mobile)" />
+    <meta property="og:description" content="Step-by-step instructions for adding an HTML email signature to new Outlook, classic Outlook, Outlook on the web, and the iOS and Android apps." />
+    <meta property="og:image" content="https://signitures.dev/og-image.png" />
+    <meta property="og:site_name" content="Signitures" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="he_IL" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="How to Add an Email Signature in Outlook (Desktop, Web &amp; Mobile)" />
+    <meta name="twitter:description" content="Step-by-step instructions for adding an HTML email signature to new Outlook, classic Outlook, Outlook on the web, and the iOS and Android apps." />
+    <meta name="twitter:image" content="https://signitures.dev/og-image.png" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Rubik:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+  :root { color-scheme: light dark; --brand: #88236f; --ink: #16181d; --muted: #5a6070; --line: #e2e6ee; --bg: #ffffff; --panel: #f7f9fc; }
+  @media (prefers-color-scheme: dark) { :root { --ink: #eef1f6; --muted: #a3abbd; --line: #2b303c; --bg: #14161b; --panel: #1c1f27; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Rubik', 'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; line-height: 1.7; font-size: 17px; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px 80px; }
+  a { color: var(--brand); }
+  header.site { border-bottom: 1px solid var(--line); }
+  header.site .wrap { padding-block: 16px; display: flex; gap: 16px; align-items: center; justify-content: space-between; }
+  .brand { font-weight: 700; text-decoration: none; color: var(--ink); }
+  nav.crumbs { font-size: 14px; color: var(--muted); margin: 24px 0 8px; }
+  nav.crumbs a { color: var(--muted); }
+  h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.2; letter-spacing: -0.02em; margin: 8px 0 16px; }
+  h2 { font-size: clamp(21px, 3vw, 26px); line-height: 1.3; letter-spacing: -0.01em; margin: 44px 0 12px; }
+  h3 { font-size: 18px; margin: 28px 0 8px; }
+  .lede { font-size: 19px; color: var(--muted); }
+  .meta { font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+  ol, ul { padding-inline-start: 22px; }
+  li { margin: 6px 0; }
+  .note { background: var(--panel); border-inline-start: 3px solid var(--brand); padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 16px; }
+  .toc { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin: 28px 0; }
+  .toc p { margin: 0 0 8px; font-weight: 600; font-size: 15px; }
+  .toc ul { margin: 0; }
+  .cta { border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 24px; margin: 48px 0 0; }
+  .cta h2 { margin-top: 0; }
+  .btn { display: inline-block; background: var(--brand); color: #fff; text-decoration: none; font-weight: 600; padding: 12px 22px; border-radius: 8px; margin-top: 8px; }
+  .faq h3 { font-size: 17px; }
+  .cards { list-style: none; padding: 0; display: grid; gap: 12px; }
+  .cards a { font-weight: 600; text-decoration: none; }
+  .cards li { border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin: 0; }
+  .cards p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+  footer.site { border-top: 1px solid var(--line); margin-top: 64px; }
+  footer.site .wrap { padding-block: 24px; font-size: 14px; color: var(--muted); }
+</style>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "How to add an email signature in Outlook",
+  "description": "Step-by-step instructions for adding an HTML email signature to new Outlook, classic Outlook, Outlook on the web, and the iOS and Android apps.",
+  "inLanguage": "en",
+  "datePublished": "2026-08-05",
+  "dateModified": "2026-08-05",
+  "mainEntityOfPage": "https://signitures.dev/guides/outlook-email-signature",
+  "image": "https://signitures.dev/og-image.png",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Signitures",
+    "url": "https://signitures.dev"
+  }
+}
+    </script>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Why does my Outlook signature image not show up for recipients?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The image is almost certainly linked from your local disk rather than embedded or hosted. Recipients cannot reach a path on your machine. Either embed the image in the signature or host it at a public URL."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I have different signatures for new emails and replies?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Every Outlook version lets you assign one signature for new messages and a different one for replies and forwards. A common setup is a full signature on new mail and a short one on replies."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does an Outlook signature sync across my devices?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Only in new Outlook and Outlook on the web, which store the signature on the mailbox. Classic Outlook for Windows and Outlook for Mac store signatures locally, so each machine has to be set up separately."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I add my signature to Outlook automatically for everyone in the company?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Either deploy the signature files to each user profile with a script or group policy, or apply the signature server-side using an Exchange transport rule. Exporting a bulk set of per-employee signature files makes the first approach practical."
+      }
+    }
+  ]
+}
+    </script>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://signitures.dev/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Guides",
+      "item": "https://signitures.dev/guides"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "How to add an email signature in Outlook",
+      "item": "https://signitures.dev/guides/outlook-email-signature"
+    }
+  ]
+}
+    </script>
+  </head>
+  <body>
+    <header class="site">
+      <div class="wrap">
+        <a class="brand" href="/">Signitures</a>
+        <a href="/">Open the signature generator</a>
+      </div>
+    </header>
+    <main class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a> ›
+        <a href="/guides">Guides</a>
+      </nav>
+      <h1>How to add an email signature in Outlook</h1>
+      <p class="meta">Updated 2026-08-05</p>
+      <p class="lede">Outlook stores signatures differently depending on which version you use, which is why a signature that works on your desktop often disappears on your phone. This guide covers all four places you need to set it, and what to do when the signature loses its formatting.</p>
+      <nav class="toc" aria-label="On this page">
+        <p>On this page</p>
+        <ul>
+          <li><a href="#s1">New Outlook for Windows and Outlook on the web</a></li>
+          <li><a href="#s2">Classic Outlook for Windows</a></li>
+          <li><a href="#s3">Outlook for Mac</a></li>
+          <li><a href="#s4">Outlook for iOS and Android</a></li>
+          <li><a href="#s5">When the signature loses its formatting</a></li>
+        </ul>
+      </nav>
+      <h2 id="s1">New Outlook for Windows and Outlook on the web</h2>
+      <p>New Outlook and Outlook on the web share the same signature store, so setting it in one place applies it to the other automatically. The signature lives on your Microsoft 365 mailbox rather than on the machine.</p>
+      <ol>
+        <li>Open Settings from the gear icon in the top-right corner.</li>
+        <li>Go to Mail, then Compose and reply.</li>
+        <li>Under Email signature, give the signature a name.</li>
+        <li>Paste your signature into the editor. Copy it from the rendered preview, not from the HTML source, so the formatting carries over.</li>
+        <li>Choose whether to apply it to new messages, replies and forwards, or both.</li>
+        <li>Select Save.</li>
+      </ol>
+      <p class="note">The web editor strips some CSS. If your layout collapses, the signature is likely relying on CSS that Outlook removes — see the HTML best practices guide below.</p>
+      <h2 id="s2">Classic Outlook for Windows</h2>
+      <p>Classic Outlook keeps signatures as files on disk, in three parts: an .htm file, a .txt fallback, and a folder holding the images. Because the images are referenced from that folder, copying only the .htm file to another machine produces a signature with broken image placeholders.</p>
+      <ol>
+        <li>Go to File, then Options, then Mail, then Signatures.</li>
+        <li>Select New and name the signature.</li>
+        <li>Paste the rendered signature into the edit box.</li>
+        <li>Set the default signature for new messages and for replies and forwards.</li>
+        <li>Select OK.</li>
+      </ol>
+      <p class="note">The signature files live in %APPDATA%\Microsoft\Signatures. Dropping a prepared .htm file plus its matching image folder there installs a signature without any manual pasting — which is how bulk deployment works.</p>
+      <h2 id="s3">Outlook for Mac</h2>
+      <p>Outlook for Mac stores signatures locally in the app profile. Signatures do not sync from the Windows client, so they must be set once per machine.</p>
+      <ol>
+        <li>Open Outlook, then Settings, then Signatures.</li>
+        <li>Select the plus button to add a signature.</li>
+        <li>Paste the rendered signature and name it.</li>
+        <li>Assign it as the default for your account under Choose default signature.</li>
+      </ol>
+      <h2 id="s4">Outlook for iOS and Android</h2>
+      <p>The mobile apps only support plain text signatures. There is no way to set an HTML signature with a logo directly in the app. Replies composed on mobile will use this plain text version, so keep it short — usually a name, title, and phone number.</p>
+      <p>If your organisation needs a consistent HTML signature on mobile too, it has to be applied server-side with an Exchange transport rule, which appends it to messages as they leave the server.</p>
+      <ol>
+        <li>Open the app and tap your profile icon.</li>
+        <li>Tap the gear icon to open Settings.</li>
+        <li>Tap Signature.</li>
+        <li>Replace the default text and confirm.</li>
+      </ol>
+      <h2 id="s5">When the signature loses its formatting</h2>
+      <p>Three causes account for almost every broken signature. First, the message is being composed in plain text rather than HTML — check the Format Text tab. Second, the signature was copied from HTML source instead of from a rendered page, so Outlook pastes the markup as visible text. Third, the layout uses modern CSS such as flexbox or grid, which the Word rendering engine behind Outlook for Windows does not support.</p>
+      <p>The generator produces table-based, inline-styled markup specifically to avoid the third case.</p>
+      <section class="faq">
+        <h2>Frequently asked questions</h2>
+        <h3>Why does my Outlook signature image not show up for recipients?</h3>
+        <p>The image is almost certainly linked from your local disk rather than embedded or hosted. Recipients cannot reach a path on your machine. Either embed the image in the signature or host it at a public URL.</p>
+        <h3>Can I have different signatures for new emails and replies?</h3>
+        <p>Yes. Every Outlook version lets you assign one signature for new messages and a different one for replies and forwards. A common setup is a full signature on new mail and a short one on replies.</p>
+        <h3>Does an Outlook signature sync across my devices?</h3>
+        <p>Only in new Outlook and Outlook on the web, which store the signature on the mailbox. Classic Outlook for Windows and Outlook for Mac store signatures locally, so each machine has to be set up separately.</p>
+        <h3>How do I add my signature to Outlook automatically for everyone in the company?</h3>
+        <p>Either deploy the signature files to each user profile with a script or group policy, or apply the signature server-side using an Exchange transport rule. Exporting a bulk set of per-employee signature files makes the first approach practical.</p>
+      </section>
+      <section>
+        <h2>Related guides</h2>
+        <ul class="cards">
+          <li><a href="/guides/bulk-email-signatures-excel">Create email signatures for a whole team from Excel</a><p>How to generate consistent, per-employee Outlook signatures in bulk from a spreadsheet of names, titles, and phone numbers — and deploy them across the company.</p></li>
+          <li><a href="/guides/html-email-signature-best-practices">HTML email signature best practices</a><p>Why email signatures break in Outlook and the markup rules that keep them intact: tables over flexbox, inline styles, hosted images, and accessible fallbacks.</p></li>
+        </ul>
+      </section>
+      <section class="cta">
+        <h2>Build your signature now</h2>
+        <p>Fill in your details, pick a layout, and download a signature ready to drop into Outlook. Free to use.</p>
+        <a class="btn" href="/">Open the generator</a>
+      </section>
+    </main>
+    <footer class="site">
+      <div class="wrap">
+        <a href="/">Signitures</a> ·
+        <a href="/guides">Guides</a>
+      </div>
+    </footer>
+  </body>
+</html>

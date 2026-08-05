@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>כללי כתיבת HTML לחתימות מייל שעובדות באאוטלוק</title>
+    <meta name="theme-color" content="#88236f" />
+    <meta name="description" content="למה חתימות מייל נשברות באאוטלוק ואילו כללי קוד שומרים עליהן: טבלאות במקום flexbox, עיצוב inline, תמונות מאוחסנות וחלופות נגישות." />
+    <link rel="canonical" href="https://signitures.dev/he/guides/html-email-signature-best-practices" />
+    <link rel="alternate" hreflang="en" href="https://signitures.dev/guides/html-email-signature-best-practices" />
+    <link rel="alternate" hreflang="he" href="https://signitures.dev/he/guides/html-email-signature-best-practices" />
+    <link rel="alternate" hreflang="x-default" href="https://signitures.dev/guides/html-email-signature-best-practices" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://signitures.dev/he/guides/html-email-signature-best-practices" />
+    <meta property="og:title" content="כללי כתיבת HTML לחתימות מייל שעובדות באאוטלוק" />
+    <meta property="og:description" content="למה חתימות מייל נשברות באאוטלוק ואילו כללי קוד שומרים עליהן: טבלאות במקום flexbox, עיצוב inline, תמונות מאוחסנות וחלופות נגישות." />
+    <meta property="og:image" content="https://signitures.dev/og-image.png" />
+    <meta property="og:site_name" content="Signitures" />
+    <meta property="og:locale" content="he_IL" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="כללי כתיבת HTML לחתימות מייל שעובדות באאוטלוק" />
+    <meta name="twitter:description" content="למה חתימות מייל נשברות באאוטלוק ואילו כללי קוד שומרים עליהן: טבלאות במקום flexbox, עיצוב inline, תמונות מאוחסנות וחלופות נגישות." />
+    <meta name="twitter:image" content="https://signitures.dev/og-image.png" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Rubik:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+  :root { color-scheme: light dark; --brand: #88236f; --ink: #16181d; --muted: #5a6070; --line: #e2e6ee; --bg: #ffffff; --panel: #f7f9fc; }
+  @media (prefers-color-scheme: dark) { :root { --ink: #eef1f6; --muted: #a3abbd; --line: #2b303c; --bg: #14161b; --panel: #1c1f27; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Rubik', 'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; line-height: 1.7; font-size: 17px; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px 80px; }
+  a { color: var(--brand); }
+  header.site { border-bottom: 1px solid var(--line); }
+  header.site .wrap { padding-block: 16px; display: flex; gap: 16px; align-items: center; justify-content: space-between; }
+  .brand { font-weight: 700; text-decoration: none; color: var(--ink); }
+  nav.crumbs { font-size: 14px; color: var(--muted); margin: 24px 0 8px; }
+  nav.crumbs a { color: var(--muted); }
+  h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.2; letter-spacing: -0.02em; margin: 8px 0 16px; }
+  h2 { font-size: clamp(21px, 3vw, 26px); line-height: 1.3; letter-spacing: -0.01em; margin: 44px 0 12px; }
+  h3 { font-size: 18px; margin: 28px 0 8px; }
+  .lede { font-size: 19px; color: var(--muted); }
+  .meta { font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+  ol, ul { padding-inline-start: 22px; }
+  li { margin: 6px 0; }
+  .note { background: var(--panel); border-inline-start: 3px solid var(--brand); padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 16px; }
+  .toc { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin: 28px 0; }
+  .toc p { margin: 0 0 8px; font-weight: 600; font-size: 15px; }
+  .toc ul { margin: 0; }
+  .cta { border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 24px; margin: 48px 0 0; }
+  .cta h2 { margin-top: 0; }
+  .btn { display: inline-block; background: var(--brand); color: #fff; text-decoration: none; font-weight: 600; padding: 12px 22px; border-radius: 8px; margin-top: 8px; }
+  .faq h3 { font-size: 17px; }
+  .cards { list-style: none; padding: 0; display: grid; gap: 12px; }
+  .cards a { font-weight: 600; text-decoration: none; }
+  .cards li { border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin: 0; }
+  .cards p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+  footer.site { border-top: 1px solid var(--line); margin-top: 64px; }
+  footer.site .wrap { padding-block: 24px; font-size: 14px; color: var(--muted); }
+</style>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "כללי כתיבת HTML לחתימות מייל",
+  "description": "למה חתימות מייל נשברות באאוטלוק ואילו כללי קוד שומרים עליהן: טבלאות במקום flexbox, עיצוב inline, תמונות מאוחסנות וחלופות נגישות.",
+  "inLanguage": "he",
+  "datePublished": "2026-08-05",
+  "dateModified": "2026-08-05",
+  "mainEntityOfPage": "https://signitures.dev/he/guides/html-email-signature-best-practices",
+  "image": "https://signitures.dev/og-image.png",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Signitures",
+    "url": "https://signitures.dev"
+  }
+}
+    </script>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "he",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "למה החתימה נראית תקין בג׳ימייל ושבורה באאוטלוק?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "אאוטלוק לחלונות מרנדר HTML במנוע של Word, שמתעלם מ‑flexbox, מ‑grid ומרוב הגדרות המיקום. ג׳ימייל משתמש במנוע דפדפן וסלחני הרבה יותר. בנייה מחדש של המבנה עם טבלאות מקוננות ועיצוב inline פותרת את זה."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "להטמיע תמונות או לקשר אליהן?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "מקשרים לתמונות בכתובת HTTPS ציבורית עבור הווב ואאוטלוק החדש. אאוטלוק הקלאסי לחלונות משתמש בתיקיית תמונות מקומית לצד קובץ ה‑htm, ולכן הייצוא כולל את שניהם."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "מה הגודל האידיאלי לחתימת מייל?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "עד 600 פיקסלים רוחב ועד כ‑100KB בסך הכול. חתימות גדולות יותר עלולות לגרום לג׳ימייל לקטוע את ההודעה ולהיטען לאט בחיבור סלולרי."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "צריך גם גרסת טקסט פשוט לחתימה?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "כן. אאוטלוק מצמיד לכל חתימת HTML קובץ ‎.txt‎ חלופי שמשמש כשההודעה נכתבת בטקסט רגיל. בלעדיו, הודעות טקסט פשוט לא יקבלו חתימה כלל."
+      }
+    }
+  ]
+}
+    </script>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "דף הבית",
+      "item": "https://signitures.dev/he"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "מדריכים",
+      "item": "https://signitures.dev/he/guides"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "כללי כתיבת HTML לחתימות מייל",
+      "item": "https://signitures.dev/he/guides/html-email-signature-best-practices"
+    }
+  ]
+}
+    </script>
+  </head>
+  <body>
+    <header class="site">
+      <div class="wrap">
+        <a class="brand" href="/he">Signitures</a>
+        <a href="/he">למחולל החתימות</a>
+      </div>
+    </header>
+    <main class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="/he">דף הבית</a> ›
+        <a href="/he/guides">מדריכים</a>
+      </nav>
+      <h1>כללי כתיבת HTML לחתימות מייל</h1>
+      <p class="meta">עודכן 2026-08-05</p>
+      <p class="lede">תוכנות דואר מפגרות אחרי הדפדפנים בערך בחמש־עשרה שנה, ואאוטלוק לחלונות מפגר מכולן כי הוא מרנדר HTML באמצעות Word ולא במנוע דפדפן. חתימה שנראית מושלמת בתצוגה בדפדפן עלולה להתפרק לגמרי בדיוק במקום שבו זה חשוב. אלה הכללים שמחזיקים.</p>
+      <nav class="toc" aria-label="בעמוד הזה">
+        <p>בעמוד הזה</p>
+        <ul>
+          <li><a href="#s1">בונים מבנה עם טבלאות, לא עם flexbox או grid</a></li>
+          <li><a href="#s2">כל העיצוב בתוך התגית</a></li>
+          <li><a href="#s3">תמונות מאוחסנות, עם מידות, ולא הכרחיות</a></li>
+          <li><a href="#s4">מגבילים את הרוחב ובודקים במובייל</a></li>
+          <li><a href="#s5">מרסנים את התוכן</a></li>
+        </ul>
+      </nav>
+      <h2 id="s1">בונים מבנה עם טבלאות, לא עם flexbox או grid</h2>
+      <p>מנוע הרינדור של Word לא תומך ב‑flexbox, ב‑grid, ב‑float בצורה אמינה כלשהי, או ב‑position. טבלאות מקוננות עם רוחב קבוע בפיקסלים הן אמצעי הפריסה היחיד שמרונדר באופן עקבי באאוטלוק, בג׳ימייל, ב‑Apple Mail ובלקוחות המובייל.</p>
+      <p>זה נשמע ארכאי וזה באמת כך, אבל זה ההבדל בין חתימה ששומרת על הצורה שלה לבין ערימה אנכית של טקסט לא מיושר.</p>
+      <h2 id="s2">כל העיצוב בתוך התגית</h2>
+      <p>ג׳ימייל מוחק בלוקים של ‎&lt;style&gt;‎ לחלוטין. אאוטלוק בדפדפן משכתב שמות מחלקות. כל עיצוב שיושב בגיליון סגנונות או באלמנט ‎&lt;style&gt;‎ יימחק באיזשהו שלב בשרשרת, ולכן כל כלל חייב לשבת במאפיין style על האלמנט שהוא חל עליו.</p>
+      <p>כדאי להגדיר font-family על כל אלמנט טקסט ולא להסתמך על הורשה, כי חלק מהלקוחות מאפסים גופנים בגבול המכולה.</p>
+      <h2 id="s3">תמונות מאוחסנות, עם מידות, ולא הכרחיות</h2>
+      <p>מקשרים לתמונות בכתובת ציבורית מלאה, לעולם לא בנתיב מקומי — נתיב בדיסק שלכם לא נגיש לאף אחד אחר ומייצר את ריבוע התמונה השבורה המוכר. מגדירים מאפייני width ו‑height מפורשים כדי שהמבנה לא יזוז בזמן טעינת התמונות, וכדי שתמונות חסומות עדיין יתפסו את המקום הנכון.</p>
+      <p>צריך להניח שתמונות ייחסמו כברירת מחדל, כי בהרבה לקוחות ארגוניים זה המצב. כותבים טקסט חלופי משמעותי, ולעולם לא שמים מידע חיוני כמו מספר טלפון בתוך תמונה, שם הוא בלתי נראה למשתמשים עם תמונות חסומות, לקוראי מסך ולחיפוש טקסט.</p>
+      <h2 id="s4">מגבילים את הרוחב ובודקים במובייל</h2>
+      <p>שומרים על רוחב כולל של עד 600 פיקסלים. חתימות רחבות יותר גורמות לגלילה אופקית בטלפון, שם נקראים היום יותר מחצי מהמיילים. שאילתות מדיה לא אמינות בהקשר הזה, ולכן עדיף לעצב משהו שעובד ברוחב צר קבוע מאשר משהו רספונסיבי.</p>
+      <h2 id="s5">מרסנים את התוכן</h2>
+      <p>חתימה נושאת שם, תפקיד, חברה, אמצעי קשר אחד או שניים, ואופציונלית לוגו וכמה אייקונים של רשתות חברתיות. כל שורה נוספת מקטינה את הסיכוי שמשהו מזה ייקרא, והבהרות משפטיות ארוכות דוחפות את התוכן האמיתי אל מחוץ לחלון התצוגה המקדימה.</p>
+      <p>משתמשים בטקסט אמיתי לפרטי קשר ולא בתמונות. טקסט ניתן לסימון, לחיפוש, נגיש לקוראי מסך, ושורד חסימת תמונות.</p>
+      <section class="faq">
+        <h2>שאלות נפוצות</h2>
+        <h3>למה החתימה נראית תקין בג׳ימייל ושבורה באאוטלוק?</h3>
+        <p>אאוטלוק לחלונות מרנדר HTML במנוע של Word, שמתעלם מ‑flexbox, מ‑grid ומרוב הגדרות המיקום. ג׳ימייל משתמש במנוע דפדפן וסלחני הרבה יותר. בנייה מחדש של המבנה עם טבלאות מקוננות ועיצוב inline פותרת את זה.</p>
+        <h3>להטמיע תמונות או לקשר אליהן?</h3>
+        <p>מקשרים לתמונות בכתובת HTTPS ציבורית עבור הווב ואאוטלוק החדש. אאוטלוק הקלאסי לחלונות משתמש בתיקיית תמונות מקומית לצד קובץ ה‑htm, ולכן הייצוא כולל את שניהם.</p>
+        <h3>מה הגודל האידיאלי לחתימת מייל?</h3>
+        <p>עד 600 פיקסלים רוחב ועד כ‑100KB בסך הכול. חתימות גדולות יותר עלולות לגרום לג׳ימייל לקטוע את ההודעה ולהיטען לאט בחיבור סלולרי.</p>
+        <h3>צריך גם גרסת טקסט פשוט לחתימה?</h3>
+        <p>כן. אאוטלוק מצמיד לכל חתימת HTML קובץ ‎.txt‎ חלופי שמשמש כשההודעה נכתבת בטקסט רגיל. בלעדיו, הודעות טקסט פשוט לא יקבלו חתימה כלל.</p>
+      </section>
+      <section>
+        <h2>מדריכים נוספים</h2>
+        <ul class="cards">
+          <li><a href="/he/guides/outlook-email-signature">איך מוסיפים חתימה במייל באאוטלוק</a><p>מדריך שלב אחר שלב להוספת חתימת HTML לאאוטלוק החדש, לאאוטלוק הקלאסי, לאאוטלוק בדפדפן ולאפליקציות אייפון ואנדרואיד.</p></li>
+          <li><a href="/he/guides/bulk-email-signatures-excel">יצירת חתימות מייל לכל הארגון מקובץ אקסל</a><p>איך מייצרים חתימות אאוטלוק אחידות לכל עובד בצורה מרוכזת מתוך גיליון עם שמות, תפקידים וטלפונים — ואיך מפיצים אותן בארגון.</p></li>
+        </ul>
+      </section>
+      <section class="cta">
+        <h2>בנו את החתימה שלכם עכשיו</h2>
+        <p>ממלאים פרטים, בוחרים עיצוב, ומורידים חתימה מוכנה להדבקה באאוטלוק. השימוש חינם.</p>
+        <a class="btn" href="/he">פתחו את המחולל</a>
+      </section>
+    </main>
+    <footer class="site">
+      <div class="wrap">
+        <a href="/he">Signitures</a> ·
+        <a href="/he/guides">מדריכים</a>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://signitures.dev/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://signitures.dev/" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://signitures.dev/he" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://signitures.dev/" />
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://signitures.dev/guides</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://signitures.dev/guides" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://signitures.dev/he/guides" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://signitures.dev/guides" />
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://signitures.dev/guides/outlook-email-signature</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://signitures.dev/guides/outlook-email-signature" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://signitures.dev/he/guides/outlook-email-signature" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://signitures.dev/guides/outlook-email-signature" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://signitures.dev/guides/bulk-email-signatures-excel</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://signitures.dev/guides/bulk-email-signatures-excel" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://signitures.dev/he/guides/bulk-email-signatures-excel" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://signitures.dev/guides/bulk-email-signatures-excel" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://signitures.dev/guides/html-email-signature-best-practices</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://signitures.dev/guides/html-email-signature-best-practices" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://signitures.dev/he/guides/html-email-signature-best-practices" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://signitures.dev/guides/html-email-signature-best-practices" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://signitures.dev/he</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://signitures.dev/" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://signitures.dev/he" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://signitures.dev/" />
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://signitures.dev/he/guides</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://signitures.dev/guides" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://signitures.dev/he/guides" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://signitures.dev/guides" />
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://signitures.dev/he/guides/outlook-email-signature</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://signitures.dev/guides/outlook-email-signature" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://signitures.dev/he/guides/outlook-email-signature" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://signitures.dev/guides/outlook-email-signature" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://signitures.dev/he/guides/bulk-email-signatures-excel</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://signitures.dev/guides/bulk-email-signatures-excel" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://signitures.dev/he/guides/bulk-email-signatures-excel" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://signitures.dev/guides/bulk-email-signatures-excel" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://signitures.dev/he/guides/html-email-signature-best-practices</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://signitures.dev/guides/html-email-signature-best-practices" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://signitures.dev/he/guides/html-email-signature-best-practices" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://signitures.dev/guides/html-email-signature-best-practices" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>

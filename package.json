@@ -1,13 +1,14 @@
 {
   "name": "signitures",
-  "version": "1.0.134",
+  "version": "1.0.135",
   "description": "",
   "scripts": {
     "prepare": "node scripts/install-git-hooks.mjs",
     "version:bump": "node scripts/bump-version.mjs",
     "dev": "vite",
     "dev:vercel": "node scripts/bundle-api.mjs && vercel dev",
-    "build": "node scripts/generate-pwa-icons.mjs && node scripts/generate-og-image.mjs && node scripts/copy-signature-fonts.mjs && vite build && node scripts/bundle-api.mjs",
+    "build": "node scripts/generate-pwa-icons.mjs && node scripts/generate-og-image.mjs && node scripts/copy-signature-fonts.mjs && vite build && node scripts/generate-seo-pages.mjs && node scripts/bundle-api.mjs",
+    "seo": "node scripts/generate-seo-pages.mjs",
     "fonts": "node scripts/copy-signature-fonts.mjs",
     "icons": "node scripts/generate-pwa-icons.mjs",
     "preview": "vite preview",

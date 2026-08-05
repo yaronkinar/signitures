@@ -22,5 +22,18 @@ const readBrowserLanguage = (): AppLanguage => {
   return locale.startsWith('he') ? 'he' : 'en'
 }
 
+/**
+ * `/he` and `/he/...` are indexed as the Hebrew locale, so the URL wins over any
+ * persisted or browser preference. Without this a Hebrew search result would
+ * render in English for returning visitors, which Google treats as a mismatch
+ * between the hreflang annotation and the served page.
+ */
+const readPathLanguage = (): AppLanguage | null => {
+  if (typeof location === 'undefined') return null
+  const path = location.pathname.toLowerCase()
+  if (path === '/he' || path.startsWith('/he/')) return 'he'
+  return null
+}
+
 export const getInitialUiLanguage = (): AppLanguage =>
-  readPersistedLanguage() ?? readBrowserLanguage()
+  readPathLanguage() ?? readPersistedLanguage() ?? readBrowserLanguage()

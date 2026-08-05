@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>יצירת חתימות מייל לכל הארגון מקובץ אקסל</title>
+    <meta name="theme-color" content="#88236f" />
+    <meta name="description" content="איך מייצרים חתימות אאוטלוק אחידות לכל עובד בצורה מרוכזת מתוך גיליון עם שמות, תפקידים וטלפונים — ואיך מפיצים אותן בארגון." />
+    <link rel="canonical" href="https://signitures.dev/he/guides/bulk-email-signatures-excel" />
+    <link rel="alternate" hreflang="en" href="https://signitures.dev/guides/bulk-email-signatures-excel" />
+    <link rel="alternate" hreflang="he" href="https://signitures.dev/he/guides/bulk-email-signatures-excel" />
+    <link rel="alternate" hreflang="x-default" href="https://signitures.dev/guides/bulk-email-signatures-excel" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://signitures.dev/he/guides/bulk-email-signatures-excel" />
+    <meta property="og:title" content="יצירת חתימות מייל לכל הארגון מקובץ אקסל" />
+    <meta property="og:description" content="איך מייצרים חתימות אאוטלוק אחידות לכל עובד בצורה מרוכזת מתוך גיליון עם שמות, תפקידים וטלפונים — ואיך מפיצים אותן בארגון." />
+    <meta property="og:image" content="https://signitures.dev/og-image.png" />
+    <meta property="og:site_name" content="Signitures" />
+    <meta property="og:locale" content="he_IL" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="יצירת חתימות מייל לכל הארגון מקובץ אקסל" />
+    <meta name="twitter:description" content="איך מייצרים חתימות אאוטלוק אחידות לכל עובד בצורה מרוכזת מתוך גיליון עם שמות, תפקידים וטלפונים — ואיך מפיצים אותן בארגון." />
+    <meta name="twitter:image" content="https://signitures.dev/og-image.png" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Rubik:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+  :root { color-scheme: light dark; --brand: #88236f; --ink: #16181d; --muted: #5a6070; --line: #e2e6ee; --bg: #ffffff; --panel: #f7f9fc; }
+  @media (prefers-color-scheme: dark) { :root { --ink: #eef1f6; --muted: #a3abbd; --line: #2b303c; --bg: #14161b; --panel: #1c1f27; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Rubik', 'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; line-height: 1.7; font-size: 17px; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px 80px; }
+  a { color: var(--brand); }
+  header.site { border-bottom: 1px solid var(--line); }
+  header.site .wrap { padding-block: 16px; display: flex; gap: 16px; align-items: center; justify-content: space-between; }
+  .brand { font-weight: 700; text-decoration: none; color: var(--ink); }
+  nav.crumbs { font-size: 14px; color: var(--muted); margin: 24px 0 8px; }
+  nav.crumbs a { color: var(--muted); }
+  h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.2; letter-spacing: -0.02em; margin: 8px 0 16px; }
+  h2 { font-size: clamp(21px, 3vw, 26px); line-height: 1.3; letter-spacing: -0.01em; margin: 44px 0 12px; }
+  h3 { font-size: 18px; margin: 28px 0 8px; }
+  .lede { font-size: 19px; color: var(--muted); }
+  .meta { font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+  ol, ul { padding-inline-start: 22px; }
+  li { margin: 6px 0; }
+  .note { background: var(--panel); border-inline-start: 3px solid var(--brand); padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 16px; }
+  .toc { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin: 28px 0; }
+  .toc p { margin: 0 0 8px; font-weight: 600; font-size: 15px; }
+  .toc ul { margin: 0; }
+  .cta { border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 24px; margin: 48px 0 0; }
+  .cta h2 { margin-top: 0; }
+  .btn { display: inline-block; background: var(--brand); color: #fff; text-decoration: none; font-weight: 600; padding: 12px 22px; border-radius: 8px; margin-top: 8px; }
+  .faq h3 { font-size: 17px; }
+  .cards { list-style: none; padding: 0; display: grid; gap: 12px; }
+  .cards a { font-weight: 600; text-decoration: none; }
+  .cards li { border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin: 0; }
+  .cards p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+  footer.site { border-top: 1px solid var(--line); margin-top: 64px; }
+  footer.site .wrap { padding-block: 24px; font-size: 14px; color: var(--muted); }
+</style>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "יצירת חתימות מייל לכל הארגון מקובץ אקסל",
+  "description": "איך מייצרים חתימות אאוטלוק אחידות לכל עובד בצורה מרוכזת מתוך גיליון עם שמות, תפקידים וטלפונים — ואיך מפיצים אותן בארגון.",
+  "inLanguage": "he",
+  "datePublished": "2026-08-05",
+  "dateModified": "2026-08-05",
+  "mainEntityOfPage": "https://signitures.dev/he/guides/bulk-email-signatures-excel",
+  "image": "https://signitures.dev/og-image.png",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Signitures",
+    "url": "https://signitures.dev"
+  }
+}
+    </script>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "he",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "כמה חתימות אפשר לייצר בבת אחת?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "המחולל מעבד את כל הגיליון בדפדפן, ולכן המגבלה המעשית היא הזיכרון של המחשב ולא מספר שורות קבוע. כמה מאות שורות זה שגרתי."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "אילו עמודות צריכות להיות בגיליון?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "לכל הפחות שם מלא. תפקיד, אימייל, טלפון ונייד הם רשות — כל עמודה שתשמיטו פשוט לא תופיע בחתימות."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "אפשר תמונה שונה לכל עובד?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "התבנית מחילה לוגו משותף אחד על כל החתימות. תמונות פרטניות לכל עובד מחייבות ייצור בקבוצות קטנות, אחת לכל תמונה."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "האם נתוני העובדים נשלחים לשרת?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "הגיליון מנותח בדפדפן שלכם. השורות מעובדות מקומית כדי לייצר את קובצי החתימה."
+      }
+    }
+  ]
+}
+    </script>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "דף הבית",
+      "item": "https://signitures.dev/he"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "מדריכים",
+      "item": "https://signitures.dev/he/guides"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "יצירת חתימות מייל לכל הארגון מקובץ אקסל",
+      "item": "https://signitures.dev/he/guides/bulk-email-signatures-excel"
+    }
+  ]
+}
+    </script>
+  </head>
+  <body>
+    <header class="site">
+      <div class="wrap">
+        <a class="brand" href="/he">Signitures</a>
+        <a href="/he">למחולל החתימות</a>
+      </div>
+    </header>
+    <main class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="/he">דף הבית</a> ›
+        <a href="/he/guides">מדריכים</a>
+      </nav>
+      <h1>יצירת חתימות מייל לכל הארגון מקובץ אקסל</h1>
+      <p class="meta">עודכן 2026-08-05</p>
+      <p class="lede">לעצב חתימה אחת זה מהיר. לייצר שמונים חתימות, כל אחת עם שם, תפקיד וטלפון ישיר אחרים, ולשמור על מיתוג זהה בכולן — שם זה מפסיק להיות משימת עיצוב והופך למשימת נתונים. הדרך היציבה היא לבנות את העיצוב פעם אחת כתבנית, ולתת לגיליון לספק את השדות המשתנים.</p>
+      <nav class="toc" aria-label="בעמוד הזה">
+        <p>בעמוד הזה</p>
+        <ul>
+          <li><a href="#s1">הכנת הגיליון</a></li>
+          <li><a href="#s2">בניית התבנית פעם אחת</a></li>
+          <li><a href="#s3">ייצור וייצוא</a></li>
+          <li><a href="#s4">הפצה בארגון</a></li>
+        </ul>
+      </nav>
+      <h2 id="s1">הכנת הגיליון</h2>
+      <p>שורה אחת לכל עובד, עמודה אחת לכל שדה שמשתנה בין אנשים. כל מה שקבוע — לוגו, צבעי מותג, הבהרה משפטית, קישורים לרשתות — שייך לתבנית ולא לגיליון. שומרים על שורת כותרות בדיוק כפי שהמחולל מצפה, כדי שהעמודות ימופו אוטומטית.</p>
+      <ol>
+        <li>מוסיפים שורת כותרות עם השדות המשתנים: שם מלא, תפקיד, אימייל, טלפון, נייד.</li>
+        <li>ממלאים שורה לכל עובד. תא ריק פשוט משמיט את השורה הזו מהחתימה של אותו אדם.</li>
+        <li>בודקים שפורמט מספרי הטלפון אחיד — החתימות יורשות את הגיליון בדיוק כפי שהוא.</li>
+        <li>שומרים כקובץ ‎.xlsx‎ או ‎.csv‎.</li>
+      </ol>
+      <p class="note">תאים ריקים מכובדים ולא מייצרים שורות ריקות, כך שעובד בלי טלפון ישיר פשוט מקבל חתימה בלעדיו.</p>
+      <h2 id="s2">בניית התבנית פעם אחת</h2>
+      <p>מגדירים את העיצוב עם פרטים של עובד אחד כתצוגה מקדימה. בוחרים מבנה, מעלים לוגו, קובעים צבעי מותג, מוסיפים אייקונים של רשתות חברתיות והבהרה משפטית אם צריך. מה שרואים בתצוגה המקדימה הוא בדיוק איך תיראה כל חתימה שתיווצר, כשרק שדות הגיליון מתחלפים.</p>
+      <p>כדאי להשקיע כאן ולא אחרי הייצור. שינוי הלוגו אחרי הייצוא מחייב ייצור מחדש של כל הסט — וזה זול, אבל ההפצה מחדש כבר לא.</p>
+      <h2 id="s3">ייצור וייצוא</h2>
+      <p>מעלים את הגיליון בפאנל ההפצה המרוכזת והמחולל מייצר חתימה לכל שורה. הייצוא הוא קובץ ZIP שמכיל לכל עובד את קובץ ה‑htm, את גיבוי הטקסט, ואת תיקיית התמונות שאאוטלוק מצפה לה — בשמות שתואמים לפורמט החתימות של אאוטלוק הקלאסי.</p>
+      <ol>
+        <li>פותחים את פאנל ההפצה המרוכזת ומעלים את הקובץ.</li>
+        <li>מאשרים את מיפוי העמודות ובודקים את מספר השורות.</li>
+        <li>מייצאים את קובץ ה‑ZIP.</li>
+        <li>בודקים שתיים־שלוש חתימות לדוגמה לפני ההפצה.</li>
+      </ol>
+      <h2 id="s4">הפצה בארגון</h2>
+      <p>יש שלוש דרכים מעשיות, לפי סדר עולה של מאמץ ושליטה. הפשוטה היא לשלוח לכל עובד את התיקייה שלו עם הנחיה להעתיק אותה אל ‎%APPDATA%\Microsoft\Signatures‎. השנייה היא סקריפט התחברות או Group Policy שמעתיק את התיקייה הנכונה לכל מחשב אוטומטית לפי שם המשתמש. השלישית היא כלל תעבורה של Exchange שמוסיף את החתימה בצד השרת, מה שמבטיח אחידות כולל במובייל, אבל מוסיף את החתימה בתחתית כל השרשור ולא מתחת לכל תשובה.</p>
+      <p>לרוב הארגונים עד מאה עובדים, האפשרות הראשונה או השנייה מספיקה בהחלט.</p>
+      <section class="faq">
+        <h2>שאלות נפוצות</h2>
+        <h3>כמה חתימות אפשר לייצר בבת אחת?</h3>
+        <p>המחולל מעבד את כל הגיליון בדפדפן, ולכן המגבלה המעשית היא הזיכרון של המחשב ולא מספר שורות קבוע. כמה מאות שורות זה שגרתי.</p>
+        <h3>אילו עמודות צריכות להיות בגיליון?</h3>
+        <p>לכל הפחות שם מלא. תפקיד, אימייל, טלפון ונייד הם רשות — כל עמודה שתשמיטו פשוט לא תופיע בחתימות.</p>
+        <h3>אפשר תמונה שונה לכל עובד?</h3>
+        <p>התבנית מחילה לוגו משותף אחד על כל החתימות. תמונות פרטניות לכל עובד מחייבות ייצור בקבוצות קטנות, אחת לכל תמונה.</p>
+        <h3>האם נתוני העובדים נשלחים לשרת?</h3>
+        <p>הגיליון מנותח בדפדפן שלכם. השורות מעובדות מקומית כדי לייצר את קובצי החתימה.</p>
+      </section>
+      <section>
+        <h2>מדריכים נוספים</h2>
+        <ul class="cards">
+          <li><a href="/he/guides/outlook-email-signature">איך מוסיפים חתימה במייל באאוטלוק</a><p>מדריך שלב אחר שלב להוספת חתימת HTML לאאוטלוק החדש, לאאוטלוק הקלאסי, לאאוטלוק בדפדפן ולאפליקציות אייפון ואנדרואיד.</p></li>
+          <li><a href="/he/guides/html-email-signature-best-practices">כללי כתיבת HTML לחתימות מייל</a><p>למה חתימות מייל נשברות באאוטלוק ואילו כללי קוד שומרים עליהן: טבלאות במקום flexbox, עיצוב inline, תמונות מאוחסנות וחלופות נגישות.</p></li>
+        </ul>
+      </section>
+      <section class="cta">
+        <h2>בנו את החתימה שלכם עכשיו</h2>
+        <p>ממלאים פרטים, בוחרים עיצוב, ומורידים חתימה מוכנה להדבקה באאוטלוק. השימוש חינם.</p>
+        <a class="btn" href="/he">פתחו את המחולל</a>
+      </section>
+    </main>
+    <footer class="site">
+      <div class="wrap">
+        <a href="/he">Signitures</a> ·
+        <a href="/he/guides">מדריכים</a>
+      </div>
+    </footer>
+  </body>
+</html>

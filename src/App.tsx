@@ -1663,6 +1663,14 @@ export default function App() {
           </span>
         </div>
         <div className="app-enterprise-footer-actions">
+          {/* Real anchor, not a router push: the guides are statically generated
+              pages and this is the internal link that lets crawlers reach them. */}
+          <a
+            className="app-enterprise-footer-link"
+            href={lang === 'he' ? '/he/guides' : '/guides'}
+          >
+            {t(lang, 'footerGuides')}
+          </a>
           <button
             type="button"
             className="app-enterprise-footer-link"

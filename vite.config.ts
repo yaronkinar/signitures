@@ -66,7 +66,10 @@ export default defineConfig(({ mode }) => {
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
           navigateFallback: '/index.html',
-          navigateFallbackDenylist: [/^\/api\//]
+          // The statically generated SEO pages are real documents, not SPA
+          // routes. Without these the service worker would answer /guides and
+          // /he navigations with the English app shell.
+          navigateFallbackDenylist: [/^\/api\//, /^\/guides/, /^\/he(\/|$)/, /^\/sitemap\.xml$/]
         }
       })
     ],

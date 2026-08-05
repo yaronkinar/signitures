@@ -14,7 +14,10 @@ export type SignatureStrings = {
 
 const translations = {
   en: {
-    pageTitle: 'Outlook Signature Generator',
+    // Keep in sync with `locales.en.appTitle` in scripts/seo/content.mjs — this
+    // overwrites the served <title> once React mounts, and Google indexes the
+    // rendered value.
+    pageTitle: 'Free Outlook Email Signature Generator',
     pageHeading: 'Outlook Signature Generator',
     editorSidebarTitle: 'Signature Editor',
     editorActiveTemplate: 'Active template',
@@ -42,6 +45,7 @@ const translations = {
     footerCreatedBy: 'Created by {name}',
     toolbarMore: 'Import / export',
     footerChangelog: 'Changelog',
+    footerGuides: 'Guides',
     pageLead:
       'Fill in your details and generate copy-ready HTML for Outlook. Expand each section as needed.',
     formSaving: 'Saving…',
@@ -479,7 +483,8 @@ const translations = {
     userMenuSignIn: 'Sign in'
   },
   he: {
-    pageTitle: 'מחולל חתימות Outlook',
+    // Keep in sync with `locales.he.appTitle` in scripts/seo/content.mjs.
+    pageTitle: 'מחולל חתימות למייל לאאוטלוק — חינם',
     pageHeading: 'מחולל חתימות Outlook',
     editorSidebarTitle: 'עורך חתימות',
     editorActiveTemplate: 'תבנית פעילה',
@@ -505,6 +510,7 @@ const translations = {
     footerCreatedBy: 'נוצר על ידי {name}',
     toolbarMore: 'ייבוא / ייצוא',
     footerChangelog: 'יומן שינויים',
+    footerGuides: 'מדריכים',
     pageLead: 'מלאו את הפרטים ויצרו HTML מוכן להעתקה ל-Outlook. הרחיבו כל מקטע לפי הצורך.',
     formSaving: 'שומר…',
     formSaved: 'נשמר מקומית',

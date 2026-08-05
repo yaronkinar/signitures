@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTML Email Signature Best Practices That Survive Outlook</title>
+    <meta name="theme-color" content="#88236f" />
+    <meta name="description" content="Why email signatures break in Outlook and the markup rules that keep them intact: tables over flexbox, inline styles, hosted images, and accessible fallbacks." />
+    <link rel="canonical" href="https://signitures.dev/guides/html-email-signature-best-practices" />
+    <link rel="alternate" hreflang="en" href="https://signitures.dev/guides/html-email-signature-best-practices" />
+    <link rel="alternate" hreflang="he" href="https://signitures.dev/he/guides/html-email-signature-best-practices" />
+    <link rel="alternate" hreflang="x-default" href="https://signitures.dev/guides/html-email-signature-best-practices" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://signitures.dev/guides/html-email-signature-best-practices" />
+    <meta property="og:title" content="HTML Email Signature Best Practices That Survive Outlook" />
+    <meta property="og:description" content="Why email signatures break in Outlook and the markup rules that keep them intact: tables over flexbox, inline styles, hosted images, and accessible fallbacks." />
+    <meta property="og:image" content="https://signitures.dev/og-image.png" />
+    <meta property="og:site_name" content="Signitures" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="he_IL" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="HTML Email Signature Best Practices That Survive Outlook" />
+    <meta name="twitter:description" content="Why email signatures break in Outlook and the markup rules that keep them intact: tables over flexbox, inline styles, hosted images, and accessible fallbacks." />
+    <meta name="twitter:image" content="https://signitures.dev/og-image.png" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Rubik:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+  :root { color-scheme: light dark; --brand: #88236f; --ink: #16181d; --muted: #5a6070; --line: #e2e6ee; --bg: #ffffff; --panel: #f7f9fc; }
+  @media (prefers-color-scheme: dark) { :root { --ink: #eef1f6; --muted: #a3abbd; --line: #2b303c; --bg: #14161b; --panel: #1c1f27; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Rubik', 'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; line-height: 1.7; font-size: 17px; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px 80px; }
+  a { color: var(--brand); }
+  header.site { border-bottom: 1px solid var(--line); }
+  header.site .wrap { padding-block: 16px; display: flex; gap: 16px; align-items: center; justify-content: space-between; }
+  .brand { font-weight: 700; text-decoration: none; color: var(--ink); }
+  nav.crumbs { font-size: 14px; color: var(--muted); margin: 24px 0 8px; }
+  nav.crumbs a { color: var(--muted); }
+  h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.2; letter-spacing: -0.02em; margin: 8px 0 16px; }
+  h2 { font-size: clamp(21px, 3vw, 26px); line-height: 1.3; letter-spacing: -0.01em; margin: 44px 0 12px; }
+  h3 { font-size: 18px; margin: 28px 0 8px; }
+  .lede { font-size: 19px; color: var(--muted); }
+  .meta { font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+  ol, ul { padding-inline-start: 22px; }
+  li { margin: 6px 0; }
+  .note { background: var(--panel); border-inline-start: 3px solid var(--brand); padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 16px; }
+  .toc { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin: 28px 0; }
+  .toc p { margin: 0 0 8px; font-weight: 600; font-size: 15px; }
+  .toc ul { margin: 0; }
+  .cta { border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 24px; margin: 48px 0 0; }
+  .cta h2 { margin-top: 0; }
+  .btn { display: inline-block; background: var(--brand); color: #fff; text-decoration: none; font-weight: 600; padding: 12px 22px; border-radius: 8px; margin-top: 8px; }
+  .faq h3 { font-size: 17px; }
+  .cards { list-style: none; padding: 0; display: grid; gap: 12px; }
+  .cards a { font-weight: 600; text-decoration: none; }
+  .cards li { border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin: 0; }
+  .cards p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+  footer.site { border-top: 1px solid var(--line); margin-top: 64px; }
+  footer.site .wrap { padding-block: 24px; font-size: 14px; color: var(--muted); }
+</style>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "HTML email signature best practices",
+  "description": "Why email signatures break in Outlook and the markup rules that keep them intact: tables over flexbox, inline styles, hosted images, and accessible fallbacks.",
+  "inLanguage": "en",
+  "datePublished": "2026-08-05",
+  "dateModified": "2026-08-05",
+  "mainEntityOfPage": "https://signitures.dev/guides/html-email-signature-best-practices",
+  "image": "https://signitures.dev/og-image.png",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Signitures",
+    "url": "https://signitures.dev"
+  }
+}
+    </script>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Why does my signature look fine in Gmail but broken in Outlook?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Outlook for Windows renders HTML with the Word engine, which ignores flexbox, grid, and most positioning. Gmail uses a browser engine and is far more forgiving. Rebuilding the layout with nested tables and inline styles resolves it."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Should I embed images or link to them?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Link to images at a public HTTPS URL for web and new Outlook. Classic Outlook for Windows uses a local image folder alongside the .htm file, which is why the export includes both."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the ideal email signature size?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Under 600 pixels wide and under about 100KB in total. Larger signatures risk Gmail clipping the message and slow loading on mobile connections."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need a plain text version of my signature?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Outlook pairs each HTML signature with a .txt fallback used when a message is composed in plain text. Without it, plain text messages get no signature at all."
+      }
+    }
+  ]
+}
+    </script>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://signitures.dev/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Guides",
+      "item": "https://signitures.dev/guides"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "HTML email signature best practices",
+      "item": "https://signitures.dev/guides/html-email-signature-best-practices"
+    }
+  ]
+}
+    </script>
+  </head>
+  <body>
+    <header class="site">
+      <div class="wrap">
+        <a class="brand" href="/">Signitures</a>
+        <a href="/">Open the signature generator</a>
+      </div>
+    </header>
+    <main class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a> ›
+        <a href="/guides">Guides</a>
+      </nav>
+      <h1>HTML email signature best practices</h1>
+      <p class="meta">Updated 2026-08-05</p>
+      <p class="lede">Email clients are roughly fifteen years behind browsers, and Outlook for Windows is the furthest behind of all because it renders HTML with Microsoft Word rather than a browser engine. A signature that looks perfect in a browser preview can collapse entirely in the place it actually matters. These are the rules that hold up.</p>
+      <nav class="toc" aria-label="On this page">
+        <p>On this page</p>
+        <ul>
+          <li><a href="#s1">Lay out with tables, not flexbox or grid</a></li>
+          <li><a href="#s2">Put every style inline</a></li>
+          <li><a href="#s3">Keep images hosted, sized, and optional</a></li>
+          <li><a href="#s4">Constrain the width and test on mobile</a></li>
+          <li><a href="#s5">Restrain the content</a></li>
+        </ul>
+      </nav>
+      <h2 id="s1">Lay out with tables, not flexbox or grid</h2>
+      <p>Word's rendering engine has no support for flexbox, grid, float in any reliable form, or position. Nested tables with fixed pixel widths are the only layout primitive that renders consistently across Outlook, Gmail, Apple Mail, and the mobile clients.</p>
+      <p>This feels archaic and it is, but it is the difference between a signature that holds its shape and one that becomes a vertical stack of misaligned text.</p>
+      <h2 id="s2">Put every style inline</h2>
+      <p>Gmail strips &lt;style&gt; blocks entirely. Outlook on the web rewrites class names. Any styling that lives in a stylesheet or a &lt;style&gt; element will be discarded somewhere in the chain, so every rule has to sit in a style attribute on the element it applies to.</p>
+      <p>Set a font-family on each text element rather than relying on inheritance, because some clients reset fonts at the container boundary.</p>
+      <h2 id="s3">Keep images hosted, sized, and optional</h2>
+      <p>Reference images by absolute public URL, never by a local file path — a path on your disk is unreachable for everyone else and produces the classic broken-image square. Set explicit width and height attributes so the layout does not reflow while images load, and so blocked images still occupy the right space.</p>
+      <p>Assume images will be blocked by default, because in many corporate clients they are. Write meaningful alt text and never put essential information such as a phone number inside an image, where it is invisible to blocked-image users, screen readers, and text search.</p>
+      <h2 id="s4">Constrain the width and test on mobile</h2>
+      <p>Keep the total signature width at or under 600 pixels. Wider signatures force horizontal scrolling on phones, where more than half of email is now read. Media queries are unreliable in this context, so design something that works at a fixed narrow width rather than something responsive.</p>
+      <h2 id="s5">Restrain the content</h2>
+      <p>A signature carries name, title, company, one or two contact methods, and optionally a logo and a small set of social icons. Every additional line reduces the chance any of it is read, and long legal disclaimers push the actual content out of the preview pane.</p>
+      <p>Use real text for contact details rather than images. It is selectable, searchable, screen-reader accessible, and it survives image blocking.</p>
+      <section class="faq">
+        <h2>Frequently asked questions</h2>
+        <h3>Why does my signature look fine in Gmail but broken in Outlook?</h3>
+        <p>Outlook for Windows renders HTML with the Word engine, which ignores flexbox, grid, and most positioning. Gmail uses a browser engine and is far more forgiving. Rebuilding the layout with nested tables and inline styles resolves it.</p>
+        <h3>Should I embed images or link to them?</h3>
+        <p>Link to images at a public HTTPS URL for web and new Outlook. Classic Outlook for Windows uses a local image folder alongside the .htm file, which is why the export includes both.</p>
+        <h3>What is the ideal email signature size?</h3>
+        <p>Under 600 pixels wide and under about 100KB in total. Larger signatures risk Gmail clipping the message and slow loading on mobile connections.</p>
+        <h3>Do I need a plain text version of my signature?</h3>
+        <p>Yes. Outlook pairs each HTML signature with a .txt fallback used when a message is composed in plain text. Without it, plain text messages get no signature at all.</p>
+      </section>
+      <section>
+        <h2>Related guides</h2>
+        <ul class="cards">
+          <li><a href="/guides/outlook-email-signature">How to add an email signature in Outlook</a><p>Step-by-step instructions for adding an HTML email signature to new Outlook, classic Outlook, Outlook on the web, and the iOS and Android apps.</p></li>
+          <li><a href="/guides/bulk-email-signatures-excel">Create email signatures for a whole team from Excel</a><p>How to generate consistent, per-employee Outlook signatures in bulk from a spreadsheet of names, titles, and phone numbers — and deploy them across the company.</p></li>
+        </ul>
+      </section>
+      <section class="cta">
+        <h2>Build your signature now</h2>
+        <p>Fill in your details, pick a layout, and download a signature ready to drop into Outlook. Free to use.</p>
+        <a class="btn" href="/">Open the generator</a>
+      </section>
+    </main>
+    <footer class="site">
+      <div class="wrap">
+        <a href="/">Signitures</a> ·
+        <a href="/guides">Guides</a>
+      </div>
+    </footer>
+  </body>
+</html>
